@@ -1,365 +1,407 @@
-// Animation des sections
+/*==================================================
+KINEPULSE V4
+PARTIE 1
+==================================================*/
+
+let bookingData = {
+    service: "",
+    objectif: "",
+    disponibilites: [],
+    nom: "",
+    telephone: "",
+    email: ""
+};
+
+/*=========================================
+ANIMATIONS
+=========================================*/
 
 const observer = new IntersectionObserver((entries)=>{
 
-entries.forEach(entry=>{
+    entries.forEach(entry=>{
 
-if(entry.isIntersecting){
+        if(entry.isIntersecting){
 
-entry.target.classList.add("show");
+            entry.target.classList.add("show");
 
-}
+        }
 
-});
+    });
 
 },{threshold:0.15});
 
-document.querySelectorAll(".fade-up").forEach((el)=>{
+document.querySelectorAll(".fade-up").forEach(el=>{
 
-observer.observe(el);
-
-});
-
-// Header au scroll
-
-const header=document.querySelector("header");
-
-window.addEventListener("scroll",()=>{
-
-if(window.scrollY>80){
-
-header.classList.add("scrolled");
-
-}else{
-
-header.classList.remove("scrolled");
-
-}
-
-});
-document.querySelectorAll(".step").forEach((card)=>{
-
-card.classList.add("fade-up");
-
-observer.observe(card);
-
-});
-document.querySelectorAll(".offer-box").forEach((box)=>{
-
-box.classList.add("fade-up");
-
-observer.observe(box);
-
-});
-const form=document.querySelector(".booking-form");
-
-form.addEventListener("submit",(e)=>{
-
-e.preventDefault();
-
-alert("Merci ! Votre demande a été envoyée. Nous vous contacterons rapidement.");
-
-});
-document.querySelectorAll(".faq-question").forEach(question=>{
-
-question.addEventListener("click",()=>{
-
-const item=question.parentElement;
-
-item.classList.toggle("active");
+    observer.observe(el);
 
 });
 
-});
-document.querySelector(".hamburger").addEventListener("click",()=>{
-
-alert("Le menu mobile sera ajouté dans la prochaine livraison.");
-
-});
 document.querySelectorAll(".philosophy-card").forEach(card=>{
 
-card.classList.add("fade-up");
+    card.classList.add("fade-up");
 
-observer.observe(card);
+    observer.observe(card);
 
 });
+
+document.querySelectorAll(".offer-box").forEach(box=>{
+
+    box.classList.add("fade-up");
+
+    observer.observe(box);
+
+});
+
 document.querySelectorAll(".adv-item").forEach(item=>{
 
-item.classList.add("fade-up");
+    item.classList.add("fade-up");
 
-observer.observe(item);
+    observer.observe(item);
 
 });
-window.addEventListener("scroll",()=>{
+
+
+/*=========================================
+HEADER
+=========================================*/
 
 const header=document.querySelector("header");
 
-if(window.scrollY>80){
+window.addEventListener("scroll",()=>{
 
-header.classList.add("scrolled");
+    if(window.scrollY>80){
 
-}else{
+        header.classList.add("scrolled");
 
-header.classList.remove("scrolled");
+    }else{
+
+        header.classList.remove("scrolled");
+
+    }
+
+});
+
+
+/*=========================================
+FAQ
+=========================================*/
+
+document.querySelectorAll(".faq-question").forEach(question=>{
+
+    question.addEventListener("click",()=>{
+
+        question.parentElement.classList.toggle("active");
+
+    });
+
+});
+
+
+/*=========================================
+FORMULAIRE SIMPLE
+=========================================*/
+
+const form=document.querySelector(".booking-form");
+
+if(form){
+
+    form.addEventListener("submit",(e)=>{
+
+        e.preventDefault();
+
+        alert("Merci ! Votre demande a été envoyée.");
+
+    });
 
 }
 
-});
+
+/*=========================================
+MODAL
+=========================================*/
+
 function openBooking(){
 
-document.getElementById("bookingModal").style.display="flex";
+    document.getElementById("bookingModal").style.display="flex";
 
 }
 
 function closeBooking(){
 
-document.getElementById("bookingModal").style.display="none";
+    document.getElementById("bookingModal").style.display="none";
 
 }
 
-window.onclick=function(e){
+window.addEventListener("click",(e)=>{
 
-const modal=document.getElementById("bookingModal");
+    const modal=document.getElementById("bookingModal");
 
-if(e.target===modal){
+    if(e.target===modal){
 
-closeBooking();
+        closeBooking();
 
-}
+    }
 
-}
+});
+/*==================================================
+PARTIE 2
+RÉSERVATION
+==================================================*/
 
 function selectService(service){
 
-const content=document.getElementById("bookingContent");
+    const content=document.getElementById("bookingContent");
 
-let question="";
+    let html="";
 
-if(service==="EMS"){
+    if(service==="EMS"){
 
-question=`
+        html=`
 
-<div class="step">
+        <div class="step">
 
-<h3>Quel est votre objectif ?</h3>
+            <h3>Quel est votre objectif ?</h3>
 
-<button class="step-btn" onclick="showAvailability('${service}','Perte de poids')">Perte de poids</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Perte de poids')">Perte de poids</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Tonification')">Tonification</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Tonification')">Tonification</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Masse musculaire')">Développer la masse musculaire</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Développement musculaire')">Développement musculaire</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Soulagement des douleurs')">Soulager des douleurs</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Soulagement des douleurs')">Soulagement des douleurs</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Rééducation')">Rééducation</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Rééducation')">Rééducation</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Autre')">Autre</button>
+            <button class="step-btn" onclick="showAvailability('EMS','Autre')">Autre</button>
 
-</div>
+        </div>
 
-`;
+        `;
 
-}else{
+    }else{
 
-question=`
+        html=`
 
-<div class="step">
+        <div class="step">
 
-<h3>Quelle est la raison de votre consultation ?</h3>
+            <h3>Quelle est la raison de votre consultation ?</h3>
 
-<button class="step-btn" onclick="showAvailability('${service}','Cou')">Douleur au cou</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Cou')">Douleur au cou</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Dos')">Douleur au dos</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Dos')">Douleur au dos</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Épaules')">Épaules</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Épaules')">Épaules</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Jambes')">Jambes</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Jambes')">Jambes</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Stress')">Stress / tension</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Stress')">Stress / Tensions</button>
 
-<button class="step-btn" onclick="showAvailability('${service}','Autre')">Autre</button>
+            <button class="step-btn" onclick="showAvailability('${service}','Autre')">Autre</button>
 
-</div>
+        </div>
 
-`;
+        `;
 
-}
+    }
 
-content.innerHTML=question;
-
-function showAvailability(service, objectif){
-
-bookingData.service=service;
-bookingData.objectif=objectif;
-
-const content=document.getElementById("bookingContent");
-
-content.innerHTML=`
-...
-tout le HTML de tes disponibilités
-...
-`;
-
-const checks=document.querySelectorAll(".availability-grid input");
-
-checks.forEach(c=>{
-
-c.addEventListener("change",()=>{
-
-const checked=document.querySelectorAll(".availability-grid input:checked");
-
-if(checked.length>3){
-
-c.checked=false;
-
-alert("Vous pouvez sélectionner un maximum de 3 disponibilités.");
+    content.innerHTML=html;
 
 }
 
-});
 
-});
-
-}  
-
-}
 function showAvailability(service,objectif){
 
-const content=document.getElementById("bookingContent");
+    bookingData.service=service;
+    bookingData.objectif=objectif;
 
-content.innerHTML=`
+    const content=document.getElementById("bookingContent");
 
-<div class="step">
+    content.innerHTML=`
 
-<h3>Choisissez vos disponibilités</h3>
+    <div class="step">
 
-<p>Vous pouvez sélectionner jusqu'à 3 choix.</p>
+        <h3>Choisissez jusqu'à 3 disponibilités</h3>
 
-<div class="availability-grid">
+        <p>Votre rendez-vous sera confirmé après vérification de notre agenda.</p>
 
-<label><input type="checkbox"> Lundi 15h00</label>
+        <div class="availability-grid">
 
-<label><input type="checkbox"> Lundi 16h00</label>
+            <label><input type="checkbox"> Lundi 15h00</label>
+            <label><input type="checkbox"> Lundi 16h00</label>
 
-<label><input type="checkbox"> Mardi 15h00</label>
+            <label><input type="checkbox"> Mardi 15h00</label>
+            <label><input type="checkbox"> Mardi 16h00</label>
 
-<label><input type="checkbox"> Mardi 16h00</label>
+            <label><input type="checkbox"> Mercredi 15h00</label>
+            <label><input type="checkbox"> Mercredi 16h00</label>
 
-<label><input type="checkbox"> Mercredi 15h00</label>
+            <label><input type="checkbox"> Jeudi 15h00</label>
+            <label><input type="checkbox"> Jeudi 16h00</label>
 
-<label><input type="checkbox"> Mercredi 16h00</label>
+        </div>
 
-<label><input type="checkbox"> Jeudi 15h00</label>
+        <button class="hero-btn" style="margin-top:30px;" onclick="showContactForm()">
 
-<label><input type="checkbox"> Jeudi 16h00</label>
+            Continuer
 
-<label><input type="checkbox"> Vendredi 16h00</label>
+        </button>
 
-<label><input type="checkbox"> Vendredi 17h00</label>
+    </div>
 
-<label><input type="checkbox"> Vendredi 18h00</label>
+    `;
 
-<label><input type="checkbox"> Vendredi 19h00</label>
 
-<label><input type="checkbox"> Samedi 8h00</label>
+    const checks=document.querySelectorAll(".availability-grid input");
 
-<label><input type="checkbox"> Samedi 9h00</label>
+    checks.forEach(check=>{
 
-<label><input type="checkbox"> Samedi 10h00</label>
+        check.addEventListener("change",()=>{
 
-<label><input type="checkbox"> Samedi 11h00</label>
+            const checked=document.querySelectorAll(".availability-grid input:checked");
 
-</div>
+            if(checked.length>3){
 
-<button class="hero-btn" style="margin-top:30px;" onclick="showContactForm('${service}','${objectif}')">
+                check.checked=false;
 
-Continuer
+                alert("Vous pouvez sélectionner un maximum de 3 disponibilités.");
 
-</button>
+            }
 
-</div>
+        });
 
-`;
-
-}
-function showContactForm(service, objectif){
-
-const content=document.getElementById("bookingContent");
-
-content.innerHTML=`
-
-<div class="step">
-
-<h3>Vos coordonnées</h3>
-
-<p>Remplissez vos informations afin que nous puissions communiquer avec vous.</p>
-
-<input class="booking-input" type="text" placeholder="Nom complet">
-
-<input class="booking-input" type="tel" placeholder="Téléphone">
-
-<input class="booking-input" type="email" placeholder="Courriel">
-
-<p class="booking-note">
-
-⚠️ Ceci est une demande de réservation. Votre rendez-vous sera confirmé après vérification de nos disponibilités.
-
-</p>
-
-<button class="hero-btn" onclick="bookingSuccess()">
-
-Envoyer ma demande
-
-</button>
-
-</div>
-
-`;
+    });
 
 }
+/*==================================================
+PARTIE 3
+COORDONNÉES + CONFIRMATION
+==================================================*/
+
+function showContactForm(){
+
+    bookingData.disponibilites=[];
+
+    document.querySelectorAll(".availability-grid input:checked").forEach(item=>{
+
+        bookingData.disponibilites.push(item.parentElement.innerText.trim());
+
+    });
+
+    const content=document.getElementById("bookingContent");
+
+    content.innerHTML=`
+
+    <div class="step">
+
+        <h3>Vos coordonnées</h3>
+
+        <p>Complétez vos informations pour que nous puissions communiquer avec vous.</p>
+
+        <input
+            id="bookingName"
+            class="booking-input"
+            type="text"
+            placeholder="Nom complet"
+        >
+
+        <input
+            id="bookingPhone"
+            class="booking-input"
+            type="tel"
+            placeholder="Téléphone"
+        >
+
+        <input
+            id="bookingEmail"
+            class="booking-input"
+            type="email"
+            placeholder="Courriel"
+        >
+
+        <p class="booking-note">
+
+        ⚠️ Ceci est une demande de réservation uniquement.
+        Votre rendez-vous sera confirmé après vérification de nos disponibilités.
+
+        </p>
+
+        <button class="hero-btn" onclick="bookingSuccess()">
+
+            Envoyer ma demande
+
+        </button>
+
+    </div>
+
+    `;
+
+}
+
 
 function bookingSuccess(){
 
-const name=document.querySelector('input[type="text"]').value.trim();
-const phone=document.querySelector('input[type="tel"]').value.trim();
-const email=document.querySelector('input[type="email"]').value.trim();
+    const nom=document.getElementById("bookingName").value.trim();
+    const telephone=document.getElementById("bookingPhone").value.trim();
+    const email=document.getElementById("bookingEmail").value.trim();
 
-if(name==="" || phone==="" || email===""){
+    if(nom===""){
 
-alert("Veuillez remplir tous les champs.");
+        alert("Veuillez entrer votre nom.");
 
-return;
+        return;
 
-}
+    }
 
-const content=document.getElementById("bookingContent");
+    if(telephone===""){
 
-content.innerHTML=`
+        alert("Veuillez entrer votre numéro de téléphone.");
 
-<div class="step success">
+        return;
 
-<h2>✅ Merci !</h2>
+    }
 
-<p>
+    if(email===""){
 
-Votre demande a bien été reçue.
+        alert("Veuillez entrer votre courriel.");
 
-</p>
+        return;
 
-<p>
+    }
 
-Nous communiquerons avec vous rapidement afin de confirmer votre rendez-vous.
+    bookingData.nom=nom;
+    bookingData.telephone=telephone;
+    bookingData.email=email;
 
-</p>
+    console.log("Réservation :",bookingData);
 
-<button class="hero-btn" onclick="closeBooking()">
+    const content=document.getElementById("bookingContent");
 
-Fermer
+    content.innerHTML=`
 
-</button>
+    <div class="step success">
 
-</div>
+        <h2>✅ Merci ${nom} !</h2>
 
-`;
+        <p>
+
+        Votre demande de réservation a bien été enregistrée.
+
+        </p>
+
+        <p>
+
+        Nous communiquerons avec vous rapidement afin de confirmer un rendez-vous.
+
+        </p>
+
+        <button class="hero-btn" onclick="closeBooking()">
+
+            Fermer
+
+        </button>
+
+    </div>
+
+    `;
 
 }
