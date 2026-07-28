@@ -37,3 +37,10 @@ header.classList.remove("scrolled");
 }
 
 });
+document.querySelectorAll(".step").forEach((card)=>{
+
+card.classList.add("fade-up");
+
+observer.observe(card);
+
+});
