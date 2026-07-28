@@ -282,7 +282,20 @@ Envoyer ma demande
 `;
 
 }
+
 function bookingSuccess(){
+
+const name=document.querySelector('input[type="text"]').value.trim();
+const phone=document.querySelector('input[type="tel"]').value.trim();
+const email=document.querySelector('input[type="email"]').value.trim();
+
+if(name==="" || phone==="" || email===""){
+
+alert("Veuillez remplir tous les champs.");
+
+return;
+
+}
 
 const content=document.getElementById("bookingContent");
 
@@ -300,7 +313,7 @@ Votre demande a bien été reçue.
 
 <p>
 
-Nous vérifierons nos disponibilités et communiquerons avec vous rapidement afin de confirmer votre rendez-vous.
+Nous communiquerons avec vous rapidement afin de confirmer votre rendez-vous.
 
 </p>
 
