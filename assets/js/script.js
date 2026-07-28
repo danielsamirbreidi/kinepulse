@@ -133,13 +133,116 @@ function selectService(service){
 
 const content=document.getElementById("bookingContent");
 
+let question="";
+
+if(service==="EMS"){
+
+question=`
+
+<div class="step">
+
+<h3>Quel est votre objectif ?</h3>
+
+<button class="step-btn" onclick="showAvailability('${service}','Perte de poids')">Perte de poids</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Tonification')">Tonification</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Masse musculaire')">Développer la masse musculaire</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Soulagement des douleurs')">Soulager des douleurs</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Rééducation')">Rééducation</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Autre')">Autre</button>
+
+</div>
+
+`;
+
+}else{
+
+question=`
+
+<div class="step">
+
+<h3>Quelle est la raison de votre consultation ?</h3>
+
+<button class="step-btn" onclick="showAvailability('${service}','Cou')">Douleur au cou</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Dos')">Douleur au dos</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Épaules')">Épaules</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Jambes')">Jambes</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Stress')">Stress / tension</button>
+
+<button class="step-btn" onclick="showAvailability('${service}','Autre')">Autre</button>
+
+</div>
+
+`;
+
+}
+
+content.innerHTML=question;
+
+}
+function showAvailability(service,objectif){
+
+const content=document.getElementById("bookingContent");
+
 content.innerHTML=`
 
-<hr style="margin:30px 0;">
+<div class="step">
 
-<h3>${service}</h3>
+<h3>Choisissez vos disponibilités</h3>
 
-<p>Le formulaire intelligent sera ajouté à la prochaine étape.</p>
+<p>Vous pouvez sélectionner jusqu'à 3 choix.</p>
+
+<div class="availability-grid">
+
+<label><input type="checkbox"> Lundi 15h00</label>
+
+<label><input type="checkbox"> Lundi 16h00</label>
+
+<label><input type="checkbox"> Mardi 15h00</label>
+
+<label><input type="checkbox"> Mardi 16h00</label>
+
+<label><input type="checkbox"> Mercredi 15h00</label>
+
+<label><input type="checkbox"> Mercredi 16h00</label>
+
+<label><input type="checkbox"> Jeudi 15h00</label>
+
+<label><input type="checkbox"> Jeudi 16h00</label>
+
+<label><input type="checkbox"> Vendredi 16h00</label>
+
+<label><input type="checkbox"> Vendredi 17h00</label>
+
+<label><input type="checkbox"> Vendredi 18h00</label>
+
+<label><input type="checkbox"> Vendredi 19h00</label>
+
+<label><input type="checkbox"> Samedi 8h00</label>
+
+<label><input type="checkbox"> Samedi 9h00</label>
+
+<label><input type="checkbox"> Samedi 10h00</label>
+
+<label><input type="checkbox"> Samedi 11h00</label>
+
+</div>
+
+<button class="hero-btn" style="margin-top:30px;" onclick="showContactForm('${service}','${objectif}')">
+
+Continuer
+
+</button>
+
+</div>
 
 `;
 
