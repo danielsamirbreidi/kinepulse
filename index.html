@@ -91,7 +91,7 @@ Première séance EMS gratuite
 
                 <div class="hero-buttons">
 
-                    <a href="#booking" class="hero-btn">
+                    <a href="#" class="hero-btn" onclick="openBooking();return false;">
 
                         Première séance EMS gratuite
 
@@ -355,7 +355,7 @@ Nos massages thérapeutiques sont adaptés à votre condition afin de réduire l
 
 </ul>
 
-<a href="#booking" class="hero-btn">
+<a href="#" class="hero-btn" onclick="openBooking();return false;">
 
 Réserver un massage
 
@@ -401,7 +401,7 @@ Découvrez la technologie EMS avec une première séance offerte afin d'évaluer
 
 </ul>
 
-<a href="#booking" class="hero-btn">
+<a href="#" class="hero-btn" onclick="openBooking();return false;">
 
 Réserver ma séance EMS
 
@@ -447,7 +447,7 @@ L'analyse corporelle permet d'obtenir une vue détaillée de votre composition c
 
 </ul>
 
-<a href="#booking" class="hero-btn">
+<a href="#" class="hero-btn" onclick="openBooking();return false;">
 
 En savoir plus
 
@@ -1091,7 +1091,7 @@ Que vous souhaitiez soulager une douleur, découvrir l'EMS ou obtenir une analys
 
 </p>
 
-<a href="#booking" class="hero-btn">
+<a href="#" class="hero-btn" onclick="openBooking();return false;">
 
 Faire une demande de réservation
 
@@ -1187,6 +1187,48 @@ Votre partenaire en massage thérapeutique, EMS et analyse corporelle 3D.
 
 </a>   
 
+<div id="bookingModal" class="booking-modal">
+
+<div class="booking-box">
+
+<button class="close-modal" onclick="closeBooking()">&times;</button>
+
+<h2>Demande de réservation</h2>
+
+<p>
+
+Choisissez le service qui vous intéresse.
+
+</p>
+
+<div class="booking-services">
+
+<button class="booking-choice" onclick="selectService('EMS')">
+
+🎁 Première séance EMS gratuite
+
+</button>
+
+<button class="booking-choice" onclick="selectService('Massage 60')">
+
+💆 Massage thérapeutique 60 min
+
+</button>
+
+<button class="booking-choice" onclick="selectService('Massage 90')">
+
+💆 Massage thérapeutique 90 min
+
+</button>
+
+</div>
+
+<div id="bookingContent"></div>
+
+</div>
+
+</div>
+    
 </body>
 
 </html>
