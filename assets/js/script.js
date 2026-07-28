@@ -71,3 +71,8 @@ item.classList.toggle("active");
 });
 
 });
+document.querySelector(".hamburger").addEventListener("click",()=>{
+
+alert("Le menu mobile sera ajouté dans la prochaine livraison.");
+
+});
