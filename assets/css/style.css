@@ -30,19 +30,29 @@ body{
 
 header{
 
-    position:fixed;
+position:fixed;
 
-    width:100%;
+width:100%;
 
-    top:0;
+top:0;
 
-    left:0;
+left:0;
 
-    z-index:999;
+z-index:999;
 
-    background:white;
+background:transparent;
 
-    box-shadow:0 5px 20px rgba(0,0,0,.08);
+transition:.35s;
+
+padding:10px 0;
+
+}
+
+header.scrolled{
+
+background:white;
+
+box-shadow:0 10px 30px rgba(0,0,0,.12);
 
 }
 
@@ -78,7 +88,13 @@ nav a{
 
 text-decoration:none;
 
-color:#222;
+color:white;
+
+font-weight:500;
+
+transition:.3s;
+
+}
 
 font-weight:500;
 
@@ -641,5 +657,83 @@ font-size:24px;
 color:#cccccc;
 
 line-height:1.8;
+
+}
+header.scrolled nav a{
+
+color:#222;
+
+}
+
+header.scrolled .btn{
+
+background:#C8A44D;
+
+}
+
+header.scrolled .btn:hover{
+
+background:#111;
+
+}
+
+header.scrolled .logo img{
+
+filter:none;
+
+}
+/*=============================
+SECTION CONTACT RAPIDE
+=============================*/
+
+.quick-contact{
+
+padding:100px 0;
+
+background:#fafafa;
+
+}
+
+.quick-grid{
+
+display:grid;
+
+grid-template-columns:repeat(3,1fr);
+
+gap:30px;
+
+}
+
+.quick-card{
+
+background:white;
+
+padding:40px;
+
+text-align:center;
+
+border-radius:20px;
+
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+transition:.3s;
+
+}
+
+.quick-card:hover{
+
+transform:translateY(-8px);
+
+}
+
+.quick-card h3{
+
+margin:20px 0;
+
+}
+
+.quick-card p{
+
+color:#666;
 
 }
