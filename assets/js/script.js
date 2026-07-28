@@ -51,3 +51,12 @@ box.classList.add("fade-up");
 observer.observe(box);
 
 });
+const form=document.querySelector(".booking-form");
+
+form.addEventListener("submit",(e)=>{
+
+e.preventDefault();
+
+alert("Merci ! Votre demande a été envoyée. Nous vous contacterons rapidement.");
+
+});
