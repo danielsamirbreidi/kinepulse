@@ -105,3 +105,42 @@ header.classList.remove("scrolled");
 }
 
 });
+function openBooking(){
+
+document.getElementById("bookingModal").style.display="flex";
+
+}
+
+function closeBooking(){
+
+document.getElementById("bookingModal").style.display="none";
+
+}
+
+window.onclick=function(e){
+
+const modal=document.getElementById("bookingModal");
+
+if(e.target===modal){
+
+closeBooking();
+
+}
+
+}
+
+function selectService(service){
+
+const content=document.getElementById("bookingContent");
+
+content.innerHTML=`
+
+<hr style="margin:30px 0;">
+
+<h3>${service}</h3>
+
+<p>Le formulaire intelligent sera ajouté à la prochaine étape.</p>
+
+`;
+
+}
