@@ -44,3 +44,10 @@ card.classList.add("fade-up");
 observer.observe(card);
 
 });
+document.querySelectorAll(".offer-box").forEach((box)=>{
+
+box.classList.add("fade-up");
+
+observer.observe(box);
+
+});
