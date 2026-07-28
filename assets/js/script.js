@@ -1,3 +1,5 @@
+// Animation des sections
+
 const observer = new IntersectionObserver((entries)=>{
 
 entries.forEach(entry=>{
@@ -10,27 +12,28 @@ entry.target.classList.add("show");
 
 });
 
-});
+},{threshold:0.15});
 
-document.querySelectorAll(".service-card").forEach(el=>{
-
-el.classList.add("fade-up");
+document.querySelectorAll(".fade-up").forEach((el)=>{
 
 observer.observe(el);
 
 });
 
-document.querySelectorAll(".why-grid div").forEach(el=>{
+// Header au scroll
 
-el.classList.add("fade-up");
+const header=document.querySelector("header");
 
-observer.observe(el);
+window.addEventListener("scroll",()=>{
 
-});
-document.querySelectorAll(".advantage").forEach((card)=>{
+if(window.scrollY>80){
 
-card.classList.add("fade-up");
+header.classList.add("scrolled");
 
-observer.observe(card);
+}else{
+
+header.classList.remove("scrolled");
+
+}
 
 });
