@@ -187,6 +187,41 @@ question=`
 
 content.innerHTML=question;
 
+function showAvailability(service, objectif){
+
+bookingData.service=service;
+bookingData.objectif=objectif;
+
+const content=document.getElementById("bookingContent");
+
+content.innerHTML=`
+...
+tout le HTML de tes disponibilités
+...
+`;
+
+const checks=document.querySelectorAll(".availability-grid input");
+
+checks.forEach(c=>{
+
+c.addEventListener("change",()=>{
+
+const checked=document.querySelectorAll(".availability-grid input:checked");
+
+if(checked.length>3){
+
+c.checked=false;
+
+alert("Vous pouvez sélectionner un maximum de 3 disponibilités.");
+
+}
+
+});
+
+});
+
+}  
+
 }
 function showAvailability(service,objectif){
 
