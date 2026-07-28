@@ -247,3 +247,71 @@ Continuer
 `;
 
 }
+function showContactForm(service, objectif){
+
+const content=document.getElementById("bookingContent");
+
+content.innerHTML=`
+
+<div class="step">
+
+<h3>Vos coordonnées</h3>
+
+<p>Remplissez vos informations afin que nous puissions communiquer avec vous.</p>
+
+<input class="booking-input" type="text" placeholder="Nom complet">
+
+<input class="booking-input" type="tel" placeholder="Téléphone">
+
+<input class="booking-input" type="email" placeholder="Courriel">
+
+<p class="booking-note">
+
+⚠️ Ceci est une demande de réservation. Votre rendez-vous sera confirmé après vérification de nos disponibilités.
+
+</p>
+
+<button class="hero-btn" onclick="bookingSuccess()">
+
+Envoyer ma demande
+
+</button>
+
+</div>
+
+`;
+
+}
+function bookingSuccess(){
+
+const content=document.getElementById("bookingContent");
+
+content.innerHTML=`
+
+<div class="step success">
+
+<h2>✅ Merci !</h2>
+
+<p>
+
+Votre demande a bien été reçue.
+
+</p>
+
+<p>
+
+Nous vérifierons nos disponibilités et communiquerons avec vous rapidement afin de confirmer votre rendez-vous.
+
+</p>
+
+<button class="hero-btn" onclick="closeBooking()">
+
+Fermer
+
+</button>
+
+</div>
+
+`;
+
+}
