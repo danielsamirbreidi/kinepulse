@@ -1457,3 +1457,120 @@ justify-content:center;
 }
 
 }
+/*=========================
+NAVIGATION V3
+=========================*/
+
+.btn-menu{
+
+background:#C8A44D;
+
+padding:14px 26px;
+
+border-radius:40px;
+
+color:white;
+
+text-decoration:none;
+
+font-weight:600;
+
+transition:.3s;
+
+}
+
+.btn-menu:hover{
+
+transform:translateY(-3px);
+
+box-shadow:0 12px 25px rgba(201,162,39,.35);
+
+}
+
+.hamburger{
+
+display:none;
+
+flex-direction:column;
+
+cursor:pointer;
+
+gap:6px;
+
+}
+
+.hamburger span{
+
+width:28px;
+
+height:3px;
+
+background:white;
+
+transition:.3s;
+
+}
+
+header.scrolled .hamburger span{
+
+background:#111;
+
+}
+@media(max-width:960px){
+
+nav a{
+
+display:none;
+
+}
+
+.btn-menu{
+
+display:none;
+
+}
+
+.hamburger{
+
+display:flex;
+
+}
+
+}
+.hero h1{
+
+animation:slideHero .9s ease;
+
+}
+
+.hero p{
+
+animation:slideHero 1.2s ease;
+
+}
+
+.hero-buttons{
+
+animation:slideHero 1.5s ease;
+
+}
+
+@keyframes slideHero{
+
+from{
+
+opacity:0;
+
+transform:translateY(45px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+}
