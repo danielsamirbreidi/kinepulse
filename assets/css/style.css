@@ -28,43 +28,52 @@ body{
    HEADER
 =========================== */
 
+
 header{
 
 position:fixed;
-
-width:100%;
 
 top:0;
 
 left:0;
 
+width:100%;
+
 z-index:999;
+
+padding:22px 0;
 
 background:transparent;
 
-transition:.35s;
-
-padding:10px 0;
+transition:.35s ease;
 
 }
 
 header.scrolled{
 
-background:white;
+background:rgba(255,255,255,.88);
 
-box-shadow:0 10px 30px rgba(0,0,0,.12);
+backdrop-filter:blur(18px);
+
+-webkit-backdrop-filter:blur(18px);
+
+box-shadow:0 10px 35px rgba(0,0,0,.08);
+
+padding:14px 0;
 
 }
 
-header .container{
+header.scrolled nav a{
 
-display:flex;
+color:#111;
 
-justify-content:space-between;
+}
 
-align-items:center;
+header.scrolled .logo img{
 
-padding:20px 0;
+height:58px;
+
+transition:.3s;
 
 }
 
