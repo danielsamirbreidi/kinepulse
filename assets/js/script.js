@@ -83,3 +83,10 @@ card.classList.add("fade-up");
 observer.observe(card);
 
 });
+document.querySelectorAll(".adv-item").forEach(item=>{
+
+item.classList.add("fade-up");
+
+observer.observe(item);
+
+});
