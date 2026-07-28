@@ -27,3 +27,10 @@ el.classList.add("fade-up");
 observer.observe(el);
 
 });
+document.querySelectorAll(".advantage").forEach((card)=>{
+
+card.classList.add("fade-up");
+
+observer.observe(card);
+
+});
