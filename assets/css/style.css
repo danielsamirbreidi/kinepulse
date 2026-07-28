@@ -427,3 +427,100 @@ transition:.3s;
 transform:scale(1.05);
 
 }
+/* ===========================
+   NOTRE APPROCHE
+=========================== */
+
+.approach{
+
+padding:120px 0;
+
+background:white;
+
+}
+
+.approach h2{
+
+text-align:center;
+
+font-size:48px;
+
+margin-bottom:15px;
+
+}
+
+.subtitle{
+
+text-align:center;
+
+max-width:700px;
+
+margin:auto;
+
+margin-bottom:70px;
+
+color:#666;
+
+font-size:18px;
+
+}
+
+.approach-grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+
+gap:30px;
+
+}
+
+.approach-card{
+
+background:#fafafa;
+
+padding:40px;
+
+border-radius:18px;
+
+transition:.35s;
+
+border-top:5px solid #C8A44D;
+
+}
+
+.approach-card:hover{
+
+transform:translateY(-8px);
+
+box-shadow:0 20px 40px rgba(0,0,0,.12);
+
+}
+
+.number{
+
+font-size:42px;
+
+font-weight:700;
+
+color:#C8A44D;
+
+margin-bottom:20px;
+
+}
+
+.approach-card h3{
+
+margin-bottom:15px;
+
+font-size:24px;
+
+}
+
+.approach-card p{
+
+line-height:1.8;
+
+color:#666;
+
+}
