@@ -76,3 +76,10 @@ document.querySelector(".hamburger").addEventListener("click",()=>{
 alert("Le menu mobile sera ajouté dans la prochaine livraison.");
 
 });
+document.querySelectorAll(".philosophy-card").forEach(card=>{
+
+card.classList.add("fade-up");
+
+observer.observe(card);
+
+});
