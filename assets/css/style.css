@@ -2071,3 +2071,48 @@ font-size:14px;
 color:#999;
 
 }
+/*==========================
+CTA FINAL
+==========================*/
+
+.cta-final{
+
+padding:120px 20px;
+
+background:#C8A44D;
+
+text-align:center;
+
+color:white;
+
+}
+
+.cta-final h2{
+
+font-size:52px;
+
+margin-bottom:25px;
+
+}
+
+.cta-final p{
+
+max-width:800px;
+
+margin:auto;
+
+line-height:1.9;
+
+font-size:20px;
+
+margin-bottom:40px;
+
+}
+
+.cta-final .hero-btn{
+
+background:white;
+
+color:#111;
+
+}
