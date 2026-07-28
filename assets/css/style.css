@@ -2152,3 +2152,33 @@ p{
 line-height:1.9;
 
 }
+.hero-btn,
+.card-btn,
+.btn-menu{
+
+transition:.35s;
+
+cursor:pointer;
+
+}
+
+.hero-btn:hover,
+.card-btn:hover,
+.btn-menu:hover{
+
+transform:translateY(-4px);
+
+}
+.service-card,
+.philosophy-card{
+
+border:1px solid rgba(0,0,0,.05);
+
+}
+
+.service-card:hover,
+.philosophy-card:hover{
+
+box-shadow:0 25px 60px rgba(0,0,0,.10);
+
+}
