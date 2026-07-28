@@ -346,7 +346,7 @@ function bookingSuccess(){
 
     if(nom===""){
 
-        alert("Veuillez entrer votre nom.");
+        alert("Le bouton fonctionne");
 
         return;
 
