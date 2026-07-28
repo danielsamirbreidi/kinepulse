@@ -1,1 +1,198 @@
+/* ===========================
+   CLINIQUE KINÉPULSE V2
+=========================== */
 
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:#f7f7f7;
+    color:#222;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+header{
+
+    position:fixed;
+
+    width:100%;
+
+    top:0;
+
+    left:0;
+
+    z-index:999;
+
+    background:white;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+
+}
+
+header .container{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:20px 0;
+
+}
+
+.logo img{
+
+height:70px;
+
+}
+
+nav{
+
+display:flex;
+
+align-items:center;
+
+gap:35px;
+
+}
+
+nav a{
+
+text-decoration:none;
+
+color:#222;
+
+font-weight:500;
+
+transition:.3s;
+
+}
+
+nav a:hover{
+
+color:#C8A44D;
+
+}
+
+.btn{
+
+background:#C8A44D;
+
+padding:12px 28px;
+
+border-radius:50px;
+
+color:white!important;
+
+}
+
+.btn:hover{
+
+background:black;
+
+}
+
+/* ===========================
+   HERO
+=========================== */
+
+.hero{
+
+height:100vh;
+
+background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
+url("../images/hero.jpg");
+
+background-size:cover;
+
+background-position:center;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+text-align:center;
+
+color:white;
+
+padding-top:80px;
+
+}
+
+.hero-content{
+
+max-width:800px;
+
+}
+
+.hero h1{
+
+font-size:62px;
+
+line-height:1.2;
+
+margin-bottom:25px;
+
+font-weight:700;
+
+}
+
+.hero p{
+
+font-size:22px;
+
+margin-bottom:40px;
+
+}
+
+.hero-btn{
+
+display:inline-block;
+
+background:#C8A44D;
+
+padding:18px 42px;
+
+border-radius:60px;
+
+text-decoration:none;
+
+color:white;
+
+font-size:20px;
+
+font-weight:600;
+
+transition:.35s;
+
+}
+
+.hero-btn:hover{
+
+transform:translateY(-4px);
+
+background:white;
+
+color:black;
+
+}
