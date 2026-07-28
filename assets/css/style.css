@@ -1855,3 +1855,130 @@ font-size:40px;
 }
 
 }
+/*==========================
+SERVICES PREMIUM
+==========================*/
+
+.service-premium{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:70px;
+
+align-items:center;
+
+margin:90px 0;
+
+}
+
+.service-premium.reverse{
+
+direction:rtl;
+
+}
+
+.service-premium.reverse .service-content{
+
+direction:ltr;
+
+}
+
+.service-image .image-placeholder{
+
+height:420px;
+
+background:#ececec;
+
+border-radius:24px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:#999;
+
+font-size:24px;
+
+}
+
+.service-content span{
+
+color:#C8A44D;
+
+font-weight:700;
+
+letter-spacing:2px;
+
+}
+
+.service-content h3{
+
+font-size:42px;
+
+margin:20px 0;
+
+}
+
+.service-content p{
+
+font-size:18px;
+
+line-height:1.9;
+
+color:#666;
+
+margin-bottom:30px;
+
+}
+
+.service-content ul{
+
+padding-left:20px;
+
+margin-bottom:35px;
+
+}
+
+.service-content li{
+
+margin-bottom:12px;
+
+line-height:1.8;
+
+}
+
+.service-divider{
+
+border:none;
+
+height:1px;
+
+background:#e5e5e5;
+
+margin:60px 0;
+
+}
+
+@media(max-width:900px){
+
+.service-premium,
+
+.service-premium.reverse{
+
+grid-template-columns:1fr;
+
+direction:ltr;
+
+}
+
+.service-content h3{
+
+font-size:34px;
+
+}
+
+}
