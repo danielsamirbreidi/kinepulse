@@ -1240,3 +1240,32 @@ color:#555;
 color:#111;
 
 }
+.final-cta{
+
+padding:140px 20px;
+
+background:linear-gradient(135deg,#111,#2d2d2d);
+
+color:white;
+
+text-align:center;
+
+}
+
+.final-cta h2{
+
+font-size:54px;
+
+margin-bottom:25px;
+
+}
+
+.final-cta p{
+
+font-size:22px;
+
+margin-bottom:40px;
+
+color:#ddd;
+
+}
