@@ -957,3 +957,112 @@ color:#666;
 line-height:1.6;
 
 }
+/*=========================
+BOOKING
+=========================*/
+
+.booking{
+
+padding:120px 0;
+
+background:#f7f7f7;
+
+}
+
+.booking-content{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:70px;
+
+align-items:center;
+
+}
+
+.booking-text span{
+
+color:#C8A44D;
+
+font-weight:700;
+
+letter-spacing:3px;
+
+}
+
+.booking-text h2{
+
+font-size:48px;
+
+margin:20px 0;
+
+}
+
+.booking-text p{
+
+color:#666;
+
+font-size:18px;
+
+line-height:1.8;
+
+}
+
+.booking-form{
+
+display:flex;
+
+flex-direction:column;
+
+gap:20px;
+
+}
+
+.booking-form input,
+
+.booking-form select,
+
+.booking-form textarea{
+
+padding:18px;
+
+border:none;
+
+border-radius:12px;
+
+background:white;
+
+font-size:16px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+.booking-form button{
+
+padding:20px;
+
+background:#C8A44D;
+
+color:white;
+
+font-size:18px;
+
+font-weight:700;
+
+border:none;
+
+border-radius:50px;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+.booking-form button:hover{
+
+background:#111;
+
+}
