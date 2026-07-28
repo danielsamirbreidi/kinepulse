@@ -60,3 +60,14 @@ e.preventDefault();
 alert("Merci ! Votre demande a été envoyée. Nous vous contacterons rapidement.");
 
 });
+document.querySelectorAll(".faq-question").forEach(question=>{
+
+question.addEventListener("click",()=>{
+
+const item=question.parentElement;
+
+item.classList.toggle("active");
+
+});
+
+});
