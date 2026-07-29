@@ -1,297 +1,163 @@
 /*==================================================
-CLINIQUE KINÉPULSE V5
-SCRIPT PRINCIPAL
+KINÉPULSE V1
+SCRIPT.JS
 ==================================================*/
 
 "use strict";
 
 /*==================================================
-CONFIGURATION
+INITIALISATION
 ==================================================*/
 
-const bookingData = {
-    service: "",
-    objectif: "",
-    disponibilites: [],
-    nom: "",
-    telephone: "",
-    email: ""
-};
+document.addEventListener("DOMContentLoaded", () => {
 
-const modal = document.getElementById("bookingModal");
-const bookingContent = document.getElementById("bookingContent");
-const header = document.querySelector("header");
+    initHeader();
+
+    initMobileMenu();
+
+    initBackToTop();
+
+    initFAQ();
+
+    initAnimations();
+
+});
 
 
 /*==================================================
-ANIMATIONS
+HEADER AU SCROLL
 ==================================================*/
 
-const observer = new IntersectionObserver((entries) => {
+function initHeader() {
 
-    entries.forEach(entry => {
+    const header = document.querySelector("header");
 
-        if (entry.isIntersecting) {
+    if (!header) return;
 
-            entry.target.classList.add("show");
+    function updateHeader() {
+
+        if (window.scrollY > 50) {
+
+            header.classList.add("scrolled");
+
+        } else {
+
+            header.classList.remove("scrolled");
 
         }
 
-    });
+    }
 
-}, {
+    updateHeader();
 
-    threshold: 0.15
+    window.addEventListener("scroll", updateHeader);
 
-});
-
-document.querySelectorAll(".fade-up").forEach(el => {
-
-    observer.observe(el);
-
-});
+}
 
 
 /*==================================================
-HEADER
+MENU MOBILE
 ==================================================*/
 
-window.addEventListener("scroll", () => {
+function initMobileMenu() {
 
-    if (window.scrollY > 60) {
+    const hamburger = document.querySelector(".hamburger");
 
-        header.classList.add("scrolled");
+    const menu = document.querySelector(".nav-menu");
 
-    } else {
+    if (!hamburger || !menu) return;
 
-        header.classList.remove("scrolled");
+    hamburger.addEventListener("click", () => {
+
+        menu.classList.toggle("active");
+
+        hamburger.classList.toggle("active");
+
+    });
+
+    document.querySelectorAll(".nav-menu a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+            menu.classList.remove("active");
+
+            hamburger.classList.remove("active");
+
+        });
+
+    });
+
+}
+
+
+/*==================================================
+BOUTON RETOUR EN HAUT
+==================================================*/
+
+function initBackToTop() {
+
+    const button = document.getElementById("backToTop");
+
+    if (!button) return;
+
+    function updateButton() {
+
+        if (window.scrollY > 500) {
+
+            button.classList.add("show");
+
+        } else {
+
+            button.classList.remove("show");
+
+        }
 
     }
 
-});
+    updateButton();
 
+    window.addEventListener("scroll", updateButton);
 
+    button.addEventListener("click", () => {
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+    });
+
+}
 /*==================================================
 FAQ
 ==================================================*/
 
-document.querySelectorAll(".faq-question").forEach(question => {
+function initFAQ() {
 
-    question.addEventListener("click", () => {
+    const questions = document.querySelectorAll(".faq-question");
 
-        const item = question.parentElement;
+    if (!questions.length) return;
 
-        item.classList.toggle("active");
+    questions.forEach(question => {
 
-    });
+        question.addEventListener("click", () => {
 
-});
+            const item = question.parentElement;
 
+            const isActive = item.classList.contains("active");
 
-/*==================================================
-MODAL
-==================================================*/
+            document.querySelectorAll(".faq-item").forEach(faq => {
 
-function openBooking() {
+                faq.classList.remove("active");
 
-    modal.style.display = "flex";
+            });
 
-}
+            if (!isActive) {
 
-function closeBooking() {
-
-    modal.style.display = "none";
-
-}
-
-window.addEventListener("click", (e) => {
-
-    if (e.target === modal) {
-
-        closeBooking();
-
-    }
-
-});
-
-
-/*==================================================
-OUTILS
-==================================================*/
-
-function resetBookingData() {
-
-    bookingData.service = "";
-    bookingData.objectif = "";
-    bookingData.disponibilites = [];
-    bookingData.nom = "";
-    bookingData.telephone = "";
-    bookingData.email = "";
-
-}
-
-function showMessage(message) {
-
-    alert(message);
-
-}
-/*==================================================
-RÉSERVATION - CHOIX DU SERVICE
-==================================================*/
-
-function selectService(service) {
-
-    resetBookingData();
-
-    bookingData.service = service;
-
-    let html = "";
-
-    if (service === "EMS") {
-
-        html = `
-
-        <div class="step">
-
-            <h2>Quel est votre objectif ?</h2>
-
-            <button class="step-btn" onclick="showAvailability('Perte de poids')">
-                Perte de poids
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Tonification')">
-                Tonification
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Développement musculaire')">
-                Développement musculaire
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Soulagement des douleurs')">
-                Soulagement des douleurs
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Rééducation')">
-                Rééducation
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Autre')">
-                Autre
-            </button>
-
-        </div>
-
-        `;
-
-    } else {
-
-        html = `
-
-        <div class="step">
-
-            <h2>Quelle est la raison de votre consultation ?</h2>
-
-            <button class="step-btn" onclick="showAvailability('Douleur au cou')">
-                Douleur au cou
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Douleur au dos')">
-                Douleur au dos
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Épaules')">
-                Épaules
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Jambes')">
-                Jambes
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Stress / Tensions')">
-                Stress / Tensions
-            </button>
-
-            <button class="step-btn" onclick="showAvailability('Autre')">
-                Autre
-            </button>
-
-        </div>
-
-        `;
-
-    }
-
-    bookingContent.innerHTML = html;
-
-}
-
-
-/*==================================================
-DISPONIBILITÉS
-==================================================*/
-
-function showAvailability(objectif) {
-
-    bookingData.objectif = objectif;
-
-    bookingContent.innerHTML = `
-
-    <div class="step">
-
-        <h2>Choisissez vos disponibilités</h2>
-
-        <p>
-
-        Sélectionnez jusqu'à <strong>3 disponibilités</strong>.
-
-        Ceci est une demande de réservation.
-        Votre rendez-vous sera confirmé après vérification de notre agenda.
-
-        </p>
-
-        <div class="availability-grid">
-
-            <label><input type="checkbox" value="Lundi 15h00">Lundi 15h00</label>
-            <label><input type="checkbox" value="Lundi 16h00">Lundi 16h00</label>
-
-            <label><input type="checkbox" value="Mardi 15h00">Mardi 15h00</label>
-            <label><input type="checkbox" value="Mardi 16h00">Mardi 16h00</label>
-
-            <label><input type="checkbox" value="Mercredi 15h00">Mercredi 15h00</label>
-            <label><input type="checkbox" value="Mercredi 16h00">Mercredi 16h00</label>
-
-            <label><input type="checkbox" value="Jeudi 15h00">Jeudi 15h00</label>
-            <label><input type="checkbox" value="Jeudi 16h00">Jeudi 16h00</label>
-
-        </div>
-
-        <button class="hero-btn"
-
-            style="margin-top:30px"
-
-            onclick="goToContactForm()">
-
-            Continuer
-
-        </button>
-
-    </div>
-
-    `;
-
-    const checkboxes = document.querySelectorAll(".availability-grid input");
-
-    checkboxes.forEach(box => {
-
-        box.addEventListener("change", () => {
-
-            const checked = document.querySelectorAll(".availability-grid input:checked");
-
-            if (checked.length > 3) {
-
-                box.checked = false;
-
-                showMessage("Vous pouvez sélectionner un maximum de 3 disponibilités.");
+                item.classList.add("active");
 
             }
 
@@ -300,387 +166,157 @@ function showAvailability(objectif) {
     });
 
 }
+
+
 /*==================================================
-FORMULAIRE DE CONTACT
+ANIMATIONS AU SCROLL
 ==================================================*/
 
-function goToContactForm() {
+function initAnimations() {
 
-    bookingData.disponibilites = [];
+    const elements = document.querySelectorAll(
 
-    document
-        .querySelectorAll(".availability-grid input:checked")
-        .forEach(item => {
+        ".fade-up, .service-card, .adv-card, .step-card, .testimonial-card, .contact-card"
 
-            bookingData.disponibilites.push(item.value);
+    );
+
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+
+        entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+                entry.target.classList.add("show");
+
+                observer.unobserve(entry.target);
+
+            }
 
         });
 
-    if (bookingData.disponibilites.length === 0) {
+    }, {
 
-        showMessage("Veuillez sélectionner au moins une disponibilité.");
+        threshold: 0.15
 
-        return;
+    });
 
-    }
+    elements.forEach(element => {
 
-    bookingContent.innerHTML = `
+        if (!element.classList.contains("fade-up")) {
 
-    <div class="step">
+            element.classList.add("fade-up");
 
-        <h2>Vos coordonnées</h2>
+        }
 
-        <p>
+        observer.observe(element);
 
-        Complétez vos informations afin que nous puissions communiquer avec vous.
-
-        </p>
-
-        <input
-            id="bookingName"
-            class="booking-input"
-            type="text"
-            placeholder="Nom complet">
-
-        <input
-            id="bookingPhone"
-            class="booking-input"
-            type="tel"
-            placeholder="Téléphone">
-
-        <input
-            id="bookingEmail"
-            class="booking-input"
-            type="email"
-            placeholder="Courriel">
-
-        <p class="booking-note">
-
-        ⚠️ Ceci est une demande de réservation.
-
-        Nous communiquerons avec vous pour confirmer le rendez-vous.
-
-        </p>
-
-        <button
-            id="sendBookingBtn"
-            class="hero-btn"
-            onclick="bookingSuccess()">
-
-            Envoyer ma demande
-
-        </button>
-
-    </div>
-
-    `;
+    });
 
 }
 
 
 /*==================================================
-VALIDATION
+UTILITAIRE
 ==================================================*/
 
-function bookingSuccess() {
+function scrollToSection(id) {
 
-    const nom = document.getElementById("bookingName").value.trim();
+    const section = document.getElementById(id);
 
-    const telephone = document.getElementById("bookingPhone").value.trim();
+    if (!section) return;
 
-    const email = document.getElementById("bookingEmail").value.trim();
+    section.scrollIntoView({
 
+        behavior: "smooth",
 
-    if (nom.length < 2) {
+        block: "start"
 
-        showMessage("Veuillez entrer votre nom.");
-
-        return;
-
-    }
-
-
-    const phoneRegex = /^[0-9+() .-]{8,20}$/;
-
-    if (!phoneRegex.test(telephone)) {
-
-        showMessage("Veuillez entrer un numéro de téléphone valide.");
-
-        return;
-
-    }
-
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-
-        showMessage("Veuillez entrer un courriel valide.");
-
-        return;
-
-    }
-
-
-    bookingData.nom = nom;
-
-    bookingData.telephone = telephone;
-
-    bookingData.email = email;
-
-
-    const btn = document.getElementById("sendBookingBtn");
-
-    btn.disabled = true;
-
-    btn.innerHTML = "⏳ Envoi...";
-
-
-    sendBooking();
-
-}
-
-
-/*==================================================
-ENVOI
-==================================================*/
-
-function sendBooking() {
-
-    console.log("Réservation :", bookingData);
-
-    setTimeout(() => {
-
-        bookingContent.innerHTML = `
-
-        <div class="step success">
-
-            <h2>
-
-            ✅ Merci ${bookingData.nom} !
-
-            </h2>
-
-            <p>
-
-            Votre demande de réservation a bien été enregistrée.
-
-            </p>
-
-            <p>
-
-            Nous communiquerons avec vous rapidement afin de confirmer votre rendez-vous.
-
-            </p>
-
-            <button
-                class="hero-btn"
-                onclick="closeBooking()">
-
-                Fermer
-
-            </button>
-
-        </div>
-
-        `;
-
-    }, 1000);
+    });
 
 }
 /*==================================================
-NOTIFICATIONS
+FORMULAIRES
 ==================================================*/
 
-function showMessage(message){
+let bookingData = {
 
-    const oldMessage = document.querySelector(".booking-message");
+    service: "",
 
-    if(oldMessage){
+    duration: "",
 
-        oldMessage.remove();
+    objectif: "",
 
-    }
+    disponibilites: [],
 
-    const div = document.createElement("div");
+    nom: "",
 
-    div.className = "booking-message";
+    telephone: "",
 
-    div.innerHTML = message;
-
-    document.body.appendChild(div);
-
-    setTimeout(()=>{
-
-        div.classList.add("show");
-
-    },50);
-
-    setTimeout(()=>{
-
-        div.classList.remove("show");
-
-        setTimeout(()=>{
-
-            div.remove();
-
-        },300);
-
-    },3000);
-
-}
-
-
-/*==================================================
-FERMETURE AVEC ÉCHAP
-==================================================*/
-
-document.addEventListener("keydown",(e)=>{
-
-    if(e.key==="Escape"){
-
-        closeBooking();
-
-    }
-
-});
-
-
-/*==================================================
-RÉINITIALISER LA MODAL
-==================================================*/
-
-function resetBookingModal(){
-
-    bookingContent.innerHTML=`
-
-    <div class="step">
-
-        <h2>
-
-        Choisissez un service
-
-        </h2>
-
-        <button
-            class="step-btn"
-            onclick="selectService('Massage thérapeutique')">
-
-            Massage thérapeutique
-
-        </button>
-
-        <button
-            class="step-btn"
-            onclick="selectService('EMS')">
-
-            EMS
-
-        </button>
-
-        <button
-            class="step-btn"
-            onclick="selectService('Analyse corporelle 3D')">
-
-            Analyse corporelle 3D
-
-        </button>
-
-    </div>
-
-    `;
-
-}
-
-
-/*==================================================
-FERMETURE MODAL
-==================================================*/
-
-const originalCloseBooking = closeBooking;
-
-closeBooking = function(){
-
-    modal.style.display="none";
-
-    resetBookingData();
-
-    resetBookingModal();
+    email: ""
 
 };
 
 
 /*==================================================
-POINT D'ENTRÉE FUTUR
+INITIALISATION FORMULAIRES
 ==================================================*/
 
-function sendBookingToServer(data){
+document.addEventListener("DOMContentLoaded", () => {
 
-    /*
-    FUTUR :
+    initForms();
 
-    Google Calendar
+});
 
-    ↓
 
-    Notion
+function initForms() {
 
-    ↓
+    const forms = document.querySelectorAll("form");
 
-    n8n
+    forms.forEach(form => {
 
-    ↓
+        form.addEventListener("submit", handleFormSubmit);
 
-    Courriel de confirmation
-
-    */
-
-    console.log("Prêt à envoyer :",data);
+    });
 
 }
 
 
 /*==================================================
-VERSION
+ENVOI FORMULAIRE
 ==================================================*/
 
-console.log("KinéPulse Script V5 chargé.");
-/*==================================================
-NOTIFICATION
-==================================================*/
+function handleFormSubmit(event) {
 
-.booking-message{
+    event.preventDefault();
 
-    position:fixed;
+    const form = event.target;
 
-    bottom:30px;
+    const data = new FormData(form);
 
-    left:50%;
+    bookingData.service = data.get("service") || "";
 
-    transform:translateX(-50%) translateY(20px);
+    bookingData.duration = data.get("duration") || "";
 
-    background:#0b2340;
+    bookingData.objectif = data.get("objectif") || "";
 
-    color:white;
+    bookingData.nom = data.get("nom") || "";
 
-    padding:16px 28px;
+    bookingData.telephone = data.get("telephone") || "";
 
-    border-radius:14px;
+    bookingData.email = data.get("email") || "";
 
-    box-shadow:0 15px 40px rgba(0,0,0,.25);
+    bookingData.disponibilites = data.getAll("disponibilites");
 
-    opacity:0;
+    console.log("Réservation :", bookingData);
 
-    transition:.3s;
+    alert(
 
-    z-index:99999;
+        "Merci ! Votre demande a été envoyée avec succès."
 
-}
+    );
 
-.booking-message.show{
-
-    opacity:1;
-
-    transform:translateX(-50%) translateY(0);
+    form.reset();
 
 }
