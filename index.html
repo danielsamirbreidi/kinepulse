@@ -4,53 +4,56 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+    <title>KinéPulse | Massothérapie • EMS • Analyse corporelle 3D</title>
 
-    <title>
-        Clinique KinéPulse | Massage thérapeutique • EMS • Analyse corporelle 3D
-    </title>
+    <meta name="description"
+        content="Clinique KinéPulse à Montréal. Massothérapie thérapeutique, EMS et analyse corporelle 3D. Réservez votre massage en ligne ou demandez votre consultation EMS gratuite.">
 
-    <meta
-        name="description"
-        content="Clinique KinéPulse offre des massages thérapeutiques, des séances EMS et une analyse corporelle 3D gratuite afin d'améliorer votre santé et votre bien-être.">
+    <meta name="keywords"
+        content="massothérapie, massage thérapeutique, EMS, électrostimulation, analyse corporelle 3D, Montréal">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com">
+    <meta name="author" content="Clinique KinéPulse">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
+    <meta property="og:title" content="KinéPulse">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    <meta property="og:description"
+        content="Massothérapie • EMS • Analyse corporelle 3D">
+
+    <meta property="og:image"
+        content="assets/images/hero.jpg">
+
+    <meta property="og:type"
+        content="website">
+
+    <link rel="icon" href="assets/images/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <link
-        rel="stylesheet"
-        href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 
 </head>
 
 <body>
 
-<!--==========================================
+
+<!-- ==========================================
 HEADER
-===========================================-->
+=========================================== -->
 
 <header id="header">
 
     <div class="container header-container">
 
-        <a
-            href="index.html"
-            class="logo">
+        <a href="index.html" class="logo">
 
-            <span>Kiné</span>Pulse
+            <img src="assets/images/logo.svg" alt="KinéPulse">
 
         </a>
 
@@ -60,7 +63,7 @@ HEADER
 
                 <li>
 
-                    <a href="#hero">
+                    <a href="index.html" class="active">
 
                         Accueil
 
@@ -70,19 +73,9 @@ HEADER
 
                 <li>
 
-                    <a href="#services">
+                    <a href="massage.html">
 
-                        Services
-
-                    </a>
-
-                </li>
-
-                <li>
-
-                    <a href="#about">
-
-                        Notre approche
+                        Massage
 
                     </a>
 
@@ -90,9 +83,9 @@ HEADER
 
                 <li>
 
-                    <a href="#faq">
+                    <a href="ems.html">
 
-                        FAQ
+                        EMS
 
                     </a>
 
@@ -100,7 +93,17 @@ HEADER
 
                 <li>
 
-                    <a href="#contact">
+                    <a href="analyse-3d.html">
+
+                        Analyse 3D
+
+                    </a>
+
+                </li>
+
+                <li>
+
+                    <a href="contact.html">
 
                         Contact
 
@@ -112,17 +115,23 @@ HEADER
 
         </nav>
 
-        <button
-            class="header-book-btn"
-            onclick="openBooking()">
+        <div class="header-buttons">
 
-            Réserver
+            <a href="massage.html" class="btn-outline">
 
-        </button>
+                Réserver un massage
 
-        <button
-            class="hamburger"
-            id="hamburger">
+            </a>
+
+            <a href="ems.html" class="btn-primary">
+
+                Consultation EMS
+
+            </a>
+
+        </div>
+
+        <button class="hamburger">
 
             ☰
 
@@ -131,173 +140,180 @@ HEADER
     </div>
 
 </header>
-<!--==================================================
-HERO
-===================================================-->
 
-<section class="hero" id="hero">
+
+
+<!-- ==========================================
+HERO
+=========================================== -->
+
+<section class="hero">
 
     <div class="hero-overlay"></div>
 
-    <div class="container hero-content">
+    <div class="container hero-grid">
 
-        <div class="hero-glass">
+        <div class="hero-content">
 
-            <span class="hero-badge">
+            <span class="hero-tag">
 
-                Clinique privée de physiothérapie & bien-être
+                Clinique privée • Montréal
 
             </span>
 
             <h1>
 
-                Votre santé.<br>
-                Notre priorité.
+                Votre santé.
+                <br>
+
+                Votre mouvement.
+                <br>
+
+                Votre performance.
 
             </h1>
 
             <p>
 
-                Découvrez une approche personnalisée grâce à nos massages thérapeutiques,
-                nos séances EMS et notre analyse corporelle 3D afin de retrouver votre
-                bien-être et d'atteindre vos objectifs de santé.
+                Chez KinéPulse, nous combinons la massothérapie thérapeutique,
+                l'entraînement EMS et l'analyse corporelle 3D afin d'offrir des
+                traitements personnalisés adaptés à vos objectifs.
 
             </p>
 
             <div class="hero-buttons">
 
-                <button
-                    class="hero-btn"
-                    onclick="openBooking()">
+                <a href="massage.html" class="btn-primary">
 
-                    Réserver
+                    Réserver un massage
 
-                </button>
+                </a>
 
-                <a
-                    href="#services"
-                    class="hero-btn-outline">
+                <a href="ems.html" class="btn-secondary">
 
-                    Découvrir nos services
+                    Consultation EMS gratuite
 
                 </a>
 
             </div>
 
+            <div class="hero-features">
+
+                <div class="hero-feature">
+
+                    ✔ Analyse corporelle 3D offerte*
+
+                </div>
+
+                <div class="hero-feature">
+
+                    ✔ Réservation simple
+
+                </div>
+
+                <div class="hero-feature">
+
+                    ✔ Approche personnalisée
+
+                </div>
+
+            </div>
+
         </div>
 
-    </div>
+        <div class="hero-image">
 
-    <div class="scroll-indicator">
+            <img
+                src="assets/images/hero.jpg"
+                alt="Clinique KinéPulse">
 
-        <span></span>
+            <div class="floating-card card-one">
+
+                <strong>+500</strong>
+
+                <span>Clients accompagnés</span>
+
+            </div>
+
+            <div class="floating-card card-two">
+
+                <strong>4.9 ★</strong>
+
+                <span>Satisfaction des clients</span>
+
+            </div>
+
+        </div>
 
     </div>
 
 </section>
 
 
-<!--==================================================
-PHILOSOPHIE
-===================================================-->
 
-<section class="section philosophy" id="about">
+<!-- ==========================================
+À PROPOS
+=========================================== -->
 
-    <div class="container">
+<section class="section about">
+        <div class="container">
 
         <div class="section-title">
 
-            <span>
+            <span>Bienvenue chez KinéPulse</span>
 
-                Notre philosophie
-
-            </span>
-
-            <h2>
-
-                Une approche humaine, moderne et personnalisée.
-
-            </h2>
+            <h2>Une approche moderne centrée sur votre bien-être</h2>
 
             <p>
 
-                Chez Clinique KinéPulse, nous croyons que chaque personne mérite une
-                évaluation complète et un plan adapté à ses besoins. Notre objectif est
-                d'améliorer votre qualité de vie en combinant expertise, technologie et
-                accompagnement personnalisé.
+                Chez KinéPulse, nous croyons qu'un traitement efficace commence
+                par une bonne compréhension de votre condition. Notre mission est
+                de vous accompagner grâce à une approche personnalisée combinant
+                massothérapie thérapeutique, électrostimulation musculaire (EMS)
+                et analyse corporelle 3D.
 
             </p>
 
         </div>
 
-        <div class="philosophy-grid">
+        <div class="about-grid">
 
-            <div class="philosophy-card fade-up">
+            <div class="about-image">
 
-                <div class="card-icon">
-
-                    💙
-
-                </div>
-
-                <h3>
-
-                    Écoute
-
-                </h3>
-
-                <p>
-
-                    Chaque consultation débute par une compréhension de votre condition
-                    afin de proposer les meilleurs soins possibles.
-
-                </p>
+                <img src="assets/images/about.jpg"
+                     alt="Clinique KinéPulse">
 
             </div>
 
-            <div class="philosophy-card fade-up">
-
-                <div class="card-icon">
-
-                    🎯
-
-                </div>
+            <div class="about-content">
 
                 <h3>
 
-                    Résultats
+                    Plus qu'une clinique,
+                    un accompagnement personnalisé.
 
                 </h3>
 
                 <p>
 
-                    Nos traitements visent à réduire la douleur, améliorer la mobilité
-                    et favoriser un retour rapide à vos activités.
+                    Que votre objectif soit de réduire vos douleurs,
+                    améliorer vos performances, récupérer après une blessure
+                    ou reprendre le contrôle de votre santé,
+                    notre équipe adapte chaque intervention à vos besoins.
 
                 </p>
 
-            </div>
+                <ul class="about-list">
 
-            <div class="philosophy-card fade-up">
+                    <li>✔ Massothérapie thérapeutique professionnelle</li>
 
-                <div class="card-icon">
+                    <li>✔ Consultation EMS gratuite</li>
 
-                    ⚡
+                    <li>✔ Analyse corporelle 3D offerte*</li>
 
-                </div>
+                    <li>✔ Traitement adapté à vos objectifs</li>
 
-                <h3>
-
-                    Innovation
-
-                </h3>
-
-                <p>
-
-                    Nous utilisons des technologies modernes comme l'EMS et l'analyse
-                    corporelle 3D afin d'offrir une prise en charge complète.
-
-                </p>
+                </ul>
 
             </div>
 
@@ -306,33 +322,26 @@ PHILOSOPHIE
     </div>
 
 </section>
-<!--==================================================
-SERVICES
-===================================================-->
 
-<section class="section services" id="services">
+
+<!-- ==========================================
+SERVICES
+=========================================== -->
+
+<section class="section services">
 
     <div class="container">
 
         <div class="section-title">
 
-            <span>
+            <span>Nos services</span>
 
-                Nos services
-
-            </span>
-
-            <h2>
-
-                Des soins adaptés à vos besoins
-
-            </h2>
+            <h2>Des solutions adaptées à chaque objectif</h2>
 
             <p>
 
-                Que votre objectif soit de diminuer la douleur, améliorer vos performances
-                ou retrouver votre bien-être, nous proposons une approche personnalisée
-                utilisant des techniques modernes et efficaces.
+                Découvrez nos services conçus pour améliorer votre santé,
+                votre récupération et votre performance.
 
             </p>
 
@@ -342,15 +351,10 @@ SERVICES
 
             <!-- MASSAGE -->
 
-            <div class="service-card fade-up">
+            <article class="service-card">
 
-                <div class="service-image">
-
-                    <img
-                        src="assets/images/massage.jpg"
-                        alt="Massage thérapeutique">
-
-                </div>
+                <img src="assets/images/massage.jpg"
+                     alt="Massage thérapeutique">
 
                 <div class="service-content">
 
@@ -362,46 +366,39 @@ SERVICES
 
                     <p>
 
-                        Soulagez les tensions musculaires, améliorez votre mobilité
-                        et diminuez les douleurs grâce à un traitement personnalisé.
+                        Soulagez les tensions musculaires,
+                        améliorez votre mobilité et favorisez votre récupération.
 
                     </p>
 
-                    <ul class="service-features">
+                    <ul>
 
-                        <li>✔ Douleurs musculaires</li>
+                        <li>Massage 60 minutes</li>
 
-                        <li>✔ Stress et tensions</li>
+                        <li>Massage 90 minutes</li>
 
-                        <li>✔ Mobilité</li>
-
-                        <li>✔ Relaxation thérapeutique</li>
+                        <li>Analyse corporelle 3D offerte</li>
 
                     </ul>
 
-                    <button
-                        class="service-btn"
-                        onclick="openBooking();selectService('Massage thérapeutique');">
+                    <a href="massage.html"
+                       class="btn-primary">
 
                         Réserver
 
-                    </button>
+                    </a>
 
                 </div>
 
-            </div>
+            </article>
+
 
             <!-- EMS -->
 
-            <div class="service-card fade-up">
+            <article class="service-card">
 
-                <div class="service-image">
-
-                    <img
-                        src="assets/images/ems.jpg"
-                        alt="EMS">
-
-                </div>
+                <img src="assets/images/ems.jpg"
+                     alt="EMS">
 
                 <div class="service-content">
 
@@ -413,47 +410,40 @@ SERVICES
 
                     <p>
 
-                        L'électrostimulation musculaire permet d'améliorer la force,
-                        la récupération et la composition corporelle grâce à des séances
-                        courtes et intensives.
+                        Découvrez l'électrostimulation musculaire
+                        lors d'une consultation gratuite adaptée
+                        à vos objectifs.
 
                     </p>
 
-                    <ul class="service-features">
+                    <ul>
 
-                        <li>✔ Perte de poids</li>
+                        <li>Consultation gratuite</li>
 
-                        <li>✔ Tonification</li>
+                        <li>Analyse corporelle 3D offerte</li>
 
-                        <li>✔ Rééducation</li>
-
-                        <li>✔ Performance sportive</li>
+                        <li>Programme personnalisé</li>
 
                     </ul>
 
-                    <button
-                        class="service-btn"
-                        onclick="openBooking();selectService('EMS');">
+                    <a href="ems.html"
+                       class="btn-primary">
 
-                        Réserver
+                        En savoir plus
 
-                    </button>
+                    </a>
 
                 </div>
 
-            </div>
+            </article>
+
 
             <!-- ANALYSE -->
 
-            <div class="service-card fade-up">
+            <article class="service-card">
 
-                <div class="service-image">
-
-                    <img
-                        src="assets/images/bodyscan.jpg"
-                        alt="Analyse corporelle 3D">
-
-                </div>
+                <img src="assets/images/bodyscan.jpg"
+                     alt="Analyse corporelle 3D">
 
                 <div class="service-content">
 
@@ -465,45 +455,40 @@ SERVICES
 
                     <p>
 
-                        Découvrez précisément votre composition corporelle afin de
-                        mieux comprendre votre condition physique et suivre vos progrès.
+                        Mesurez précisément votre composition corporelle
+                        afin de suivre votre progression.
 
                     </p>
 
-                    <ul class="service-features">
+                    <ul>
 
-                        <li>✔ Graisse corporelle</li>
+                        <li>Rapport détaillé</li>
 
-                        <li>✔ Masse musculaire</li>
+                        <li>Suivi de progression</li>
 
-                        <li>✔ Eau corporelle</li>
-
-                        <li>✔ Métabolisme</li>
+                        <li>Offerte avec Massage ou EMS</li>
 
                     </ul>
 
-                    <a
-                        href="analyse-3d.html"
-                        class="service-btn">
+                    <a href="analyse-3d.html"
+                       class="btn-primary">
 
-                        En savoir plus
+                        Découvrir
 
                     </a>
 
                 </div>
 
-            </div>
+            </article>
 
         </div>
 
     </div>
 
 </section>
-
-
-<!--==================================================
+<!-- ==========================================
 POURQUOI KINÉPULSE
-===================================================-->
+=========================================== -->
 
 <section class="section advantages">
 
@@ -511,216 +496,71 @@ POURQUOI KINÉPULSE
 
         <div class="section-title">
 
-            <span>
+            <span>Pourquoi KinéPulse ?</span>
 
-                Pourquoi choisir KinéPulse
-
-            </span>
-
-            <h2>
-
-                Une clinique qui met votre santé au premier plan
-
-            </h2>
-
-        </div>
-
-        <div class="advantages-grid">
-
-            <div class="adv-card fade-up">
-
-                <div class="adv-icon">
-
-                    👨‍⚕️
-
-                </div>
-
-                <h3>
-
-                    Expertise
-
-                </h3>
-
-                <p>
-
-                    Des traitements adaptés selon votre condition
-                    et vos objectifs.
-
-                </p>
-
-            </div>
-
-            <div class="adv-card fade-up">
-
-                <div class="adv-icon">
-
-                    🧠
-
-                </div>
-
-                <h3>
-
-                    Technologie moderne
-
-                </h3>
-
-                <p>
-
-                    EMS et analyse corporelle 3D pour optimiser
-                    votre progression.
-
-                </p>
-
-            </div>
-
-            <div class="adv-card fade-up">
-
-                <div class="adv-icon">
-
-                    ❤️
-
-                </div>
-
-                <h3>
-
-                    Accompagnement
-
-                </h3>
-
-                <p>
-
-                    Chaque client bénéficie d'un suivi personnalisé
-                    afin d'obtenir les meilleurs résultats.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-<!--==================================================
-NOTRE APPROCHE
-===================================================-->
-
-<section class="section approach" id="approach">
-
-    <div class="container">
-
-        <div class="section-title">
-
-            <span>
-
-                Notre approche
-
-            </span>
-
-            <h2>
-
-                Un accompagnement personnalisé à chaque étape
-
-            </h2>
+            <h2>Une clinique moderne axée sur vos résultats</h2>
 
             <p>
 
-                Chaque personne est unique. Nous prenons le temps d'évaluer votre situation
-                afin de vous proposer un plan de traitement adapté à vos objectifs.
+                Notre approche combine expertise, technologie et accompagnement personnalisé afin de vous offrir une expérience professionnelle du début à la fin.
 
             </p>
 
         </div>
 
-        <div class="approach-grid">
+        <div class="advantages-grid">
 
-            <div class="approach-card fade-up">
+            <div class="adv-card">
 
-                <div class="approach-number">
+                <div class="adv-icon">💆</div>
 
-                    01
-
-                </div>
-
-                <h3>
-
-                    Évaluation
-
-                </h3>
+                <h3>Traitements personnalisés</h3>
 
                 <p>
 
-                    Nous prenons le temps de comprendre votre condition,
-                    vos douleurs et vos objectifs.
+                    Chaque séance est adaptée à votre condition, vos douleurs et vos objectifs.
 
                 </p>
 
             </div>
 
-            <div class="approach-card fade-up">
+            <div class="adv-card">
 
-                <div class="approach-number">
+                <div class="adv-icon">⚡</div>
 
-                    02
-
-                </div>
-
-                <h3>
-
-                    Plan personnalisé
-
-                </h3>
+                <h3>Technologie EMS</h3>
 
                 <p>
 
-                    Nous élaborons un plan de traitement adapté
-                    à votre situation.
+                    Une solution moderne permettant d'optimiser votre entraînement et votre récupération.
 
                 </p>
 
             </div>
 
-            <div class="approach-card fade-up">
+            <div class="adv-card">
 
-                <div class="approach-number">
+                <div class="adv-icon">📊</div>
 
-                    03
-
-                </div>
-
-                <h3>
-
-                    Traitement
-
-                </h3>
+                <h3>Analyse corporelle 3D</h3>
 
                 <p>
 
-                    Massage thérapeutique, EMS ou combinaison des deux
-                    selon vos besoins.
+                    Suivez précisément votre évolution grâce à des mesures détaillées de votre composition corporelle.
 
                 </p>
 
             </div>
 
-            <div class="approach-card fade-up">
+            <div class="adv-card">
 
-                <div class="approach-number">
+                <div class="adv-icon">🤝</div>
 
-                    04
-
-                </div>
-
-                <h3>
-
-                    Suivi
-
-                </h3>
+                <h3>Accompagnement humain</h3>
 
                 <p>
 
-                    Nous suivons votre évolution afin d'obtenir des
-                    résultats durables.
+                    Nous prenons le temps de comprendre vos besoins afin de vous proposer le meilleur plan de traitement.
 
                 </p>
 
@@ -733,9 +573,9 @@ NOTRE APPROCHE
 </section>
 
 
-<!--==================================================
-VOTRE PREMIÈRE VISITE
-===================================================-->
+<!-- ==========================================
+PREMIÈRE VISITE
+=========================================== -->
 
 <section class="section first-visit">
 
@@ -743,116 +583,103 @@ VOTRE PREMIÈRE VISITE
 
         <div class="section-title">
 
-            <span>
+            <span>Votre première visite</span>
 
-                Votre première visite
-
-            </span>
-
-            <h2>
-
-                Simple, rapide et sans stress
-
-            </h2>
+            <h2>Simple, rapide et personnalisée</h2>
 
             <p>
 
-                Voici comment se déroule votre première visite chez
-                Clinique KinéPulse.
+                Nous vous accompagnons à chaque étape afin que votre première expérience soit agréable et rassurante.
 
             </p>
 
         </div>
 
-        <div class="visit-timeline">
+        <div class="steps-grid">
 
-            <div class="visit-step fade-up">
+            <div class="step-card">
 
-                <div class="visit-icon">
+                <div class="step-number">
 
-                    📅
+                    1
 
                 </div>
 
                 <h3>
 
-                    Demande de réservation
+                    Choisissez votre service
 
                 </h3>
 
                 <p>
 
-                    Choisissez le service qui vous convient et envoyez
-                    votre demande directement sur notre site.
+                    Réservez votre massage en ligne ou demandez votre consultation EMS gratuite.
 
                 </p>
 
             </div>
 
-            <div class="visit-step fade-up">
+            <div class="step-card">
 
-                <div class="visit-icon">
+                <div class="step-number">
 
-                    📞
+                    2
 
                 </div>
 
                 <h3>
 
-                    Confirmation
+                    Nous analysons vos besoins
 
                 </h3>
 
                 <p>
 
-                    Nous communiquons avec vous afin de confirmer
-                    la meilleure plage horaire.
+                    Nous prenons connaissance de vos objectifs et de votre condition afin de préparer votre visite.
 
                 </p>
 
             </div>
 
-            <div class="visit-step fade-up">
+            <div class="step-card">
 
-                <div class="visit-icon">
+                <div class="step-number">
 
-                    🩺
+                    3
 
                 </div>
 
                 <h3>
 
-                    Évaluation
+                    Analyse corporelle 3D offerte
 
                 </h3>
 
                 <p>
 
-                    Nous analysons votre condition et définissons
-                    ensemble les objectifs du traitement.
+                    Avec un massage thérapeutique ou une consultation EMS, profitez gratuitement de votre analyse corporelle 3D.
 
                 </p>
 
             </div>
 
-            <div class="visit-step fade-up">
+            <div class="step-card">
 
-                <div class="visit-icon">
+                <div class="step-number">
 
-                    💪
+                    4
 
                 </div>
 
                 <h3>
 
-                    Début du traitement
+                    Début de votre accompagnement
 
                 </h3>
 
                 <p>
 
-                    Vous commencez votre programme de soins avec
-                    un accompagnement personnalisé.
+                    Nous élaborons un plan adapté afin de vous aider à atteindre vos objectifs de santé et de bien-être.
 
                 </p>
 
@@ -863,11 +690,204 @@ VOTRE PREMIÈRE VISITE
     </div>
 
 </section>
+<!-- ==========================================
+TÉMOIGNAGES
+=========================================== -->
+
+<section class="section testimonials">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <span>Témoignages</span>
+
+            <h2>Ce que disent nos clients</h2>
+
+            <p>
+
+                La satisfaction de nos clients est notre plus grande réussite.
+
+            </p>
+
+        </div>
+
+        <div class="testimonials-grid">
+
+            <div class="testimonial-card">
+
+                <div class="stars">★★★★★</div>
+
+                <p>
+
+                    « Excellent service ! Très professionnel et à l'écoute.
+                    Mon mal de dos a énormément diminué après seulement quelques séances. »
+
+                </p>
+
+                <h4>
+
+                    — Marie L.
+
+                </h4>
+
+            </div>
+
+            <div class="testimonial-card">
+
+                <div class="stars">★★★★★</div>
+
+                <p>
+
+                    « J'ai découvert l'EMS chez KinéPulse.
+                    La consultation gratuite m'a convaincu et les résultats sont impressionnants. »
+
+                </p>
+
+                <h4>
+
+                    — David P.
+
+                </h4>
+
+            </div>
+
+            <div class="testimonial-card">
+
+                <div class="stars">★★★★★</div>
+
+                <p>
+
+                    « L'analyse corporelle 3D est un excellent outil pour suivre mes progrès.
+                    Je recommande fortement cette clinique. »
+
+                </p>
+
+                <h4>
+
+                    — Sophie R.
+
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-<!--==================================================
-APPEL À L'ACTION
-===================================================-->
+
+<!-- ==========================================
+FAQ
+=========================================== -->
+
+<section class="section faq">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <span>FAQ</span>
+
+            <h2>Questions fréquentes</h2>
+
+        </div>
+
+        <div class="faq-container">
+
+            <div class="faq-item">
+
+                <button class="faq-question">
+
+                    Dois-je réserver mon massage à l'avance ?
+
+                </button>
+
+                <div class="faq-answer">
+
+                    <p>
+
+                        Oui. Vous pouvez réserver directement en ligne selon les disponibilités affichées.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <button class="faq-question">
+
+                    La consultation EMS est-elle vraiment gratuite ?
+
+                </button>
+
+                <div class="faq-answer">
+
+                    <p>
+
+                        Oui. Votre première consultation EMS est offerte afin d'évaluer vos objectifs et de déterminer si cette approche vous convient.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <button class="faq-question">
+
+                    L'analyse corporelle 3D est-elle payante ?
+
+                </button>
+
+                <div class="faq-answer">
+
+                    <p>
+
+                        Non. Elle est offerte gratuitement avec toute réservation d'un massage thérapeutique ou d'une consultation EMS.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="faq-item">
+
+                <button class="faq-question">
+
+                    Quels modes de paiement acceptez-vous ?
+
+                </button>
+
+                <div class="faq-answer">
+
+                    <p>
+
+                        Nous acceptons les cartes de débit, les principales cartes de crédit ainsi que les paiements comptants.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==========================================
+CALL TO ACTION
+=========================================== -->
 
 <section class="cta-section">
 
@@ -875,162 +895,37 @@ APPEL À L'ACTION
 
         <div class="cta-box">
 
+            <span>
+
+                Votre santé commence aujourd'hui.
+
+            </span>
+
             <h2>
 
-                Prenez soin de votre santé dès aujourd'hui.
+                Prenez rendez-vous ou demandez votre consultation EMS gratuite.
 
             </h2>
 
             <p>
 
-                Que ce soit pour soulager une douleur, améliorer votre
-                condition physique ou commencer un programme EMS,
-                notre équipe est prête à vous accompagner.
+                Que vous souhaitiez soulager une douleur, améliorer votre récupération ou atteindre vos objectifs de remise en forme, notre équipe est là pour vous accompagner.
 
             </p>
 
-            <button
-                class="hero-btn"
-                onclick="openBooking()">
+            <div class="cta-buttons">
 
-                Réserver maintenant
+                <a href="massage.html" class="btn-primary">
 
-            </button>
+                    Réserver un massage
 
-        </div>
+                </a>
 
-    </div>
+                <a href="ems.html" class="btn-secondary">
 
-</section>
-<!--==================================================
-FAQ
-===================================================-->
+                    Consultation EMS gratuite
 
-<section class="section faq" id="faq">
-
-    <div class="container">
-
-        <div class="section-title">
-
-            <span>Questions fréquentes</span>
-
-            <h2>Nous répondons à vos questions</h2>
-
-            <p>
-
-                Voici les questions les plus fréquemment posées par nos clients.
-
-            </p>
-
-        </div>
-
-        <div class="faq-container">
-
-            <div class="faq-item fade-up">
-
-                <button class="faq-question">
-
-                    Les massages sont-ils couverts par les assurances ?
-
-                </button>
-
-                <div class="faq-answer">
-
-                    <p>
-
-                        Oui. Selon votre assurance, un reçu peut être fourni.
-                        Vérifiez auprès de votre assureur.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="faq-item fade-up">
-
-                <button class="faq-question">
-
-                    Combien dure une séance ?
-
-                </button>
-
-                <div class="faq-answer">
-
-                    <p>
-
-                        Les massages thérapeutiques sont offerts en
-                        60 ou 90 minutes.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="faq-item fade-up">
-
-                <button class="faq-question">
-
-                    Qu'est-ce que l'EMS ?
-
-                </button>
-
-                <div class="faq-answer">
-
-                    <p>
-
-                        L'EMS utilise l'électrostimulation musculaire afin
-                        d'améliorer la force, la récupération et la condition
-                        physique.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="faq-item fade-up">
-
-                <button class="faq-question">
-
-                    L'analyse corporelle 3D est-elle gratuite ?
-
-                </button>
-
-                <div class="faq-answer">
-
-                    <p>
-
-                        Oui.
-                        Elle est offerte gratuitement aux personnes qui
-                        réservent un massage thérapeutique ou une séance EMS.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div class="faq-item fade-up">
-
-                <button class="faq-question">
-
-                    Comment fonctionne la réservation ?
-
-                </button>
-
-                <div class="faq-answer">
-
-                    <p>
-
-                        Vous choisissez votre service et vos disponibilités.
-                        Nous vérifions ensuite notre agenda avant de confirmer
-                        votre rendez-vous.
-
-                    </p>
-
-                </div>
+                </a>
 
             </div>
 
@@ -1039,13 +934,11 @@ FAQ
     </div>
 
 </section>
-
-
-<!--==================================================
+<!-- ==========================================
 CONTACT
-===================================================-->
+=========================================== -->
 
-<section class="section contact" id="contact">
+<section class="section contact">
 
     <div class="container">
 
@@ -1053,16 +946,12 @@ CONTACT
 
             <span>Contact</span>
 
-            <h2>
-
-                Nous sommes là pour vous aider
-
-            </h2>
+            <h2>Prenez contact avec nous</h2>
 
             <p>
 
                 Une question ? Besoin d'informations ?
-                N'hésitez pas à communiquer avec nous.
+                Notre équipe est à votre disposition.
 
             </p>
 
@@ -1070,72 +959,76 @@ CONTACT
 
         <div class="contact-grid">
 
-            <div class="contact-card fade-up">
+            <div class="contact-info">
 
-                <h3>
+                <div class="contact-card">
 
-                    Coordonnées
-
-                </h3>
-
-                <div class="contact-info">
+                    <h3>📍 Adresse</h3>
 
                     <p>
 
-                        📍 Adresse à compléter
-
-                    </p>
-
-                    <p>
-
-                        📞 (514) 000-0000
-
-                    </p>
-
-                    <p>
-
-                        ✉️ contact@kinepulse.ca
-
-                    </p>
-
-                    <p>
-
-                        🕒
-
-                        Lun - Jeu : 15h00 à 16h00
-
-                        <br>
-
-                        Ven : 16h00 à 19h00
-
-                        <br>
-
-                        Sam : 8h00 à 11h00
+                        Montréal, Québec
 
                     </p>
 
                 </div>
 
-                <button
-                    class="hero-btn"
-                    onclick="openBooking()">
+                <div class="contact-card">
 
-                    Réserver
+                    <h3>📞 Téléphone</h3>
 
-                </button>
+                    <p>
+
+                        (514) XXX-XXXX
+
+                    </p>
+
+                </div>
+
+                <div class="contact-card">
+
+                    <h3>✉ Courriel</h3>
+
+                    <p>
+
+                        info@kinepulse.ca
+
+                    </p>
+
+                </div>
+
+                <div class="contact-card">
+
+                    <h3>🕒 Heures d'ouverture</h3>
+
+                    <p>
+
+                        Lundi au Vendredi : 9 h à 20 h
+
+                    </p>
+
+                    <p>
+
+                        Samedi : 9 h à 15 h
+
+                    </p>
+
+                    <p>
+
+                        Dimanche : Fermé
+
+                    </p>
+
+                </div>
 
             </div>
 
-            <div class="contact-map fade-up">
+            <div class="contact-map">
 
                 <iframe
-
                     src="https://www.google.com/maps?q=Montreal&output=embed"
-
                     loading="lazy"
-
                     allowfullscreen>
-
                 </iframe>
 
             </div>
@@ -1145,208 +1038,130 @@ CONTACT
     </div>
 
 </section>
-<!--==================================================
+
+
+<!-- ==========================================
 FOOTER
-===================================================-->
+=========================================== -->
 
-<footer class="footer">
+<footer>
 
-    <div class="container">
+    <div class="container footer-grid">
 
-        <div class="footer-grid">
+        <div>
 
-            <div>
+            <img
+                src="assets/images/logo-white.svg"
+                alt="KinéPulse"
+                class="footer-logo">
 
-                <h3 class="footer-logo">
+            <p>
 
-                    Kiné<span>Pulse</span>
+                KinéPulse est une clinique moderne spécialisée
+                en massothérapie thérapeutique, EMS et analyse
+                corporelle 3D.
 
-                </h3>
+            </p>
 
-                <p>
+        </div>
 
-                    Clinique spécialisée en massage thérapeutique,
-                    EMS et analyse corporelle 3D.
+        <div>
 
-                </p>
+            <h3>
 
-            </div>
+                Navigation
 
-            <div>
+            </h3>
 
-                <h4>
+            <ul>
 
-                    Navigation
+                <li><a href="index.html">Accueil</a></li>
 
-                </h4>
+                <li><a href="massage.html">Massage</a></li>
 
-                <ul>
+                <li><a href="ems.html">EMS</a></li>
 
-                    <li><a href="#hero">Accueil</a></li>
+                <li><a href="analyse-3d.html">Analyse 3D</a></li>
 
-                    <li><a href="#services">Services</a></li>
+                <li><a href="contact.html">Contact</a></li>
 
-                    <li><a href="#approach">Notre approche</a></li>
+            </ul>
 
-                    <li><a href="#faq">FAQ</a></li>
+        </div>
 
-                    <li><a href="#contact">Contact</a></li>
+        <div>
 
-                </ul>
+            <h3>
 
-            </div>
+                Nos services
 
-            <div>
+            </h3>
 
-                <h4>
+            <ul>
 
-                    Services
+                <li>Massage thérapeutique</li>
 
-                </h4>
+                <li>EMS</li>
 
-                <ul>
+                <li>Analyse corporelle 3D</li>
 
-                    <li>
+            </ul>
 
-                        <a href="#" onclick="openBooking();selectService('Massage thérapeutique');return false;">
+        </div>
 
-                            Massage thérapeutique
+        <div>
 
-                        </a>
+            <h3>
 
-                    </li>
+                Suivez-nous
 
-                    <li>
+            </h3>
 
-                        <a href="#" onclick="openBooking();selectService('EMS');return false;">
+            <div class="social-links">
 
-                            EMS
+                <a href="#">Facebook</a>
 
-                        </a>
+                <a href="#">Instagram</a>
 
-                    </li>
-
-                    <li>
-
-                        <a href="analyse-3d.html">
-
-                            Analyse corporelle 3D
-
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    Contact
-
-                </h4>
-
-                <p>
-
-                    📞 (514) 000-0000
-
-                </p>
-
-                <p>
-
-                    ✉ contact@kinepulse.ca
-
-                </p>
-
-                <p>
-
-                    Montréal, Québec
-
-                </p>
+                <a href="#">LinkedIn</a>
 
             </div>
 
         </div>
 
-        <div class="footer-bottom">
+    </div>
 
-            © 2026 Clinique KinéPulse.
-            Tous droits réservés.
+    <div class="copyright">
 
-        </div>
+        © 2026 KinéPulse. Tous droits réservés.
 
     </div>
 
 </footer>
 
 
-<!--==================================================
-MODAL RÉSERVATION
-===================================================-->
+<!-- ==========================================
+BOUTON RETOUR EN HAUT
+=========================================== -->
 
-<div
-    class="booking-modal"
-    id="bookingModal">
+<button id="backToTop">
 
-    <div class="booking-box">
+    ↑
 
-        <button
-            class="close-modal"
-            onclick="closeBooking()">
-
-            &times;
-
-        </button>
-
-        <div id="bookingContent">
-
-            <div class="step">
-
-                <h2>
-
-                    Choisissez un service
-
-                </h2>
-
-                <p>
-
-                    Sélectionnez le service pour lequel vous souhaitez effectuer
-                    une demande de réservation.
-
-                </p>
-
-                <button
-                    class="step-btn"
-                    onclick="selectService('Massage thérapeutique')">
-
-                    Massage thérapeutique
-
-                </button>
-
-                <button
-                    class="step-btn"
-                    onclick="selectService('EMS')">
-
-                    EMS
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
+</button>
 
 
-<!--==================================================
-SCRIPT
-===================================================-->
+<!-- ==========================================
+SCRIPTS
+=========================================== -->
 
-<script src="assets/js/script.js"></script>
+<script src="assets/js/animations.js"></script>
+
+<script src="assets/js/ui.js"></script>
+
+<script src="assets/js/booking.js"></script>
+
+<script src="assets/js/app.js"></script>
 
 </body>
 
