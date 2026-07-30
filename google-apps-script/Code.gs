@@ -31,7 +31,7 @@ APRÈS LE DÉPLOIEMENT — À FAIRE UNE SEULE FOIS
 Dans l'éditeur Apps Script, sélectionne la fonction
 "setupDailyTrigger" dans le menu déroulant en haut, puis
 clique ▶ Exécuter. Ça active les rappels et alertes
-automatiques quotidiens (9h00 chaque matin).
+automatiques quotidiens (8h00 chaque matin).
 ==================================================
 */
 
@@ -322,7 +322,7 @@ function setupDailyTrigger() {
   ScriptApp.newTrigger('dailyAutomation')
     .timeBased()
     .everyDays(1)
-    .atHour(9)
+    .atHour(8)
     .inTimezone(TIMEZONE)
     .create();
 }
