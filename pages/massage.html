@@ -490,11 +490,11 @@ RÉSERVATION
 
             <p>
 
-                Sélectionnez la durée de votre massage. Lors de la prochaine étape, vous pourrez choisir une plage horaire disponible directement dans notre calendrier.
+                Sélectionnez la durée de votre massage, puis choisissez un créneau réellement disponible dans notre horaire.
 
             </p>
 
-            <form class="booking-form fade-up">
+            <form class="booking-form fade-up" id="massage-booking-form" data-custom-submit="true">
 
                 <input type="hidden" name="service" value="Massage thérapeutique">
 
@@ -511,6 +511,12 @@ RÉSERVATION
                     </label>
 
                 </div>
+
+                <select class="booking-input" name="slot" id="massage-slot-select" required>
+                    <option value="">Chargement des créneaux disponibles...</option>
+                </select>
+
+                <p id="massage-slot-status" style="font-size:.85rem;color:var(--primary-light);display:none;"></p>
 
                 <input
                     class="booking-input"
@@ -533,34 +539,9 @@ RÉSERVATION
                     placeholder="Courriel"
                     required>
 
-                <div class="availability-field">
+                <button class="btn-primary" type="submit" id="massage-submit-btn">
 
-                    <p class="availability-label">Vos disponibilités (choisissez-en une ou plusieurs)</p>
-
-                    <div class="availability-grid">
-
-                        <label>
-                            <input type="checkbox" name="disponibilites" value="Lundi après-midi">
-                            Lundi après-midi
-                        </label>
-
-                        <label>
-                            <input type="checkbox" name="disponibilites" value="Mardi après-midi">
-                            Mardi après-midi
-                        </label>
-
-                        <label>
-                            <input type="checkbox" name="disponibilites" value="Samedi matin">
-                            Samedi matin
-                        </label>
-
-                    </div>
-
-                </div>
-
-                <button class="btn-primary" type="submit">
-
-                    Envoyer ma demande de réservation
+                    Confirmer ma réservation
 
                 </button>
 
@@ -686,6 +667,8 @@ FAQ
 
 
 <script src="../assets/js/script.js"></script>
+
+<script src="../assets/js/booking.js"></script>
 
 </body>
 

@@ -1295,6 +1295,37 @@ textarea.booking-input{
     width:100%;
 }
 
+.booking-form .btn-primary:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+    transform:none !important;
+}
+
+.success{
+    text-align:center;
+    padding:20px 0;
+}
+
+.success h2{
+    color:var(--primary);
+    margin-bottom:14px;
+    font-size:1.8rem;
+}
+
+.cta-box .success h2{
+    color:var(--primary-light);
+}
+
+.success p{
+    color:var(--text-light);
+    font-weight:300;
+}
+
+.cta-box .success p{
+    color:var(--white);
+    opacity:.85;
+}
+
 .availability-label{
     font-weight:500;
     color:var(--secondary);

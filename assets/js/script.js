@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function initForms() {
 
-    const forms = document.querySelectorAll("form");
+    const forms = document.querySelectorAll("form:not([data-custom-submit])");
 
     forms.forEach(form => {
 
