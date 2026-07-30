@@ -221,8 +221,9 @@ function handleMassageBooking(data) {
     }
   );
 
-  // 3. Trouve ou crée le client dans Notion
-  const clientId = findOrCreateClient(nom, telephone, email, 'Massage');
+  // 3. Trouve ou crée le client dans Notion (met aussi à jour "Dernière visite")
+  const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr);
+  const clientId = client.id;
 
   // 4. Crée la fiche Rendez-Vous dans Notion
   const serviceId = duration === 90 ? SERVICE_MASSAGE_90 : SERVICE_MASSAGE_60;
@@ -240,7 +241,8 @@ function handleMassageBooking(data) {
   // cliquer lui-même le bouton "Créer facture" sur la fiche Rendez-Vous
   // au moment où le client paie réellement.
 
-  // 5. Confirmation au client
+  // 5. Confirmation au client (le lien de la fiche santé n'est envoyé
+  // qu'aux NOUVEAUX clients — un client existant l'a déjà remplie)
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
   MailApp.sendEmail({
     to: email,
@@ -252,8 +254,10 @@ function handleMassageBooking(data) {
       'Date : ' + dateLisible + '\n' +
       'Heure : ' + timeStr + '\n\n' +
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
-      'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
-      'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
+      (client.isNew
+        ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
+          'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
+        : '') +
       'Au plaisir de vous accueillir.' +
       EMAIL_SIGNATURE
   });
@@ -462,7 +466,8 @@ function handleHealthIntake(data) {
   const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
 
   // Trouve ou crée le client dans Notion (même logique que pour les réservations)
-  const clientId = findOrCreateClient(nom, telephone, email, 'Massage');
+  const clientResult = findOrCreateClient(nom, telephone, email, 'Massage', today);
+  const clientId = clientResult.id;
 
   createNotionPage(DS_FICHE_SANTE, {
     'Fiche': titleProp('Fiche santé — ' + nom),
@@ -501,26 +506,44 @@ function handleHealthIntake(data) {
 CLIENTS CRM — TROUVE OU CRÉE
 ==================================================*/
 
-function findOrCreateClient(nom, telephone, email, typeClient) {
+function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr) {
   const existing = queryNotionDataSource(DS_CLIENTS, {
     filter: { property: 'Téléphone', phone_number: { equals: telephone } }
   });
 
   if (existing.results && existing.results.length > 0) {
-    return existing.results[0].id;
-  }
+    const clientId = existing.results[0].id;
 
-  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+    // Client existant: on met à jour seulement "Dernière visite".
+    // "Date première visite" ne bouge jamais une fois fixée.
+    try {
+      const props = { 'Dernière visite': dateProp(visitDateStr) };
+      const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + clientId, {
+        method: 'patch',
+        headers: notionHeaders(),
+        payload: JSON.stringify({ properties: props }),
+        muteHttpExceptions: true
+      });
+      if (res.getResponseCode() >= 300) {
+        throw new Error(res.getContentText());
+      }
+    } catch (updateErr) {
+      notifyOwner('Mise à jour "Dernière visite" échouée', updateErr.message);
+    }
+
+    return { id: clientId, isNew: false };
+  }
 
   const created = createNotionPage(DS_CLIENTS, {
     'Nom complet': titleProp(nom),
     'Téléphone': phoneProp(telephone),
     'Email': emailProp(email),
     'Type client': selectProp(typeClient),
-    'Date première visite': dateProp(today)
+    'Date première visite': dateProp(visitDateStr),
+    'Dernière visite': dateProp(visitDateStr)
   });
 
-  return created.id;
+  return { id: created.id, isNew: true };
 }
 
 /*==================================================
