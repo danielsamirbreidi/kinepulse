@@ -61,7 +61,7 @@ const MASSAGE_SLOTS = {
   0: [] // Dimanche fermé
 };
 
-const BOOKING_WINDOW_DAYS = 21; // combien de jours à l'avance on ouvre la réservation
+const BOOKING_WINDOW_DAYS = 60; // combien de jours à l'avance on ouvre la réservation (~2 mois)
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 
 const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
@@ -130,6 +130,13 @@ function getAvailableSlots(durationMinutes) {
   const now = new Date();
   const slots = [];
 
+  const windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const windowEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + BOOKING_WINDOW_DAYS);
+
+  // Un seul appel au calendrier pour toute la fenêtre (beaucoup plus rapide
+  // que de vérifier chaque créneau individuellement)
+  const events = calendar.getEvents(windowStart, windowEnd);
+
   for (let d = 0; d < BOOKING_WINDOW_DAYS; d++) {
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
     const dayOfWeek = day.getDay();
@@ -142,9 +149,12 @@ function getAvailableSlots(durationMinutes) {
       if (startDate <= now) return;
 
       const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
-      const conflicts = calendar.getEvents(startDate, endDate);
 
-      if (conflicts.length === 0) {
+      const hasConflict = events.some(function (ev) {
+        return ev.getStartTime() < endDate && ev.getEndTime() > startDate;
+      });
+
+      if (!hasConflict) {
         slots.push({
           date: Utilities.formatDate(day, TIMEZONE, 'yyyy-MM-dd'),
           time: timeStr,
