@@ -254,7 +254,7 @@ function handleMassageBooking(data) {
       'Date : ' + dateLisible + '\n' +
       'Heure : ' + timeStr + '\n\n' +
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
-      (client.isNew
+      (!clientAlreadyHasHealthForm(telephone)
         ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
           'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
         : '') +
@@ -299,6 +299,10 @@ function handleEmsLead(data) {
     'Statut': selectProp('À contacter')
   });
 
+  // N'envoie le lien de la fiche santé que si ce client n'en a pas déjà une
+  // (ex: il a déjà réservé un massage avant)
+  const needsHealthForm = !clientAlreadyHasHealthForm(telephone);
+
   MailApp.sendEmail({
     to: email,
     subject: 'Votre demande de consultation EMS — Clinique KinéPulse',
@@ -307,8 +311,10 @@ function handleEmsLead(data) {
       'Merci pour votre demande de consultation EMS.\n' +
       'Nous avons bien reçu vos informations et nous vous contacterons ' +
       'sous peu afin de planifier votre séance.\n\n' +
-      'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
-      'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
+      (needsHealthForm
+        ? 'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
+          'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
+        : '') +
       'Au plaisir de vous accompagner.' +
       EMAIL_SIGNATURE
   });
@@ -592,6 +598,21 @@ function handleHealthIntake(data) {
   );
 
   return { success: true };
+}
+
+function clientAlreadyHasHealthForm(telephone) {
+  const clientMatch = queryNotionDataSource(DS_CLIENTS, {
+    filter: { property: 'Téléphone', phone_number: { equals: telephone } }
+  });
+
+  if (!clientMatch.results || clientMatch.results.length === 0) return false;
+
+  const clientId = clientMatch.results[0].id;
+  const ficheMatch = queryNotionDataSource(DS_FICHE_SANTE, {
+    filter: { property: 'Client', relation: { contains: clientId } }
+  });
+
+  return !!(ficheMatch.results && ficheMatch.results.length > 0);
 }
 
 /*==================================================
