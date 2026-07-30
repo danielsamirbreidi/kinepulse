@@ -380,12 +380,170 @@ function setupCalendarSyncTrigger() {
     .create();
 }
 
+function setupExpenseEmailTrigger() {
+  // Supprime d'anciens déclencheurs pour éviter les doublons
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'processExpenseEmails') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  ScriptApp.newTrigger('processExpenseEmails')
+    .timeBased()
+    .everyMinutes(15)
+    .create();
+}
+
 /*==================================================
 SYNCHRONISATION CALENDAR -> NOTION
 (pour les rendez-vous ajoutés manuellement dans Google
 Calendar, hors du site — copie vers Notion "Rendez-Vous"
 s'ils n'y sont pas déjà)
 ==================================================*/
+
+/*==================================================
+DÉPENSES PAR COURRIEL (photo/PDF de facture -> lu par
+l'IA Gemini -> ligne créée automatiquement dans Notion)
+==================================================*/
+
+const EXPENSE_CATEGORY_MAP = {
+  'Maintenance': '🔧 Maintenance',
+  'Fournitures': '📦 Fournitures',
+  'Équipement EMS': '🏋️ Équipement EMS',
+  'Salaires': '👨‍⚕️ Salaires',
+  'Logiciels': '💻 Logiciels',
+  'Loyer': '🏢 Loyer',
+  'Assurance': '🛡 Assurance',
+  'Électricité': '⚡ Électricité',
+  'Marketing': '📢 Marketing',
+  'Autre': '📌 Autre'
+};
+
+function processExpenseEmails() {
+  const geminiKey = getOwnerProperty('GEMINI_API_KEY', '');
+  if (!geminiKey) {
+    return; // pas configuré, on ne fait rien silencieusement
+  }
+
+  const threads = GmailApp.search('subject:DÉPENSE has:attachment is:unread', 0, 20);
+  if (threads.length === 0) return;
+
+  threads.forEach(function (thread) {
+    const messages = thread.getMessages();
+
+    messages.forEach(function (message) {
+      if (!message.isUnread()) return;
+
+      const attachments = message.getAttachments();
+      if (attachments.length === 0) {
+        message.markRead();
+        return;
+      }
+
+      try {
+        const attachment = attachments[0]; // la première pièce jointe
+        const extracted = extractExpenseWithGemini(attachment, geminiKey);
+
+        if (!extracted) {
+          throw new Error('Aucune donnée extraite par Gemini');
+        }
+
+        const categorieLabel = EXPENSE_CATEGORY_MAP[extracted.categorie] || '📌 Autre';
+        const dateStr = extracted.date || Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+
+        createNotionPage(DS_DEPENSES, {
+          'Fournisseur': titleProp(extracted.fournisseur || 'Fournisseur inconnu'),
+          'Montant avant taxes': numberProp(extracted.montant_avant_taxes || 0),
+          'TPS': numberProp(extracted.tps || 0),
+          'TVQ': numberProp(extracted.tvq || 0),
+          'Date': dateProp(dateStr),
+          'Catégorie': selectProp(categorieLabel),
+          'Statut paiement': selectProp('🟡 En attente'),
+          'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier')
+        });
+
+        notifyOwner(
+          '✅ Dépense ajoutée automatiquement — ' + (extracted.fournisseur || '?'),
+          'Une nouvelle dépense a été extraite automatiquement et ajoutée à Notion :\n\n' +
+          'Fournisseur : ' + (extracted.fournisseur || '?') + '\n' +
+          'Montant avant taxes : ' + (extracted.montant_avant_taxes || '?') + ' $\n' +
+          'TPS : ' + (extracted.tps || 0) + ' $\n' +
+          'TVQ : ' + (extracted.tvq || 0) + ' $\n' +
+          'Date : ' + dateStr + '\n' +
+          'Catégorie : ' + categorieLabel + '\n\n' +
+          '⚠️ Vérifie ces montants dans Notion, l\'extraction automatique peut se tromper.'
+        );
+
+        message.markRead();
+
+      } catch (err) {
+        notifyOwner(
+          '⚠️ Échec extraction dépense automatique',
+          'Un courriel avec le sujet "' + message.getSubject() + '" (reçu de ' + message.getFrom() + ') n\'a pas pu être traité automatiquement.\n\n' +
+          'Erreur : ' + err.message + '\n\n' +
+          'Ajoute cette dépense manuellement dans Notion.'
+        );
+        message.markRead();
+      }
+    });
+  });
+}
+
+function extractExpenseWithGemini(attachment, apiKey) {
+  const base64Data = Utilities.base64Encode(attachment.getBytes());
+  const mimeType = attachment.getContentType();
+
+  const prompt =
+    'Analyse cette facture ou ce reçu de dépense et extrait les informations suivantes. ' +
+    'Réponds uniquement avec un objet JSON, rien d\'autre. ' +
+    'Format exact attendu : ' +
+    '{"fournisseur": "nom du commerce/fournisseur", ' +
+    '"montant_avant_taxes": nombre (avant TPS/TVQ), ' +
+    '"tps": nombre, ' +
+    '"tvq": nombre, ' +
+    '"date": "YYYY-MM-DD", ' +
+    '"categorie": "une seule valeur parmi Maintenance, Fournitures, Équipement EMS, Salaires, Logiciels, Loyer, Assurance, Électricité, Marketing, Autre"}. ' +
+    'Si les taxes ne sont pas détaillées séparément mais qu\'un total est visible, ' +
+    'calcule TPS = total × 5 ÷ 114.975 et TVQ = total × 9.975 ÷ 114.975 (taxes du Québec, Canada). ' +
+    'Si une information est manquante ou illisible, utilise 0 pour les nombres ou une estimation raisonnable pour la catégorie.';
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        { inline_data: { mime_type: mimeType, data: base64Data } }
+      ]
+    }],
+    generationConfig: {
+      responseMimeType: 'application/json'
+    }
+  };
+
+  const res = UrlFetchApp.fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
+    {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    }
+  );
+
+  if (res.getResponseCode() >= 300) {
+    throw new Error('Erreur Gemini: ' + res.getContentText());
+  }
+
+  const body = JSON.parse(res.getContentText());
+  const textResult = body.candidates && body.candidates[0] && body.candidates[0].content &&
+                      body.candidates[0].content.parts && body.candidates[0].content.parts[0] &&
+                      body.candidates[0].content.parts[0].text;
+
+  if (!textResult) {
+    throw new Error('Réponse Gemini vide ou inattendue');
+  }
+
+  return JSON.parse(textResult);
+}
 
 function syncCalendarToNotion() {
   const calendar = CalendarApp.getDefaultCalendar();
