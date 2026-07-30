@@ -395,6 +395,11 @@ function syncCalendarToNotion() {
   });
 
   events.forEach(function (ev) {
+    const title = ev.getTitle() || '';
+
+    // Ne synchronise que les événements qui mentionnent "massage" (insensible à la casse)
+    if (title.toLowerCase().indexOf('massage') === -1) return;
+
     const evDate = Utilities.formatDate(ev.getStartTime(), TIMEZONE, 'yyyy-MM-dd');
     const evTime = Utilities.formatDate(ev.getStartTime(), TIMEZONE, 'HH:mm');
     const key = evDate + '|' + evTime;
