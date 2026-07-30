@@ -1307,6 +1307,47 @@ textarea.booking-input{
     gap:12px;
 }
 
+.duration-choice{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-bottom:6px;
+}
+
+.duration-option{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 18px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    cursor:pointer;
+    transition:.3s;
+    font-size:.94rem;
+    font-weight:500;
+    color:var(--text);
+    background:var(--white);
+}
+
+.duration-option:has(input:checked){
+    border-color:var(--primary);
+    background:var(--primary-tint);
+    color:var(--primary-dark);
+}
+
+.duration-option input[type="radio"]{
+    width:16px;
+    height:16px;
+    accent-color:var(--primary);
+    flex-shrink:0;
+}
+
+@media(max-width:600px){
+    .duration-choice{
+        grid-template-columns:1fr;
+    }
+}
+
 .availability-grid label{
     display:flex;
     align-items:center;
@@ -1319,6 +1360,11 @@ textarea.booking-input{
     font-size:.92rem;
     font-weight:500;
     color:var(--text);
+    background:var(--white);
+}
+
+.cta-box .availability-label{
+    color:var(--white);
 }
 
 .availability-grid label:has(input:checked){

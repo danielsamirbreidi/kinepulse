@@ -254,6 +254,7 @@ NOS MASSAGES
                     </ul>
 
                     <a href="#reservation"
+                       data-duree="60 minutes"
                        class="btn-primary">
 
                         Réserver 60 minutes
@@ -292,6 +293,7 @@ NOS MASSAGES
                     </ul>
 
                     <a href="#reservation"
+                       data-duree="90 minutes"
                        class="btn-primary">
 
                         Réserver 90 minutes
@@ -481,23 +483,77 @@ RÉSERVATION
 
             </p>
 
-            <div class="cta-buttons">
+            <form class="booking-form fade-up">
 
-                <a href="#"
-                   class="btn-primary">
+                <input type="hidden" name="service" value="Massage thérapeutique">
 
-                    Massage thérapeutique – 60 minutes
+                <div class="duration-choice">
 
-                </a>
+                    <label class="duration-option">
+                        <input type="radio" name="duration" value="60 minutes" checked>
+                        Massage 60 minutes
+                    </label>
 
-                <a href="#"
-                   class="btn-secondary">
+                    <label class="duration-option">
+                        <input type="radio" name="duration" value="90 minutes">
+                        Massage 90 minutes
+                    </label>
 
-                    Massage thérapeutique – 90 minutes
+                </div>
 
-                </a>
+                <input
+                    class="booking-input"
+                    type="text"
+                    name="nom"
+                    placeholder="Nom complet"
+                    required>
 
-            </div>
+                <input
+                    class="booking-input"
+                    type="tel"
+                    name="telephone"
+                    placeholder="Téléphone"
+                    required>
+
+                <input
+                    class="booking-input"
+                    type="email"
+                    name="email"
+                    placeholder="Courriel"
+                    required>
+
+                <div class="availability-field">
+
+                    <p class="availability-label">Vos disponibilités (choisissez-en une ou plusieurs)</p>
+
+                    <div class="availability-grid">
+
+                        <label>
+                            <input type="checkbox" name="disponibilites" value="Lundi après-midi">
+                            Lundi après-midi
+                        </label>
+
+                        <label>
+                            <input type="checkbox" name="disponibilites" value="Mardi après-midi">
+                            Mardi après-midi
+                        </label>
+
+                        <label>
+                            <input type="checkbox" name="disponibilites" value="Samedi matin">
+                            Samedi matin
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <button class="btn-primary" type="submit">
+
+                    Envoyer ma demande de réservation
+
+                </button>
+
+            </form>
 
             <p style="margin-top:30px;font-size:.95rem;opacity:.8;">
 
