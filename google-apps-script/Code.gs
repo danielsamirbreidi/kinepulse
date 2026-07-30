@@ -63,6 +63,15 @@ const MASSAGE_SLOTS = {
 const BOOKING_WINDOW_DAYS = 21; // combien de jours à l'avance on ouvre la réservation
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 
+const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+function formatDateFr(day) {
+  const jour = JOURS_FR[day.getDay()];
+  const mois = MOIS_FR[day.getMonth()];
+  return jour + ' ' + day.getDate() + ' ' + mois;
+}
+
 /*==================================================
 POINT D'ENTRÉE - GET (liste des créneaux disponibles)
 ==================================================*/
@@ -134,7 +143,7 @@ function getAvailableSlots(durationMinutes) {
         slots.push({
           date: Utilities.formatDate(day, TIMEZONE, 'yyyy-MM-dd'),
           time: timeStr,
-          label: Utilities.formatDate(day, TIMEZONE, 'EEEE d MMMM') + ' — ' + timeStr
+          label: formatDateFr(day) + ' — ' + timeStr
         });
       }
     });
@@ -217,7 +226,7 @@ function handleMassageBooking(data) {
   });
 
   // 5. Confirmation au client
-  const dateLisible = Utilities.formatDate(day, TIMEZONE, "EEEE d MMMM yyyy");
+  const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
   MailApp.sendEmail({
     to: email,
     subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
