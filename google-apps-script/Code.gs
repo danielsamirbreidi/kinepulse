@@ -540,7 +540,7 @@ function handleHealthIntake(data) {
   const clientResult = findOrCreateClient(nom, telephone, email, 'Massage', today);
   const clientId = clientResult.id;
 
-  createNotionPage(DS_FICHE_SANTE, {
+  const fiche = {
     'Fiche': titleProp('Fiche santé — ' + nom),
     'Client': relationProp([clientId]),
     'Adresse': richTextProp(data.adresse || ''),
@@ -552,7 +552,28 @@ function handleHealthIntake(data) {
     'Blessures / douleurs actuelles': richTextProp(data.blessures || ''),
     'But de la séance': richTextProp(data.objectif || ''),
     'Date de remplissage': dateProp(today)
+  };
+
+  // Une seule fiche santé par client — si elle existe déjà (peu importe si
+  // elle vient d'une réservation massage ou EMS), on la MET À JOUR au lieu
+  // d'en créer une deuxième.
+  const existingFiche = queryNotionDataSource(DS_FICHE_SANTE, {
+    filter: { property: 'Client', relation: { contains: clientId } }
   });
+
+  if (existingFiche.results && existingFiche.results.length > 0) {
+    const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + existingFiche.results[0].id, {
+      method: 'patch',
+      headers: notionHeaders(),
+      payload: JSON.stringify({ properties: fiche }),
+      muteHttpExceptions: true
+    });
+    if (res.getResponseCode() >= 300) {
+      throw new Error('Erreur Notion (update fiche santé): ' + res.getContentText());
+    }
+  } else {
+    createNotionPage(DS_FICHE_SANTE, fiche);
+  }
 
   MailApp.sendEmail({
     to: email,
