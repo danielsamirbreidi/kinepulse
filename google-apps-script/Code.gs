@@ -64,6 +64,12 @@ const MASSAGE_SLOTS = {
 const BOOKING_WINDOW_DAYS = 60; // combien de jours à l'avance on ouvre la réservation (~2 mois)
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 
+const EMAIL_SIGNATURE =
+  '\n\n—\n' +
+  'Clinique KinéPulse\n' +
+  '13301 Rue Sherbrooke E, bureau 216, Montréal, QC H1A 1C2\n' +
+  '(263) 378-2247 · cliniquekinepulse@gmail.com';
+
 const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
@@ -230,26 +236,9 @@ function handleMassageBooking(data) {
     'Statut': selectProp('Confirmé')
   });
 
-  // 4b. Crée automatiquement la fiche Facture liée (statut "En attente")
-  // Client/Service/Prix se remplissent tout seuls via les rollups Notion.
-  // Il ne reste qu'à cliquer "Payée" + choisir le mode de paiement.
-  // (Protégé par un try/catch: si ça échoue, le rendez-vous et le courriel
-  // au client doivent quand même passer.)
-  try {
-    createNotionPage(DS_FACTURES, {
-      'Facture': titleProp('Facture — ' + nom + ' — ' + dateStr),
-      'Rendez-vous': relationProp([rdv.id]),
-      'Date': dateProp(dateStr),
-      'Statut': selectProp('🟡 En attente')
-    });
-  } catch (factureErr) {
-    notifyOwner(
-      'Facture non créée automatiquement — ' + nom,
-      'Le rendez-vous a bien été créé, mais la facture automatique a échoué.\n' +
-      'Vérifie que la base "Factures" est bien connectée à l\'intégration KinéPulse Site dans Notion.\n\n' +
-      'Erreur : ' + factureErr.message
-    );
-  }
+  // Note: la facture n'est PAS créée automatiquement ici — Daniel préfère
+  // cliquer lui-même le bouton "Créer facture" sur la fiche Rendez-Vous
+  // au moment où le client paie réellement.
 
   // 5. Confirmation au client
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
@@ -265,8 +254,8 @@ function handleMassageBooking(data) {
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
       'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
       'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
-      'Au plaisir de vous accueillir.\n\n' +
-      'Clinique KinéPulse'
+      'Au plaisir de vous accueillir.' +
+      EMAIL_SIGNATURE
   });
 
   // 6. Notification au propriétaire
@@ -316,8 +305,8 @@ function handleEmsLead(data) {
       'sous peu afin de planifier votre séance.\n\n' +
       'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
       'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
-      'Au plaisir de vous accompagner.\n\n' +
-      'Clinique KinéPulse'
+      'Au plaisir de vous accompagner.' +
+      EMAIL_SIGNATURE
   });
 
   notifyOwner(
@@ -393,8 +382,8 @@ function sendAppointmentReminders() {
           'Bonjour ' + nom + ',\n\n' +
           'Petit rappel : vous avez un rendez-vous demain à ' + heure + '.\n\n' +
           (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
-          'Au plaisir de vous accueillir.\n\n' +
-          'Clinique KinéPulse'
+          'Au plaisir de vous accueillir.' +
+          EMAIL_SIGNATURE
       });
 
     } catch (err) {
@@ -495,8 +484,8 @@ function handleHealthIntake(data) {
     body:
       'Bonjour ' + nom + ',\n\n' +
       'Merci ! Votre fiche santé a bien été reçue et sera consultée avant votre visite.\n\n' +
-      'À bientôt.\n\n' +
-      'Clinique KinéPulse'
+      'À bientôt.' +
+      EMAIL_SIGNATURE
   });
 
   notifyOwner(

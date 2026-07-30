@@ -1603,6 +1603,24 @@ CALENDRIER DE RÉSERVATION
     font-weight:300;
 }
 
+.success-detail{
+    font-family:var(--font-mono);
+    font-weight:500 !important;
+    text-transform:capitalize;
+    background:var(--primary-tint);
+    color:var(--primary-dark) !important;
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:999px;
+    margin:8px 0 18px;
+    font-size:.85rem !important;
+}
+
+.cta-box .success-detail{
+    background:rgba(255,255,255,.12);
+    color:var(--white) !important;
+}
+
 .cta-box .success p{
     color:var(--white);
     opacity:.85;

@@ -265,9 +265,12 @@ function initMassageBooking() {
             .then(data => {
 
                 if (data.success) {
+                    const dateObj = new Date(date + "T00:00:00");
+                    const dateLabel = dateObj.toLocaleDateString("fr-CA", { weekday: "long", day: "numeric", month: "long" });
                     form.innerHTML = `
                         <div class="success">
                             <h2>Rendez-vous confirmé !</h2>
+                            <p class="success-detail">${payload.duration} — ${dateLabel} à ${time}</p>
                             <p>Un courriel de confirmation vient de vous être envoyé. Au plaisir de vous accueillir.</p>
                         </div>
                     `;
