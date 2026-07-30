@@ -45,6 +45,9 @@ const DS_LEADS_EMS    = 'bb23ddce-e51d-487e-9eb5-4c20590d5889';
 const DS_FACTURES     = '3aa36ea7-3613-8072-98d9-000b5113c510';
 const DS_EMS_MEMBERSHIP = '3aa36ea7-3613-8009-844c-000b3b0dc38d';
 const DS_FICHE_SANTE  = '11599f8a-972b-427b-ad0a-0c5a04e6d734';
+const DS_DEPENSES     = '3aa36ea7-3613-8021-af97-000bb7200726';
+const DS_KPI_MENSUEL  = '85be855d-6f86-4387-b584-069bba9bab8b';
+const DS_SERVICES     = '39936ea7-3613-80e1-935f-000b367127f7';
 
 // IDs des fiches Service (Massage 60/90 min) dans la base Services
 const SERVICE_MASSAGE_60 = '39936ea7-3613-81c4-99d1-e397542b5cd7';
@@ -63,6 +66,7 @@ const MASSAGE_SLOTS = {
 
 const BOOKING_WINDOW_DAYS = 60; // combien de jours à l'avance on ouvre la réservation (~2 mois)
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
+const EXPENSE_ALERT_DAYS = 7; // combien de jours avant une depense recurrente on t'alerte
 
 const EMAIL_SIGNATURE =
   '\n\n—\n' +
@@ -338,6 +342,8 @@ AUTOMATISATION QUOTIDIENNE
 function dailyAutomation() {
   sendAppointmentReminders();
   checkEmsRenewals();
+  checkUpcomingExpenses();
+  computeMonthlyKPIs();
 }
 
 function setupDailyTrigger() {
@@ -499,6 +505,167 @@ function checkEmsRenewals() {
   if (upcoming.length > 0) {
     notifyOwner(
       'Renouvellements EMS à venir (' + upcoming.length + ')',
+      upcoming.join('\n')
+    );
+  }
+}
+
+/*==================================================
+KPI MENSUEL (profit net, repartition, conversion EMS,
+comparaison mois par mois — une ligne par mois)
+==================================================*/
+
+function computeMonthlyKPIs() {
+  const now = new Date();
+  const monthKey = Utilities.formatDate(now, TIMEZONE, 'yyyy-MM');
+  const monthStart = Utilities.formatDate(new Date(now.getFullYear(), now.getMonth(), 1), TIMEZONE, 'yyyy-MM-dd');
+  const monthEnd = Utilities.formatDate(new Date(now.getFullYear(), now.getMonth() + 1, 0), TIMEZONE, 'yyyy-MM-dd');
+  const todayStr = Utilities.formatDate(now, TIMEZONE, 'yyyy-MM-dd');
+
+  // 1. Revenus (factures payées ce mois), répartis Massage vs EMS
+  const facturesResult = queryNotionDataSource(DS_FACTURES, {
+    filter: {
+      and: [
+        { property: 'Statut', select: { equals: '✅ Payée' } },
+        { property: 'Date', date: { on_or_after: monthStart } },
+        { property: 'Date', date: { on_or_before: monthEnd } }
+      ]
+    }
+  });
+
+  let revenusMassage = 0;
+  let revenusEMS = 0;
+
+  (facturesResult.results || []).forEach(function (facture) {
+    try {
+      const rdvRelation = facture.properties['Rendez-vous'] && facture.properties['Rendez-vous'].relation;
+      if (!rdvRelation || rdvRelation.length === 0) return;
+
+      const rdv = getNotionPage(rdvRelation[0].id);
+      const serviceRelation = rdv.properties['Service'] && rdv.properties['Service'].relation;
+      if (!serviceRelation || serviceRelation.length === 0) return;
+
+      const service = getNotionPage(serviceRelation[0].id);
+      const prix = service.properties['Prix'] && service.properties['Prix'].number;
+      const categorie = service.properties['Catégorie'] && service.properties['Catégorie'].select && service.properties['Catégorie'].select.name;
+
+      if (typeof prix === 'number') {
+        if (categorie === 'EMS') {
+          revenusEMS += prix;
+        } else {
+          revenusMassage += prix;
+        }
+      }
+    } catch (e) {
+      // ignore une facture problématique plutôt que de bloquer tout le calcul
+    }
+  });
+
+  const revenusTotal = revenusMassage + revenusEMS;
+
+  // 2. Dépenses ce mois
+  const depensesResult = queryNotionDataSource(DS_DEPENSES, {
+    filter: {
+      and: [
+        { property: 'Date', date: { on_or_after: monthStart } },
+        { property: 'Date', date: { on_or_before: monthEnd } }
+      ]
+    }
+  });
+
+  let depensesTotal = 0;
+  (depensesResult.results || []).forEach(function (dep) {
+    const montant = dep.properties['Montant avant taxes'] && dep.properties['Montant avant taxes'].number;
+    if (typeof montant === 'number') depensesTotal += montant;
+  });
+
+  // 3. Rendez-vous confirmés ce mois
+  const rdvResult = queryNotionDataSource(DS_RENDEZVOUS, {
+    filter: {
+      and: [
+        { property: 'Statut', select: { equals: 'Confirmé' } },
+        { property: 'Date', date: { on_or_after: monthStart } },
+        { property: 'Date', date: { on_or_before: monthEnd } }
+      ]
+    }
+  });
+  const nbRendezVous = (rdvResult.results || []).length;
+
+  // 4. Leads EMS reçus / convertis ce mois
+  const leadsResult = queryNotionDataSource(DS_LEADS_EMS, {
+    filter: {
+      and: [
+        { property: 'Date de la demande', date: { on_or_after: monthStart } },
+        { property: 'Date de la demande', date: { on_or_before: monthEnd } }
+      ]
+    }
+  });
+  const leadsRecus = (leadsResult.results || []).length;
+  const leadsConvertis = (leadsResult.results || []).filter(function (l) {
+    return l.properties['Statut'] && l.properties['Statut'].select && l.properties['Statut'].select.name === 'Inscrit';
+  }).length;
+
+  // 5. Enregistre (ou met à jour) la ligne du mois dans "KPI Mensuel"
+  const props = {
+    'Revenus': numberProp(revenusTotal),
+    'Revenus Massage': numberProp(revenusMassage),
+    'Revenus EMS': numberProp(revenusEMS),
+    'Dépenses': numberProp(depensesTotal),
+    'Rendez-vous confirmés': numberProp(nbRendezVous),
+    'Leads EMS reçus': numberProp(leadsRecus),
+    'Leads EMS convertis': numberProp(leadsConvertis),
+    'Dernière mise à jour': dateProp(todayStr)
+  };
+
+  const existing = queryNotionDataSource(DS_KPI_MENSUEL, {
+    filter: { property: 'Mois', title: { equals: monthKey } }
+  });
+
+  if (existing.results && existing.results.length > 0) {
+    const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + existing.results[0].id, {
+      method: 'patch',
+      headers: notionHeaders(),
+      payload: JSON.stringify({ properties: props }),
+      muteHttpExceptions: true
+    });
+    if (res.getResponseCode() >= 300) {
+      notifyOwner('Erreur mise à jour KPI Mensuel', res.getContentText());
+    }
+  } else {
+    props['Mois'] = titleProp(monthKey);
+    createNotionPage(DS_KPI_MENSUEL, props);
+  }
+}
+
+/*==================================================
+DÉPENSES RÉCURRENTES À VENIR
+==================================================*/
+
+function checkUpcomingExpenses() {
+  const result = queryNotionDataSource(DS_DEPENSES, {
+    filter: { property: 'Récurrent', checkbox: { equals: true } }
+  });
+
+  const today = new Date();
+  const alertLimit = new Date();
+  alertLimit.setDate(today.getDate() + EXPENSE_ALERT_DAYS);
+
+  const upcoming = [];
+
+  (result.results || []).forEach(function (dep) {
+    const dueProp = dep.properties['Prochaine échéance'] && dep.properties['Prochaine échéance'].date;
+    if (!dueProp || !dueProp.start) return;
+
+    const dueDate = new Date(dueProp.start);
+    if (dueDate >= today && dueDate <= alertLimit) {
+      const fournisseur = getTitleText(dep.properties['Fournisseur']);
+      upcoming.push(fournisseur + ' — échéance le ' + dueProp.start);
+    }
+  });
+
+  if (upcoming.length > 0) {
+    notifyOwner(
+      'Dépenses récurrentes à venir (' + upcoming.length + ')',
       upcoming.join('\n')
     );
   }
@@ -724,6 +891,9 @@ function dateProp(isoDate) {
 }
 function relationProp(ids) {
   return { relation: ids.map(function (id) { return { id: id }; }) };
+}
+function numberProp(n) {
+  return { number: n };
 }
 
 /*==================================================
