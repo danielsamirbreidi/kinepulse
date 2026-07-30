@@ -425,7 +425,7 @@ function processExpenseEmails() {
     return; // pas configuré, on ne fait rien silencieusement
   }
 
-  const threads = GmailApp.search('subject:DÉPENSE has:attachment is:unread', 0, 20);
+  const threads = GmailApp.search('subject:depense has:attachment is:unread', 0, 20);
   if (threads.length === 0) return;
 
   threads.forEach(function (thread) {
