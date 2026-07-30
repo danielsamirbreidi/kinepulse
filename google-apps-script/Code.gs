@@ -538,23 +538,25 @@ function computeMonthlyKPIs() {
 
   (facturesResult.results || []).forEach(function (facture) {
     try {
+      const totalProp = facture.properties['Total'] && facture.properties['Total'].formula;
+      const total = (totalProp && typeof totalProp.number === 'number') ? totalProp.number : 0;
+
       const rdvRelation = facture.properties['Rendez-vous'] && facture.properties['Rendez-vous'].relation;
-      if (!rdvRelation || rdvRelation.length === 0) return;
+      let categorie = null;
 
-      const rdv = getNotionPage(rdvRelation[0].id);
-      const serviceRelation = rdv.properties['Service'] && rdv.properties['Service'].relation;
-      if (!serviceRelation || serviceRelation.length === 0) return;
-
-      const service = getNotionPage(serviceRelation[0].id);
-      const prix = service.properties['Prix'] && service.properties['Prix'].number;
-      const categorie = service.properties['Catégorie'] && service.properties['Catégorie'].select && service.properties['Catégorie'].select.name;
-
-      if (typeof prix === 'number') {
-        if (categorie === 'EMS') {
-          revenusEMS += prix;
-        } else {
-          revenusMassage += prix;
+      if (rdvRelation && rdvRelation.length > 0) {
+        const rdv = getNotionPage(rdvRelation[0].id);
+        const serviceRelation = rdv.properties['Service'] && rdv.properties['Service'].relation;
+        if (serviceRelation && serviceRelation.length > 0) {
+          const service = getNotionPage(serviceRelation[0].id);
+          categorie = service.properties['Catégorie'] && service.properties['Catégorie'].select && service.properties['Catégorie'].select.name;
         }
+      }
+
+      if (categorie === 'EMS') {
+        revenusEMS += total;
+      } else {
+        revenusMassage += total;
       }
     } catch (e) {
       // ignore une facture problématique plutôt que de bloquer tout le calcul
@@ -575,8 +577,9 @@ function computeMonthlyKPIs() {
 
   let depensesTotal = 0;
   (depensesResult.results || []).forEach(function (dep) {
-    const montant = dep.properties['Montant avant taxes'] && dep.properties['Montant avant taxes'].number;
-    if (typeof montant === 'number') depensesTotal += montant;
+    const totalProp = dep.properties['Total'] && dep.properties['Total'].formula;
+    const total = (totalProp && typeof totalProp.number === 'number') ? totalProp.number : 0;
+    depensesTotal += total;
   });
 
   // 3. Rendez-vous confirmés ce mois
