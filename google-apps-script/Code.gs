@@ -419,18 +419,44 @@ function syncCalendarToNotion() {
     if (known[key]) return; // déjà dans Notion (probablement créé par le site)
 
     try {
-      createNotionPage(DS_RENDEZVOUS, {
+      const props = {
         'Rendez-vous': titleProp('📅 ' + ev.getTitle()),
         'Date': dateProp(evDate),
         'Heure': richTextProp(evTime),
         'Thérapeute': selectProp('Daniel'),
-        'Statut': selectProp('Confirmé')
-      });
+        'Statut': selectProp('Confirmé'),
+        'Service': relationProp([title.indexOf('90') !== -1 ? SERVICE_MASSAGE_90 : SERVICE_MASSAGE_60])
+      };
+
+      // Essaie de retrouver un client existant dont le nom apparaît dans le titre
+      const matchedClientId = findClientByNameInText(title);
+      if (matchedClientId) {
+        props['Client'] = relationProp([matchedClientId]);
+      }
+
+      createNotionPage(DS_RENDEZVOUS, props);
       known[key] = true;
     } catch (syncErr) {
       // On ignore silencieusement (ex: événement personnel sans lien avec la clinique)
     }
   });
+}
+
+function findClientByNameInText(text) {
+  const lowerText = text.toLowerCase();
+  const allClients = queryNotionDataSource(DS_CLIENTS, {});
+
+  let match = null;
+  (allClients.results || []).forEach(function (client) {
+    if (match) return;
+    const nom = getTitleText(client.properties['Nom complet']);
+    if (!nom) return;
+    const parts = nom.toLowerCase().split(' ').filter(function (p) { return p.length > 2; });
+    const found = parts.some(function (p) { return lowerText.indexOf(p) !== -1; });
+    if (found) match = client.id;
+  });
+
+  return match;
 }
 
 function sendAppointmentReminders() {
@@ -553,7 +579,7 @@ function computeMonthlyKPIs() {
         }
       }
 
-      if (categorie === 'EMS') {
+      if (categorie && categorie.indexOf('EMS') !== -1) {
         revenusEMS += total;
       } else {
         revenusMassage += total;
