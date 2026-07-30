@@ -59,18 +59,36 @@ const BOOKING_API_URL = "REMPLACER_PAR_URL_DU_WEB_APP";
 par ton URL copiée à l'étape 4, puis pousse le changement sur GitHub
 (ou demande à Claude de le faire).
 
+## Étape 6 — Activer les rappels et alertes automatiques quotidiens
+
+Dans l'éditeur Apps Script (script.google.com), en haut à côté du bouton
+**Exécuter**, choisis la fonction **`setupDailyTrigger`** dans le menu
+déroulant, puis clique **▶ Exécuter**. Ça active, chaque jour à 9h00 :
+
+- un rappel automatique par courriel aux clients qui ont un massage le lendemain
+- un résumé pour toi des forfaits EMS qui arrivent à renouvellement dans les 5 prochains jours
+
+À faire **une seule fois** — le déclencheur reste actif ensuite.
+
 ## Ce qui se passe automatiquement une fois branché
 
 **Réservation massage** → le client choisit un créneau réellement
 libre (calculé depuis ton Google Calendar) → l'événement est créé
 directement dans ton Calendar + une fiche dans Notion "Rendez-Vous"
-(liée au bon client et au bon service) → le client reçoit une
+(liée au bon client et au bon service) + une fiche "Facture" liée est
+créée automatiquement (statut "En attente" — il ne te reste qu'à
+cliquer "Payée" quand le client te paie) → le client reçoit une
 confirmation immédiate par courriel → tu reçois une notification.
+
+**La veille du rendez-vous** → le client reçoit un rappel automatique.
 
 **Demande EMS** → aucun rendez-vous n'est créé → une fiche est ajoutée
 dans Notion "Leads EMS" avec le statut "À contacter" → le client reçoit
 un courriel "nous vous contacterons" → tu reçois une notification pour
 savoir qu'il faut le rappeler.
+
+**Forfait EMS qui approche du renouvellement** → tu reçois un résumé
+par courriel 5 jours avant, automatiquement.
 
 ## Si tu dois modifier l'horaire des créneaux plus tard
 

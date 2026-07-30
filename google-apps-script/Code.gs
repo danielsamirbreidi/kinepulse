@@ -2,16 +2,22 @@
 KINÉPULSE — BACKEND DE RÉSERVATION
 Google Apps Script
 
-Ce script fait 3 choses:
+Ce script fait :
 1. Expose la liste des créneaux de massage réellement libres
    (calculés depuis ton horaire fixe, moins ce qui est déjà
    pris dans Google Calendar)
 2. Quand un massage est réservé: crée l'événement dans Google
-   Calendar + une fiche dans Notion (Rendez-Vous) + envoie une
-   confirmation immédiate au client
+   Calendar + une fiche dans Notion (Rendez-Vous) + une fiche
+   Facture liée (statut "En attente", prête pour ton clic
+   "Payée") + envoie une confirmation immédiate au client
 3. Quand une demande EMS est envoyée: crée seulement une fiche
    dans Notion (Leads EMS, PAS de rendez-vous) + envoie un
    message "on vous contactera" au client
+4. Chaque jour (automatique, via déclencheur) :
+   - envoie un rappel de rendez-vous aux clients qui ont un
+     massage le lendemain
+   - t'envoie un résumé des forfaits EMS qui arrivent à
+     renouvellement dans les 5 prochains jours
 
 ==================================================
 CONFIGURATION REQUISE (Extensions > Propriétés du script)
@@ -20,15 +26,24 @@ NOTION_TOKEN       -> ton "Internal Integration Secret" (ntn_...)
 OWNER_EMAIL        -> ton adresse courriel (pour les notifications)
 CLINIC_ADDRESS     -> adresse de la clinique (pour les courriels)
 ==================================================
+APRÈS LE DÉPLOIEMENT — À FAIRE UNE SEULE FOIS
+==================================================
+Dans l'éditeur Apps Script, sélectionne la fonction
+"setupDailyTrigger" dans le menu déroulant en haut, puis
+clique ▶ Exécuter. Ça active les rappels et alertes
+automatiques quotidiens (9h00 chaque matin).
+==================================================
 */
 
 const NOTION_VERSION = '2025-09-03';
 const TIMEZONE = 'America/Toronto';
 
 // IDs des "data sources" Notion (obtenus via l'intégration KinéPulse Site)
-const DS_RENDEZVOUS = '3aa36ea7-3613-8049-82d0-000b6ac93dea';
-const DS_CLIENTS    = '39936ea7-3613-8005-86b9-000b8195be50';
-const DS_LEADS_EMS  = 'bb23ddce-e51d-487e-9eb5-4c20590d5889';
+const DS_RENDEZVOUS   = '3aa36ea7-3613-8049-82d0-000b6ac93dea';
+const DS_CLIENTS      = '39936ea7-3613-8005-86b9-000b8195be50';
+const DS_LEADS_EMS    = 'bb23ddce-e51d-487e-9eb5-4c20590d5889';
+const DS_FACTURES     = '3aa36ea7-3613-8072-98d9-000b5113c510';
+const DS_EMS_MEMBERSHIP = '3aa36ea7-3613-8009-844c-000b3b0dc38d';
 
 // IDs des fiches Service (Massage 60/90 min) dans la base Services
 const SERVICE_MASSAGE_60 = '39936ea7-3613-81c4-99d1-e397542b5cd7';
@@ -46,6 +61,7 @@ const MASSAGE_SLOTS = {
 };
 
 const BOOKING_WINDOW_DAYS = 21; // combien de jours à l'avance on ouvre la réservation
+const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 
 /*==================================================
 POINT D'ENTRÉE - GET (liste des créneaux disponibles)
@@ -180,7 +196,7 @@ function handleMassageBooking(data) {
 
   // 4. Crée la fiche Rendez-Vous dans Notion
   const serviceId = duration === 90 ? SERVICE_MASSAGE_90 : SERVICE_MASSAGE_60;
-  createNotionPage(DS_RENDEZVOUS, {
+  const rdv = createNotionPage(DS_RENDEZVOUS, {
     'Rendez-vous': titleProp('Massage ' + duration + ' min — ' + nom),
     'Date': dateProp(dateStr),
     'Heure': richTextProp(timeStr),
@@ -188,6 +204,16 @@ function handleMassageBooking(data) {
     'Service': relationProp([serviceId]),
     'Thérapeute': selectProp('Daniel'),
     'Statut': selectProp('Confirmé')
+  });
+
+  // 4b. Crée automatiquement la fiche Facture liée (statut "En attente")
+  // Client/Service/Prix se remplissent tout seuls via les rollups Notion.
+  // Il ne reste qu'à cliquer "Payée" + choisir le mode de paiement.
+  createNotionPage(DS_FACTURES, {
+    'Facture': titleProp('Facture — ' + nom + ' — ' + dateStr),
+    'Rendez-vous': relationProp([rdv.id]),
+    'Date': dateProp(dateStr),
+    'Statut': selectProp('🟡 En attente')
   });
 
   // 5. Confirmation au client
@@ -264,6 +290,132 @@ function handleEmsLead(data) {
   );
 
   return { success: true };
+}
+
+/*==================================================
+AUTOMATISATION QUOTIDIENNE
+(rappels de rendez-vous + alertes renouvellement EMS)
+==================================================*/
+
+function dailyAutomation() {
+  sendAppointmentReminders();
+  checkEmsRenewals();
+}
+
+function setupDailyTrigger() {
+  // Supprime d'anciens déclencheurs pour éviter les doublons
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'dailyAutomation') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  ScriptApp.newTrigger('dailyAutomation')
+    .timeBased()
+    .everyDays(1)
+    .atHour(9)
+    .inTimezone(TIMEZONE)
+    .create();
+}
+
+function sendAppointmentReminders() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = Utilities.formatDate(tomorrow, TIMEZONE, 'yyyy-MM-dd');
+
+  const result = queryNotionDataSource(DS_RENDEZVOUS, {
+    filter: {
+      and: [
+        { property: 'Date', date: { equals: tomorrowStr } },
+        { property: 'Statut', select: { equals: 'Confirmé' } }
+      ]
+    }
+  });
+
+  const appointments = result.results || [];
+
+  appointments.forEach(function (rdv) {
+    try {
+      const heure = getPlainText(rdv.properties['Heure']);
+      const clientRelation = rdv.properties['Client'] && rdv.properties['Client'].relation;
+
+      if (!clientRelation || clientRelation.length === 0) return;
+
+      const client = getNotionPage(clientRelation[0].id);
+      const email = client.properties['Email'] && client.properties['Email'].email;
+      const nom = getTitleText(client.properties['Nom complet']);
+
+      if (!email) return;
+
+      MailApp.sendEmail({
+        to: email,
+        subject: 'Rappel — votre rendez-vous demain chez KinéPulse',
+        body:
+          'Bonjour ' + nom + ',\n\n' +
+          'Petit rappel : vous avez un rendez-vous demain à ' + heure + '.\n\n' +
+          (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
+          'Au plaisir de vous accueillir.\n\n' +
+          'Clinique KinéPulse'
+      });
+
+    } catch (err) {
+      notifyOwner('Erreur rappel rendez-vous', err.message);
+    }
+  });
+}
+
+function checkEmsRenewals() {
+  const result = queryNotionDataSource(DS_EMS_MEMBERSHIP, {
+    filter: { property: 'Statut', select: { equals: '🟢 Actif' } }
+  });
+
+  const memberships = result.results || [];
+  const today = new Date();
+  const alertLimit = new Date();
+  alertLimit.setDate(today.getDate() + EMS_RENEWAL_ALERT_DAYS);
+
+  const upcoming = [];
+
+  memberships.forEach(function (m) {
+    const dateProp = m.properties['Date renouvellement'] && m.properties['Date renouvellement'].date;
+    if (!dateProp || !dateProp.start) return;
+
+    const renewalDate = new Date(dateProp.start);
+    if (renewalDate >= today && renewalDate <= alertLimit) {
+      const membre = getTitleText(m.properties['Membre']);
+      upcoming.push(membre + ' — renouvellement le ' + dateProp.start);
+    }
+  });
+
+  if (upcoming.length > 0) {
+    notifyOwner(
+      'Renouvellements EMS à venir (' + upcoming.length + ')',
+      upcoming.join('\n')
+    );
+  }
+}
+
+function getNotionPage(pageId) {
+  const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + pageId, {
+    method: 'get',
+    headers: notionHeaders(),
+    muteHttpExceptions: true
+  });
+
+  if (res.getResponseCode() >= 300) {
+    throw new Error('Erreur Notion (get page): ' + res.getContentText());
+  }
+  return JSON.parse(res.getContentText());
+}
+
+function getPlainText(richTextProperty) {
+  if (!richTextProperty || !richTextProperty.rich_text || richTextProperty.rich_text.length === 0) return '';
+  return richTextProperty.rich_text.map(function (t) { return t.plain_text; }).join('');
+}
+
+function getTitleText(titleProperty) {
+  if (!titleProperty || !titleProperty.title || titleProperty.title.length === 0) return '';
+  return titleProperty.title.map(function (t) { return t.plain_text; }).join('');
 }
 
 /*==================================================
