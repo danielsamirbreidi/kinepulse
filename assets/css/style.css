@@ -1365,9 +1365,39 @@ textarea.booking-input{
     color:var(--primary);
 }
 
-/*=========================================
-CALENDRIER DE RÉSERVATION
-=========================================*/
+.cal-loading{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:24px 0;
+    font-size:.85rem;
+    color:var(--text-light);
+}
+
+.cta-box .cal-loading{
+    color:rgba(255,255,255,.7);
+}
+
+.cal-spinner{
+    width:16px;
+    height:16px;
+    border:2px solid var(--border);
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:cal-spin .7s linear infinite;
+    flex-shrink:0;
+}
+
+.cta-box .cal-spinner{
+    border-color:rgba(255,255,255,.25);
+    border-top-color:var(--brass);
+}
+
+@keyframes cal-spin{
+    to{ transform:rotate(360deg); }
+}
 
 #massage-calendar-wrap{
     background:var(--white);

@@ -170,7 +170,7 @@ function initMassageBooking() {
 
         const duration = form.querySelector('input[name="duration"]:checked').value === "90 minutes" ? 90 : 60;
 
-        gridEl.innerHTML = '<p style="grid-column:1/-1;font-size:.85rem;color:var(--text-light);">Chargement des créneaux...</p>';
+        gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
         timeslotsEl.innerHTML = "";
         slotValueInput.value = "";
         selectedDate = null;

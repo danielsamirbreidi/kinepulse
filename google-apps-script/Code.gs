@@ -262,7 +262,7 @@ function handleMassageBooking(data) {
       'Date : ' + dateLisible + '\n' +
       'Heure : ' + timeStr + '\n\n' +
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
-      (!clientAlreadyHasHealthForm(telephone)
+      (!clientAlreadyHasHealthForm(telephone, clientId)
         ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
           'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
         : '') +
@@ -1003,14 +1003,17 @@ function handleHealthIntake(data) {
   return { success: true };
 }
 
-function clientAlreadyHasHealthForm(telephone) {
-  const clientMatch = queryNotionDataSource(DS_CLIENTS, {
-    filter: { property: 'Téléphone', phone_number: { equals: telephone } }
-  });
+function clientAlreadyHasHealthForm(telephone, knownClientId) {
+  let clientId = knownClientId;
 
-  if (!clientMatch.results || clientMatch.results.length === 0) return false;
+  if (!clientId) {
+    const clientMatch = queryNotionDataSource(DS_CLIENTS, {
+      filter: { property: 'Téléphone', phone_number: { equals: telephone } }
+    });
+    if (!clientMatch.results || clientMatch.results.length === 0) return false;
+    clientId = clientMatch.results[0].id;
+  }
 
-  const clientId = clientMatch.results[0].id;
   const ficheMatch = queryNotionDataSource(DS_FICHE_SANTE, {
     filter: { property: 'Client', relation: { contains: clientId } }
   });
