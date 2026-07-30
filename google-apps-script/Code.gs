@@ -44,6 +44,7 @@ const DS_CLIENTS      = '39936ea7-3613-8005-86b9-000b8195be50';
 const DS_LEADS_EMS    = 'bb23ddce-e51d-487e-9eb5-4c20590d5889';
 const DS_FACTURES     = '3aa36ea7-3613-8072-98d9-000b5113c510';
 const DS_EMS_MEMBERSHIP = '3aa36ea7-3613-8009-844c-000b3b0dc38d';
+const DS_FICHE_SANTE  = '11599f8a-972b-427b-ad0a-0c5a04e6d734';
 
 // IDs des fiches Service (Massage 60/90 min) dans la base Services
 const SERVICE_MASSAGE_60 = '39936ea7-3613-81c4-99d1-e397542b5cd7';
@@ -107,6 +108,10 @@ function doPost(e) {
 
     if (data.type === 'ems') {
       return jsonResponse(handleEmsLead(data));
+    }
+
+    if (data.type === 'intake') {
+      return jsonResponse(handleHealthIntake(data));
     }
 
     return jsonResponse({ success: false, error: 'Type de demande inconnu' });
@@ -237,6 +242,8 @@ function handleMassageBooking(data) {
       'Date : ' + dateLisible + '\n' +
       'Heure : ' + timeStr + '\n\n' +
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
+      'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
+      'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
       'Au plaisir de vous accueillir.\n\n' +
       'Clinique KinéPulse'
   });
@@ -286,6 +293,8 @@ function handleEmsLead(data) {
       'Merci pour votre demande de consultation EMS.\n' +
       'Nous avons bien reçu vos informations et nous vous contacterons ' +
       'sous peu afin de planifier votre séance.\n\n' +
+      'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
+      'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n' +
       'Au plaisir de vous accompagner.\n\n' +
       'Clinique KinéPulse'
   });
@@ -425,6 +434,57 @@ function getPlainText(richTextProperty) {
 function getTitleText(titleProperty) {
   if (!titleProperty || !titleProperty.title || titleProperty.title.length === 0) return '';
   return titleProperty.title.map(function (t) { return t.plain_text; }).join('');
+}
+
+/*==================================================
+FICHE SANTÉ (liée au client, pas de rendez-vous)
+==================================================*/
+
+function handleHealthIntake(data) {
+  const nom = (data.nom || '').trim();
+  const telephone = (data.telephone || '').trim();
+  const email = (data.email || '').trim();
+
+  if (!nom || !telephone || !email) {
+    return { success: false, error: 'Champs manquants' };
+  }
+
+  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+
+  // Trouve ou crée le client dans Notion (même logique que pour les réservations)
+  const clientId = findOrCreateClient(nom, telephone, email, 'Massage');
+
+  createNotionPage(DS_FICHE_SANTE, {
+    'Fiche': titleProp('Fiche santé — ' + nom),
+    'Client': relationProp([clientId]),
+    'Adresse': richTextProp(data.adresse || ''),
+    'Emploi': richTextProp(data.emploi || ''),
+    'Assurance': selectProp(data.assurance === 'Oui' ? 'Oui' : 'Non'),
+    "Compagnie d'assurance": richTextProp(data.compagnieAssurance || ''),
+    'Antécédents médicaux': richTextProp(data.antecedents || ''),
+    'Médicaments actuels': richTextProp(data.medicaments || ''),
+    'Blessures / douleurs actuelles': richTextProp(data.blessures || ''),
+    'But de la séance': richTextProp(data.objectif || ''),
+    'Date de remplissage': dateProp(today)
+  });
+
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Fiche santé reçue — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
+      'Merci ! Votre fiche santé a bien été reçue et sera consultée avant votre visite.\n\n' +
+      'À bientôt.\n\n' +
+      'Clinique KinéPulse'
+  });
+
+  notifyOwner(
+    'Nouvelle fiche santé — ' + nom,
+    nom + ' a rempli sa fiche santé.\nTéléphone: ' + telephone + '\nCourriel: ' + email +
+    '\nConsultez Notion "Fiche santé" pour le détail.'
+  );
+
+  return { success: true };
 }
 
 /*==================================================

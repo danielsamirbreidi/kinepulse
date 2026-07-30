@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fiche santé | Clinique KinéPulse</title>
+
+    <meta name="description"
+          content="Remplissez votre fiche santé avant votre visite chez KinéPulse — ça nous permet de personnaliser votre traitement et de sauver du temps sur place.">
+
+    <meta name="robots" content="noindex, follow">
+    <link rel="canonical" href="https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html">
+
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="container header-container">
+
+        <a href="../index.html" class="logo">
+
+            <img src="../assets/images/logo.png" alt="KinéPulse">
+
+        </a>
+
+        <nav>
+
+            <ul class="nav-menu">
+
+                <li><a href="../index.html">Accueil</a></li>
+                <li><a href="massage.html">Massage</a></li>
+                <li><a href="ems.html">EMS</a></li>
+                <li><a href="analyse.html">Analyse 3D</a></li>
+                <li><a href="contact.html">Contact</a></li>
+
+            </ul>
+
+        </nav>
+
+        <div class="header-buttons">
+
+            <a href="contact.html" class="btn-primary">Nous joindre</a>
+
+        </div>
+
+        <button class="hamburger">
+
+            <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+
+        </button>
+
+    </div>
+
+</header>
+
+<section class="section" style="padding-top:180px;">
+
+    <div class="container" style="max-width:720px;">
+
+        <div class="section-title fade-up">
+
+            <span>Avant votre visite</span>
+
+            <h2>Fiche santé</h2>
+
+            <p>
+                Prenez 3 minutes pour remplir cette fiche avant votre rendez-vous — ça nous permet de personnaliser votre traitement et d'éviter de perdre du temps sur place. Vos renseignements restent confidentiels (voir notre <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>).
+            </p>
+
+        </div>
+
+        <form class="booking-form fade-up" id="intake-form" data-custom-submit="true">
+
+            <input class="booking-input" type="text" name="nom" placeholder="Nom complet" required>
+
+            <input class="booking-input" type="tel" name="telephone" placeholder="Téléphone" required>
+
+            <input class="booking-input" type="email" name="email" placeholder="Courriel" required>
+
+            <input class="booking-input" type="text" name="adresse" placeholder="Adresse" required>
+
+            <input class="booking-input" type="text" name="emploi" placeholder="Emploi / occupation">
+
+            <div class="duration-choice">
+
+                <label class="duration-option">
+                    <input type="radio" name="assurance" value="Oui" required>
+                    J'ai des assurances
+                </label>
+
+                <label class="duration-option">
+                    <input type="radio" name="assurance" value="Non" required>
+                    Aucune assurance
+                </label>
+
+            </div>
+
+            <input class="booking-input" type="text" name="compagnie_assurance" placeholder="Compagnie d'assurance (si applicable)">
+
+            <textarea class="booking-input" name="antecedents" rows="4" placeholder="Antécédents médicaux (chirurgies, conditions chroniques, allergies, etc.)"></textarea>
+
+            <textarea class="booking-input" name="medicaments" rows="3" placeholder="Médicaments actuels"></textarea>
+
+            <textarea class="booking-input" name="blessures" rows="4" placeholder="Blessures ou douleurs actuelles" required></textarea>
+
+            <textarea class="booking-input" name="objectif" rows="4" placeholder="Quel est le but de votre séance ?" required></textarea>
+
+            <label class="consent-check">
+                <input type="checkbox" name="consentement" required>
+                <span>J'accepte que ces renseignements soient utilisés pour personnaliser mon traitement, conformément à la <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
+            </label>
+
+            <button class="btn-primary" type="submit" id="intake-submit-btn">Envoyer ma fiche santé</button>
+
+        </form>
+
+    </div>
+
+</section>
+
+<footer>
+
+    <div class="container">
+
+        <div class="footer-content">
+
+            <div>
+
+                <h3>KinéPulse</h3>
+
+                <p>Massage thérapeutique • EMS • Analyse corporelle 3D</p>
+
+            </div>
+
+            <div>
+
+                <h4>Navigation</h4>
+
+                <ul>
+
+                    <li><a href="../index.html">Accueil</a></li>
+                    <li><a href="massage.html">Massage</a></li>
+                    <li><a href="ems.html">EMS</a></li>
+                    <li><a href="analyse.html">Analyse 3D</a></li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <div class="legal-links">
+
+            <a href="politique-de-confidentialite.html">Politique de confidentialité</a>
+            <a href="conditions-utilisation.html">Conditions d'utilisation</a>
+
+        </div>
+
+        <div class="copyright">
+
+            © 2026 KinéPulse — Tous droits réservés.
+
+        </div>
+
+    </div>
+
+</footer>
+
+<button id="backToTop">↑</button>
+
+<script src="../assets/js/script.js"></script>
+<script src="../assets/js/booking.js"></script>
+
+</body>
+</html>

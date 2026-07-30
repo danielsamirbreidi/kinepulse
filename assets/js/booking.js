@@ -13,7 +13,72 @@ const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbyTwYzKDtkQWL8t
 document.addEventListener("DOMContentLoaded", () => {
     initMassageBooking();
     initEmsLead();
+    initHealthIntake();
 });
+
+/*==================================================
+FICHE SANTÉ — ENVOI (LIÉE AU CLIENT DANS NOTION)
+==================================================*/
+
+function initHealthIntake() {
+
+    const form = document.getElementById("intake-form");
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalLabel = submitBtn.textContent;
+
+        const payload = {
+            type: "intake",
+            nom: formData.get("nom"),
+            telephone: formData.get("telephone"),
+            email: formData.get("email"),
+            adresse: formData.get("adresse"),
+            emploi: formData.get("emploi"),
+            assurance: formData.get("assurance"),
+            compagnieAssurance: formData.get("compagnie_assurance"),
+            antecedents: formData.get("antecedents"),
+            medicaments: formData.get("medicaments"),
+            blessures: formData.get("blessures"),
+            objectif: formData.get("objectif")
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Envoi en cours...";
+
+        fetch(BOOKING_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.success) {
+                    form.innerHTML = `
+                        <div class="success">
+                            <h2>Merci !</h2>
+                            <p>Votre fiche santé a bien été reçue. À bientôt en clinique.</p>
+                        </div>
+                    `;
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalLabel;
+                    alert("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.");
+                }
+
+            })
+            .catch(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalLabel;
+                alert("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.");
+            });
+    });
+}
 
 /*==================================================
 MASSAGE — CRÉNEAUX RÉELS + RÉSERVATION
