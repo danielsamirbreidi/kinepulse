@@ -716,6 +716,39 @@ ABOUT / GRILLES "IMAGE + TEXTE"
     box-shadow:var(--shadow);
 }
 
+.photo-placeholder{
+    min-height:320px;
+    height:100%;
+    border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--primary-tint),var(--background));
+    border:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    color:var(--primary-dark);
+}
+
+.photo-placeholder .icon{
+    width:34px;
+    height:34px;
+    opacity:.5;
+}
+
+.photo-placeholder span{
+    font-size:.85rem;
+    font-weight:500;
+    opacity:.6;
+    font-family:var(--font-mono);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.hero-image .photo-placeholder{
+    min-height:340px;
+}
+
 .about-content h3{
     font-size:1.8rem;
     margin-bottom:18px;
