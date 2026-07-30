@@ -552,9 +552,29 @@ RÉSERVATION
 
                 </div>
 
-                <select class="booking-input" name="slot" id="massage-slot-select" required>
-                    <option value="">Chargement des créneaux disponibles...</option>
-                </select>
+                <div id="massage-calendar-wrap">
+
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav" id="cal-prev" aria-label="Mois précédent">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                        </button>
+                        <span id="cal-month-label"></span>
+                        <button type="button" class="calendar-nav" id="cal-next" aria-label="Mois suivant">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                    </div>
+
+                    <div class="calendar-grid" id="cal-grid"></div>
+
+                    <div id="cal-timeslots"></div>
+
+                </div>
+
+                <input type="hidden" name="slot" id="massage-slot-value" required>
 
                 <p id="massage-slot-status" style="font-size:.85rem;color:var(--primary-light);display:none;"></p>
 

@@ -89,48 +89,141 @@ function initMassageBooking() {
     const form = document.getElementById("massage-booking-form");
     if (!form) return;
 
-    const slotSelect = document.getElementById("massage-slot-select");
+    const slotValueInput = document.getElementById("massage-slot-value");
     const statusEl = document.getElementById("massage-slot-status");
     const submitBtn = document.getElementById("massage-submit-btn");
     const durationInputs = form.querySelectorAll('input[name="duration"]');
+
+    const monthLabel = document.getElementById("cal-month-label");
+    const gridEl = document.getElementById("cal-grid");
+    const timeslotsEl = document.getElementById("cal-timeslots");
+    const prevBtn = document.getElementById("cal-prev");
+    const nextBtn = document.getElementById("cal-next");
+
+    const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+    let slotsByDate = {};   // { "2026-08-04": [{time,label}, ...] }
+    let viewMonth = new Date();
+    viewMonth.setDate(1);
+    let selectedDate = null;
 
     function loadSlots() {
 
         const duration = form.querySelector('input[name="duration"]:checked').value === "90 minutes" ? 90 : 60;
 
-        slotSelect.innerHTML = '<option value="">Chargement des créneaux disponibles...</option>';
-        slotSelect.disabled = true;
+        gridEl.innerHTML = '<p style="grid-column:1/-1;font-size:.85rem;color:var(--text-light);">Chargement des créneaux...</p>';
+        timeslotsEl.innerHTML = "";
+        slotValueInput.value = "";
+        selectedDate = null;
 
         fetch(`${BOOKING_API_URL}?action=slots&duration=${duration}`)
             .then(res => res.json())
             .then(data => {
 
-                slotSelect.innerHTML = "";
-                slotSelect.disabled = false;
+                slotsByDate = {};
 
-                if (!data.success || !data.slots || data.slots.length === 0) {
-                    slotSelect.innerHTML = '<option value="">Aucun créneau disponible actuellement</option>';
-                    return;
+                if (data.success && data.slots) {
+                    data.slots.forEach(slot => {
+                        if (!slotsByDate[slot.date]) slotsByDate[slot.date] = [];
+                        slotsByDate[slot.date].push(slot);
+                    });
                 }
 
-                const placeholder = document.createElement("option");
-                placeholder.value = "";
-                placeholder.textContent = "Choisissez un créneau";
-                slotSelect.appendChild(placeholder);
+                // Ouvre le calendrier sur le premier mois qui contient un créneau
+                const firstDate = data.slots && data.slots.length ? data.slots[0].date : null;
+                if (firstDate) {
+                    const [y, m] = firstDate.split("-").map(Number);
+                    viewMonth = new Date(y, m - 1, 1);
+                }
 
-                data.slots.forEach(slot => {
-                    const opt = document.createElement("option");
-                    opt.value = `${slot.date}|${slot.time}`;
-                    opt.textContent = slot.label;
-                    slotSelect.appendChild(opt);
-                });
+                renderCalendar();
 
             })
             .catch(() => {
-                slotSelect.innerHTML = '<option value="">Erreur de chargement — réessayez plus tard</option>';
-                slotSelect.disabled = false;
+                gridEl.innerHTML = '<p style="grid-column:1/-1;font-size:.85rem;color:var(--text-light);">Erreur de chargement — réessayez plus tard.</p>';
             });
     }
+
+    function renderCalendar() {
+
+        monthLabel.textContent = MOIS_FR[viewMonth.getMonth()] + " " + viewMonth.getFullYear();
+
+        const year = viewMonth.getFullYear();
+        const month = viewMonth.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const startOffset = (firstDay.getDay() + 6) % 7; // lundi = 0
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        let html = "";
+
+        for (let i = 0; i < startOffset; i++) {
+            html += '<div class="cal-day empty"></div>';
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+            const hasSlots = !!slotsByDate[dateStr];
+            const isSelected = dateStr === selectedDate;
+
+            html += `<button type="button" class="cal-day${hasSlots ? " available" : ""}${isSelected ? " selected" : ""}" data-date="${dateStr}" ${hasSlots ? "" : "disabled"}>
+                ${d}${hasSlots ? '<span class="cal-dot"></span>' : ""}
+            </button>`;
+        }
+
+        gridEl.innerHTML = html;
+
+        gridEl.querySelectorAll(".cal-day.available").forEach(btn => {
+            btn.addEventListener("click", () => {
+                selectedDate = btn.dataset.date;
+                slotValueInput.value = "";
+                renderCalendar();
+                renderTimeslots();
+            });
+        });
+
+        // Désactive/active les flèches selon la fenêtre de réservation (21 jours)
+        const today = new Date();
+        prevBtn.disabled = (year === today.getFullYear() && month <= today.getMonth());
+    }
+
+    function renderTimeslots() {
+
+        if (!selectedDate || !slotsByDate[selectedDate]) {
+            timeslotsEl.innerHTML = "";
+            return;
+        }
+
+        const dateObj = new Date(selectedDate + "T00:00:00");
+        const label = dateObj.toLocaleDateString("fr-CA", { weekday: "long", day: "numeric", month: "long" });
+
+        let html = `<p class="cal-selected-date">${label}</p><div class="cal-times">`;
+
+        slotsByDate[selectedDate].forEach(slot => {
+            const isActive = slotValueInput.value === `${slot.date}|${slot.time}`;
+            html += `<button type="button" class="cal-time-btn${isActive ? " active" : ""}" data-value="${slot.date}|${slot.time}">${slot.time}</button>`;
+        });
+
+        html += "</div>";
+        timeslotsEl.innerHTML = html;
+
+        timeslotsEl.querySelectorAll(".cal-time-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                slotValueInput.value = btn.dataset.value;
+                timeslotsEl.querySelectorAll(".cal-time-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+    }
+
+    prevBtn.addEventListener("click", () => {
+        viewMonth.setMonth(viewMonth.getMonth() - 1);
+        renderCalendar();
+    });
+
+    nextBtn.addEventListener("click", () => {
+        viewMonth.setMonth(viewMonth.getMonth() + 1);
+        renderCalendar();
+    });
 
     durationInputs.forEach(input => {
         input.addEventListener("change", loadSlots);
@@ -141,9 +234,9 @@ function initMassageBooking() {
     form.addEventListener("submit", (event) => {
         event.preventDefault();
 
-        const slotValue = slotSelect.value;
+        const slotValue = slotValueInput.value;
         if (!slotValue) {
-            showStatus(statusEl, "Veuillez choisir un créneau avant d'envoyer votre demande.", true);
+            showStatus(statusEl, "Veuillez choisir un jour et une heure avant d'envoyer votre demande.", true);
             return;
         }
 
