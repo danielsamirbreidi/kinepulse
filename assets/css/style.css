@@ -1372,25 +1372,25 @@ CALENDRIER DE RÉSERVATION
 #massage-calendar-wrap{
     background:var(--white);
     border:1px solid var(--border);
-    border-radius:16px;
-    padding:14px;
-    max-width:340px;
+    border-radius:18px;
+    padding:20px;
+    max-width:360px;
     margin:0 auto;
 }
 
 .cta-box #massage-calendar-wrap{
-    background:rgba(255,255,255,.06);
-    border-color:rgba(255,255,255,.15);
+    background:rgba(255,255,255,.05);
+    border-color:rgba(255,255,255,.14);
 }
 
 .calendar-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:10px;
-    font-family:var(--font-mono);
+    margin-bottom:16px;
+    font-family:var(--font-display);
     font-weight:500;
-    font-size:.85rem;
+    font-size:1.05rem;
     text-transform:capitalize;
     color:var(--secondary);
 }
@@ -1400,15 +1400,15 @@ CALENDRIER DE RÉSERVATION
 }
 
 .calendar-nav{
-    width:26px;
-    height:26px;
+    width:30px;
+    height:30px;
     border-radius:50%;
     background:var(--background);
     color:var(--secondary);
     display:flex;
     align-items:center;
     justify-content:center;
-    transition:.3s;
+    transition:.25s;
     flex-shrink:0;
 }
 
@@ -1418,8 +1418,8 @@ CALENDRIER DE RÉSERVATION
 }
 
 .calendar-nav .icon{
-    width:13px;
-    height:13px;
+    width:14px;
+    height:14px;
 }
 
 .calendar-nav:hover:not(:disabled){
@@ -1428,7 +1428,7 @@ CALENDRIER DE RÉSERVATION
 }
 
 .calendar-nav:disabled{
-    opacity:.3;
+    opacity:.25;
     cursor:not-allowed;
 }
 
@@ -1437,121 +1437,128 @@ CALENDRIER DE RÉSERVATION
     grid-template-columns:repeat(7,1fr);
     text-align:center;
     font-family:var(--font-mono);
-    font-size:.68rem;
+    font-size:.7rem;
+    font-weight:500;
+    letter-spacing:.04em;
     color:var(--text-light);
-    margin-bottom:4px;
+    margin-bottom:8px;
 }
 
 .cta-box .calendar-weekdays{
-    color:rgba(255,255,255,.6);
+    color:rgba(255,255,255,.5);
 }
 
 .calendar-grid{
     display:grid;
     grid-template-columns:repeat(7,1fr);
-    gap:2px;
+    gap:4px;
 }
 
 .cal-day{
     position:relative;
     aspect-ratio:1;
-    max-height:36px;
-    border-radius:8px;
+    max-height:38px;
+    border-radius:50%;
     background:none;
     color:var(--text-light);
-    font-size:.78rem;
+    font-size:.82rem;
+    font-weight:400;
     font-family:var(--font-body);
     display:flex;
     align-items:center;
     justify-content:center;
+    opacity:.35;
+}
+
+.cta-box .cal-day{
+    color:rgba(255,255,255,.5);
 }
 
 .cal-day.empty{
     visibility:hidden;
 }
 
-.cal-day:disabled{
-    opacity:.3;
-}
-
 .cal-day.available{
-    color:var(--secondary);
-    font-weight:500;
+    color:var(--primary-dark);
+    background:var(--primary-tint);
+    font-weight:600;
+    opacity:1;
     cursor:pointer;
-    transition:.2s;
+    transition:.2s ease;
 }
 
 .cta-box .cal-day.available{
     color:var(--white);
+    background:rgba(255,255,255,.14);
 }
 
 .cal-day.available:hover{
-    background:var(--primary-tint);
-}
-
-.cta-box .cal-day.available:hover{
-    background:rgba(255,255,255,.12);
+    background:var(--primary);
+    color:var(--white);
+    transform:scale(1.08);
 }
 
 .cal-day.selected{
     background:var(--primary) !important;
     color:var(--white) !important;
-}
-
-.cal-dot{
-    position:absolute;
-    bottom:3px;
-    width:3px;
-    height:3px;
-    border-radius:50%;
-    background:var(--brass);
-}
-
-.cal-day.selected .cal-dot{
-    background:var(--white);
+    transform:scale(1.08);
+    box-shadow:0 4px 14px rgba(79,157,147,.4);
 }
 
 #cal-timeslots{
-    margin-top:14px;
+    margin-top:20px;
+    border-top:1px solid var(--border);
+    padding-top:18px;
+}
+
+.cta-box #cal-timeslots{
+    border-top-color:rgba(255,255,255,.14);
 }
 
 .cal-selected-date{
-    font-family:var(--font-mono);
-    font-size:.75rem;
+    font-family:var(--font-display);
+    font-weight:500;
+    font-size:.95rem;
     text-transform:capitalize;
-    color:var(--text-light);
-    margin-bottom:10px;
+    color:var(--secondary);
+    margin-bottom:12px;
 }
 
 .cta-box .cal-selected-date{
-    color:rgba(255,255,255,.7);
+    color:var(--white);
 }
 
 .cal-times{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(72px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(76px,1fr));
     gap:8px;
 }
 
 .cal-time-btn{
-    padding:9px 6px;
-    border:1px solid var(--border);
-    border-radius:9px;
-    background:var(--background);
+    padding:10px 6px;
+    border:1.5px solid var(--border);
+    border-radius:10px;
+    background:var(--white);
     color:var(--secondary);
-    font-weight:500;
-    font-size:.82rem;
+    font-weight:600;
+    font-size:.85rem;
     transition:.2s;
 }
 
 .cta-box .cal-time-btn{
-    background:rgba(255,255,255,.08);
-    border-color:rgba(255,255,255,.15);
+    background:transparent;
+    border-color:rgba(255,255,255,.25);
     color:var(--white);
 }
 
 .cal-time-btn:hover{
     border-color:var(--primary);
+    color:var(--primary-dark);
+}
+
+.cta-box .cal-time-btn:hover{
+    color:var(--white);
+    border-color:var(--white);
 }
 
 .cal-time-btn.active{
@@ -1561,8 +1568,12 @@ CALENDRIER DE RÉSERVATION
 }
 
 @media(max-width:480px){
+    #massage-calendar-wrap{
+        max-width:100%;
+        padding:16px;
+    }
     .cal-day{
-        font-size:.8rem;
+        font-size:.78rem;
     }
 }
 

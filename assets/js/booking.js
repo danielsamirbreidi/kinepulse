@@ -166,7 +166,7 @@ function initMassageBooking() {
             const isSelected = dateStr === selectedDate;
 
             html += `<button type="button" class="cal-day${hasSlots ? " available" : ""}${isSelected ? " selected" : ""}" data-date="${dateStr}" ${hasSlots ? "" : "disabled"}>
-                ${d}${hasSlots ? '<span class="cal-dot"></span>' : ""}
+                ${d}
             </button>`;
         }
 
