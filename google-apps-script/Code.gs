@@ -350,6 +350,72 @@ function setupDailyTrigger() {
     .create();
 }
 
+function setupCalendarSyncTrigger() {
+  // Supprime d'anciens déclencheurs pour éviter les doublons
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'syncCalendarToNotion') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  ScriptApp.newTrigger('syncCalendarToNotion')
+    .timeBased()
+    .everyHours(1)
+    .create();
+}
+
+/*==================================================
+SYNCHRONISATION CALENDAR -> NOTION
+(pour les rendez-vous ajoutés manuellement dans Google
+Calendar, hors du site — copie vers Notion "Rendez-Vous"
+s'ils n'y sont pas déjà)
+==================================================*/
+
+function syncCalendarToNotion() {
+  const calendar = CalendarApp.getDefaultCalendar();
+  const now = new Date();
+  const windowEnd = new Date(now.getTime() + 60 * 24 * 60 * 60000); // 60 jours
+
+  const events = calendar.getEvents(now, windowEnd);
+  if (events.length === 0) return;
+
+  // Récupère les rendez-vous déjà connus dans Notion (à venir) pour éviter les doublons
+  const today = Utilities.formatDate(now, TIMEZONE, 'yyyy-MM-dd');
+  const result = queryNotionDataSource(DS_RENDEZVOUS, {
+    filter: { property: 'Date', date: { on_or_after: today } }
+  });
+
+  const known = {};
+  (result.results || []).forEach(function (rdv) {
+    const d = rdv.properties['Date'] && rdv.properties['Date'].date;
+    const h = getPlainText(rdv.properties['Heure']);
+    if (d && d.start) {
+      known[d.start + '|' + h] = true;
+    }
+  });
+
+  events.forEach(function (ev) {
+    const evDate = Utilities.formatDate(ev.getStartTime(), TIMEZONE, 'yyyy-MM-dd');
+    const evTime = Utilities.formatDate(ev.getStartTime(), TIMEZONE, 'HH:mm');
+    const key = evDate + '|' + evTime;
+
+    if (known[key]) return; // déjà dans Notion (probablement créé par le site)
+
+    try {
+      createNotionPage(DS_RENDEZVOUS, {
+        'Rendez-vous': titleProp('📅 ' + ev.getTitle()),
+        'Date': dateProp(evDate),
+        'Heure': richTextProp(evTime),
+        'Thérapeute': selectProp('Daniel'),
+        'Statut': selectProp('Confirmé')
+      });
+      known[key] = true;
+    } catch (syncErr) {
+      // On ignore silencieusement (ex: événement personnel sans lien avec la clinique)
+    }
+  });
+}
+
 function sendAppointmentReminders() {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
