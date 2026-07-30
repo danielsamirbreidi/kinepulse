@@ -457,6 +457,7 @@ HAMBURGER + MENU MOBILE
         box-shadow:var(--shadow);
         transition:.35s ease;
         overflow:hidden;
+        z-index:1000;
     }
 
     .nav-menu.active{
@@ -1617,15 +1618,20 @@ RESPONSIVE GLOBAL
 @media(max-width:991px){
     body{ font-size:15px; }
     .section{ padding:90px 0; }
+    .cta-section{ padding:80px 0; }
 }
 
 @media(max-width:768px){
     h1{ font-size:2.4rem; }
     h2{ font-size:1.9rem; }
     .section{ padding:70px 0; }
+    .cta-section{ padding:60px 0; }
     .btn-primary,
     .btn-secondary,
     .btn-outline{ width:100%; }
+    .header-buttons{
+        display:none;
+    }
 }
 
 @media(max-width:480px){
