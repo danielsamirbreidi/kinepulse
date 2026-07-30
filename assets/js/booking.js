@@ -14,7 +14,66 @@ document.addEventListener("DOMContentLoaded", () => {
     initMassageBooking();
     initEmsLead();
     initHealthIntake();
+    initContactForm();
 });
+
+/*==================================================
+FORMULAIRE DE CONTACT
+==================================================*/
+
+function initContactForm() {
+
+    const form = document.getElementById("contactForm");
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalLabel = submitBtn.textContent;
+
+        const payload = {
+            type: "contact",
+            nom: formData.get("nom"),
+            telephone: formData.get("telephone"),
+            email: formData.get("email"),
+            sujet: formData.get("service"),
+            message: formData.get("message")
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Envoi en cours...";
+
+        fetch(BOOKING_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.success) {
+                    form.innerHTML = `
+                        <div class="success">
+                            <h2>Message envoyé !</h2>
+                            <p>Merci ! Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.</p>
+                        </div>
+                    `;
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalLabel;
+                    alert("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.");
+                }
+
+            })
+            .catch(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalLabel;
+                alert("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.");
+            });
+    });
+}
 
 /*==================================================
 FICHE SANTÉ — ENVOI (LIÉE AU CLIENT DANS NOTION)

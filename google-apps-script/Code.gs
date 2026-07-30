@@ -124,6 +124,10 @@ function doPost(e) {
       return jsonResponse(handleHealthIntake(data));
     }
 
+    if (data.type === 'contact') {
+      return jsonResponse(handleContactMessage(data));
+    }
+
     return jsonResponse({ success: false, error: 'Type de demande inconnu' });
 
   } catch (err) {
@@ -726,6 +730,51 @@ function getTitleText(titleProperty) {
 /*==================================================
 FICHE SANTÉ (liée au client, pas de rendez-vous)
 ==================================================*/
+
+/*==================================================
+FORMULAIRE DE CONTACT (message direct, pas de fiche Notion)
+==================================================*/
+
+function handleContactMessage(data) {
+  const nom = (data.nom || '').trim();
+  const telephone = (data.telephone || '').trim();
+  const email = (data.email || '').trim();
+  const sujet = (data.sujet || 'Question générale').trim();
+  const message = (data.message || '').trim();
+
+  if (!nom || !email || !message) {
+    return { success: false, error: 'Champs manquants' };
+  }
+
+  // Envoie le message directement au propriétaire par courriel
+  const ownerEmail = getOwnerProperty('OWNER_EMAIL', '');
+  if (ownerEmail) {
+    MailApp.sendEmail({
+      to: ownerEmail,
+      replyTo: email,
+      subject: 'Nouveau message du site — ' + sujet,
+      body:
+        'Nouveau message reçu via le formulaire de contact du site.\n\n' +
+        'Nom : ' + nom + '\n' +
+        'Téléphone : ' + telephone + '\n' +
+        'Courriel : ' + email + '\n' +
+        'Sujet : ' + sujet + '\n\n' +
+        'Message :\n' + message
+    });
+  }
+
+  // Confirmation au client
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Message reçu — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
+      'Merci pour votre message. Nous vous répondrons dans les plus brefs délais.' +
+      EMAIL_SIGNATURE
+  });
+
+  return { success: true };
+}
 
 function handleHealthIntake(data) {
   const nom = (data.nom || '').trim();
