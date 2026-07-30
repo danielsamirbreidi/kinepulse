@@ -360,7 +360,7 @@ function setupCalendarSyncTrigger() {
 
   ScriptApp.newTrigger('syncCalendarToNotion')
     .timeBased()
-    .everyHours(1)
+    .everyMinutes(10)
     .create();
 }
 
