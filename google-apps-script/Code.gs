@@ -233,12 +233,23 @@ function handleMassageBooking(data) {
   // 4b. Crée automatiquement la fiche Facture liée (statut "En attente")
   // Client/Service/Prix se remplissent tout seuls via les rollups Notion.
   // Il ne reste qu'à cliquer "Payée" + choisir le mode de paiement.
-  createNotionPage(DS_FACTURES, {
-    'Facture': titleProp('Facture — ' + nom + ' — ' + dateStr),
-    'Rendez-vous': relationProp([rdv.id]),
-    'Date': dateProp(dateStr),
-    'Statut': selectProp('🟡 En attente')
-  });
+  // (Protégé par un try/catch: si ça échoue, le rendez-vous et le courriel
+  // au client doivent quand même passer.)
+  try {
+    createNotionPage(DS_FACTURES, {
+      'Facture': titleProp('Facture — ' + nom + ' — ' + dateStr),
+      'Rendez-vous': relationProp([rdv.id]),
+      'Date': dateProp(dateStr),
+      'Statut': selectProp('🟡 En attente')
+    });
+  } catch (factureErr) {
+    notifyOwner(
+      'Facture non créée automatiquement — ' + nom,
+      'Le rendez-vous a bien été créé, mais la facture automatique a échoué.\n' +
+      'Vérifie que la base "Factures" est bien connectée à l\'intégration KinéPulse Site dans Notion.\n\n' +
+      'Erreur : ' + factureErr.message
+    );
+  }
 
   // 5. Confirmation au client
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
