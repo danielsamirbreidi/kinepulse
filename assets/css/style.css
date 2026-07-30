@@ -716,6 +716,12 @@ ABOUT / GRILLES "IMAGE + TEXTE"
     box-shadow:var(--shadow);
 }
 
+.img-contain{
+    object-fit:contain !important;
+    background:var(--white) !important;
+    padding:16px;
+}
+
 .photo-placeholder{
     min-height:320px;
     height:100%;
