@@ -1328,6 +1328,37 @@ textarea.booking-input{
     width:100%;
 }
 
+.consent-check{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:.85rem;
+    color:var(--text-light);
+    line-height:1.5;
+    cursor:pointer;
+}
+
+.cta-box .consent-check{
+    color:rgba(255,255,255,.75);
+}
+
+.consent-check input[type="checkbox"]{
+    width:17px;
+    height:17px;
+    margin-top:2px;
+    accent-color:var(--primary);
+    flex-shrink:0;
+}
+
+.consent-check a{
+    text-decoration:underline;
+    color:inherit;
+}
+
+.consent-check a:hover{
+    color:var(--primary);
+}
+
 .booking-form .btn-primary:disabled{
     opacity:.6;
     cursor:not-allowed;
@@ -1535,13 +1566,34 @@ footer li a:hover{
     color:var(--primary-light);
 }
 
-.copyright{
+.legal-links{
+    display:flex;
+    justify-content:center;
+    gap:24px;
+    flex-wrap:wrap;
     margin-top:50px;
+    padding-top:26px;
+    border-top:1px solid rgba(255,255,255,.1);
+    font-size:.85rem;
+}
+
+.legal-links a{
+    opacity:.6;
+    transition:.3s;
+}
+
+.legal-links a:hover{
+    opacity:1;
+    color:var(--primary-light);
+}
+
+.copyright{
+    margin-top:20px;
     text-align:center;
     opacity:.5;
     font-size:.85rem;
-    border-top:1px solid rgba(255,255,255,.1);
-    padding-top:26px;
+    padding-top:0;
+    border-top:none;
 }
 
 @media(max-width:991px){
