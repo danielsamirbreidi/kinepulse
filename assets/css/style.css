@@ -1480,7 +1480,9 @@ footer{
 .footer-logo{
     width:170px;
     margin-bottom:20px;
-    filter:brightness(0) invert(1);
+    background:var(--white);
+    padding:14px 20px;
+    border-radius:12px;
 }
 
 footer > .container > div > p,
