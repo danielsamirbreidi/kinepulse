@@ -252,13 +252,10 @@ function handleMassageBooking(data) {
   // 5. Confirmation au client (le lien de la fiche santé n'est envoyé
   // qu'aux NOUVEAUX clients — un client existant l'a déjà remplie)
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
-  MailApp.sendEmail({
-    to: email,
-    from: 'info@kinepulse.ca',
-    name: 'Clinique KinéPulse',
-    subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
-    body:
-      'Bonjour ' + nom + ',\n\n' +
+  GmailApp.sendEmail(
+    email,
+    'Confirmation de votre rendez-vous — Clinique KinéPulse',
+    'Bonjour ' + nom + ',\n\n' +
       'Votre rendez-vous est confirmé :\n\n' +
       'Massage thérapeutique ' + duration + ' minutes\n' +
       'Date : ' + dateLisible + '\n' +
@@ -269,8 +266,9 @@ function handleMassageBooking(data) {
           'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accueillir.' +
-      EMAIL_SIGNATURE
-  });
+      EMAIL_SIGNATURE,
+    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
+  );
 
   // 6. Notification au propriétaire
   notifyOwner(
@@ -313,13 +311,10 @@ function handleEmsLead(data) {
   // (ex: il a déjà réservé un massage avant)
   const needsHealthForm = !clientAlreadyHasHealthForm(telephone);
 
-  MailApp.sendEmail({
-    to: email,
-    from: 'info@kinepulse.ca',
-    name: 'Clinique KinéPulse',
-    subject: 'Votre demande de consultation EMS — Clinique KinéPulse',
-    body:
-      'Bonjour ' + nom + ',\n\n' +
+  GmailApp.sendEmail(
+    email,
+    'Votre demande de consultation EMS — Clinique KinéPulse',
+    'Bonjour ' + nom + ',\n\n' +
       'Merci pour votre demande de consultation EMS.\n' +
       'Nous avons bien reçu vos informations et nous vous contacterons ' +
       'sous peu afin de planifier votre séance.\n\n' +
@@ -328,8 +323,9 @@ function handleEmsLead(data) {
           'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accompagner.' +
-      EMAIL_SIGNATURE
-  });
+      EMAIL_SIGNATURE,
+    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
+  );
 
   notifyOwner(
     'Nouveau lead EMS — ' + nom,
@@ -654,18 +650,16 @@ function sendAppointmentReminders() {
 
       if (!email) return;
 
-      MailApp.sendEmail({
-        to: email,
-        from: 'info@kinepulse.ca',
-        name: 'Clinique KinéPulse',
-        subject: 'Rappel — votre rendez-vous demain chez KinéPulse',
-        body:
-          'Bonjour ' + nom + ',\n\n' +
+      GmailApp.sendEmail(
+        email,
+        'Rappel — votre rendez-vous demain chez KinéPulse',
+        'Bonjour ' + nom + ',\n\n' +
           'Petit rappel : vous avez un rendez-vous demain à ' + heure + '.\n\n' +
           (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
           'Au plaisir de vous accueillir.' +
-          EMAIL_SIGNATURE
-      });
+          EMAIL_SIGNATURE,
+        { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
+      );
 
     } catch (err) {
       notifyOwner('Erreur rappel rendez-vous', err.message);
@@ -928,16 +922,14 @@ function handleContactMessage(data) {
   }
 
   // Confirmation au client
-  MailApp.sendEmail({
-    to: email,
-    from: 'info@kinepulse.ca',
-    name: 'Clinique KinéPulse',
-    subject: 'Message reçu — Clinique KinéPulse',
-    body:
-      'Bonjour ' + nom + ',\n\n' +
+  GmailApp.sendEmail(
+    email,
+    'Message reçu — Clinique KinéPulse',
+    'Bonjour ' + nom + ',\n\n' +
       'Merci pour votre message. Nous vous répondrons dans les plus brefs délais.' +
-      EMAIL_SIGNATURE
-  });
+      EMAIL_SIGNATURE,
+    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
+  );
 
   return { success: true };
 }
@@ -992,17 +984,15 @@ function handleHealthIntake(data) {
     createNotionPage(DS_FICHE_SANTE, fiche);
   }
 
-  MailApp.sendEmail({
-    to: email,
-    from: 'info@kinepulse.ca',
-    name: 'Clinique KinéPulse',
-    subject: 'Fiche santé reçue — Clinique KinéPulse',
-    body:
-      'Bonjour ' + nom + ',\n\n' +
+  GmailApp.sendEmail(
+    email,
+    'Fiche santé reçue — Clinique KinéPulse',
+    'Bonjour ' + nom + ',\n\n' +
       'Merci ! Votre fiche santé a bien été reçue et sera consultée avant votre visite.\n\n' +
       'À bientôt.' +
-      EMAIL_SIGNATURE
-  });
+      EMAIL_SIGNATURE,
+    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
+  );
 
   notifyOwner(
     'Nouvelle fiche santé — ' + nom,

@@ -60,7 +60,7 @@ function initContactForm() {
                             <p>Merci ! Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.</p>
                         </div>
                     `;
-                    form.scrollIntoView({ behavior: "smooth", block: "start" });
+                    form.scrollIntoView({ behavior: "smooth", block: "center" });
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalLabel;
@@ -125,7 +125,7 @@ function initHealthIntake() {
                             <p>Votre fiche santé a bien été reçue. À bientôt en clinique.</p>
                         </div>
                     `;
-                    form.scrollIntoView({ behavior: "smooth", block: "start" });
+                    form.scrollIntoView({ behavior: "smooth", block: "center" });
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalLabel;
@@ -335,7 +335,7 @@ function initMassageBooking() {
                             <p>Un courriel de confirmation vient de vous être envoyé. Au plaisir de vous accueillir.</p>
                         </div>
                     `;
-                    form.scrollIntoView({ behavior: "smooth", block: "start" });
+                    form.scrollIntoView({ behavior: "smooth", block: "center" });
                 } else if (data.error === "SLOT_TAKEN") {
                     showStatus(statusEl, "Ce créneau vient d'être réservé par quelqu'un d'autre. Choisissez-en un autre.", true);
                     submitBtn.disabled = false;
@@ -399,7 +399,7 @@ function initEmsLead() {
                             <p>Merci ! Nous avons bien reçu votre demande et nous vous contacterons sous peu afin de planifier votre séance.</p>
                         </div>
                     `;
-                    form.scrollIntoView({ behavior: "smooth", block: "start" });
+                    form.scrollIntoView({ behavior: "smooth", block: "center" });
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalLabel;
