@@ -422,10 +422,12 @@ const EXPENSE_CATEGORY_MAP = {
 function processExpenseEmails() {
   const geminiKey = getOwnerProperty('GEMINI_API_KEY', '');
   if (!geminiKey) {
-    return; // pas configuré, on ne fait rien silencieusement
+    Logger.log('GEMINI_API_KEY manquante — arrêt.');
+    return;
   }
 
   const threads = GmailApp.search('subject:depense has:attachment is:unread', 0, 20);
+  Logger.log('Fils trouvés à traiter : ' + threads.length);
   if (threads.length === 0) return;
 
   threads.forEach(function (thread) {
@@ -434,7 +436,10 @@ function processExpenseEmails() {
     messages.forEach(function (message) {
       if (!message.isUnread()) return;
 
+      Logger.log('Traitement du courriel : "' + message.getSubject() + '"');
+
       const attachments = message.getAttachments();
+      Logger.log('Pièces jointes trouvées : ' + attachments.length);
       if (attachments.length === 0) {
         message.markRead();
         return;
@@ -442,7 +447,9 @@ function processExpenseEmails() {
 
       try {
         const attachment = attachments[0]; // la première pièce jointe
+        Logger.log('Envoi à Gemini : ' + attachment.getName() + ' (' + attachment.getContentType() + ')');
         const extracted = extractExpenseWithGemini(attachment, geminiKey);
+        Logger.log('Réponse Gemini : ' + JSON.stringify(extracted));
 
         if (!extracted) {
           throw new Error('Aucune donnée extraite par Gemini');
@@ -462,6 +469,8 @@ function processExpenseEmails() {
           'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier')
         });
 
+        Logger.log('Fiche Dépenses créée dans Notion avec succès.');
+
         notifyOwner(
           '✅ Dépense ajoutée automatiquement — ' + (extracted.fournisseur || '?'),
           'Une nouvelle dépense a été extraite automatiquement et ajoutée à Notion :\n\n' +
@@ -477,6 +486,7 @@ function processExpenseEmails() {
         message.markRead();
 
       } catch (err) {
+        Logger.log('ERREUR : ' + err.message);
         notifyOwner(
           '⚠️ Échec extraction dépense automatique',
           'Un courriel avec le sujet "' + message.getSubject() + '" (reçu de ' + message.getFrom() + ') n\'a pas pu être traité automatiquement.\n\n' +
