@@ -254,6 +254,8 @@ function handleMassageBooking(data) {
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
   MailApp.sendEmail({
     to: email,
+    from: 'info@kinepulse.ca',
+    name: 'Clinique KinéPulse',
     subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -313,6 +315,8 @@ function handleEmsLead(data) {
 
   MailApp.sendEmail({
     to: email,
+    from: 'info@kinepulse.ca',
+    name: 'Clinique KinéPulse',
     subject: 'Votre demande de consultation EMS — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -652,6 +656,8 @@ function sendAppointmentReminders() {
 
       MailApp.sendEmail({
         to: email,
+        from: 'info@kinepulse.ca',
+        name: 'Clinique KinéPulse',
         subject: 'Rappel — votre rendez-vous demain chez KinéPulse',
         body:
           'Bonjour ' + nom + ',\n\n' +
@@ -924,6 +930,8 @@ function handleContactMessage(data) {
   // Confirmation au client
   MailApp.sendEmail({
     to: email,
+    from: 'info@kinepulse.ca',
+    name: 'Clinique KinéPulse',
     subject: 'Message reçu — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -986,6 +994,8 @@ function handleHealthIntake(data) {
 
   MailApp.sendEmail({
     to: email,
+    from: 'info@kinepulse.ca',
+    name: 'Clinique KinéPulse',
     subject: 'Fiche santé reçue — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
