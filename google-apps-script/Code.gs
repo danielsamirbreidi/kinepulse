@@ -466,7 +466,8 @@ function processExpenseEmails() {
           'Date': dateProp(dateStr),
           'Catégorie': selectProp(categorieLabel),
           'Statut paiement': selectProp('🟡 En attente'),
-          'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier')
+          'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier'),
+          'Numéro de facture': richTextProp(extracted.numero_facture || '')
         });
 
         Logger.log('Fiche Dépenses créée dans Notion avec succès.');
@@ -475,6 +476,7 @@ function processExpenseEmails() {
           '✅ Dépense ajoutée automatiquement — ' + (extracted.fournisseur || '?'),
           'Une nouvelle dépense a été extraite automatiquement et ajoutée à Notion :\n\n' +
           'Fournisseur : ' + (extracted.fournisseur || '?') + '\n' +
+          'Numéro de facture : ' + (extracted.numero_facture || 'non détecté') + '\n' +
           'Montant avant taxes : ' + (extracted.montant_avant_taxes || '?') + ' $\n' +
           'TPS : ' + (extracted.tps || 0) + ' $\n' +
           'TVQ : ' + (extracted.tvq || 0) + ' $\n' +
@@ -508,6 +510,7 @@ function extractExpenseWithGemini(attachment, apiKey) {
     'Réponds uniquement avec un objet JSON, rien d\'autre. ' +
     'Format exact attendu : ' +
     '{"fournisseur": "nom du commerce/fournisseur", ' +
+    '"numero_facture": "numéro de facture/reçu/commande s\'il y en a un (sinon chaîne vide)", ' +
     '"montant_avant_taxes": nombre (avant TPS/TVQ), ' +
     '"tps": nombre, ' +
     '"tvq": nombre, ' +
@@ -515,7 +518,7 @@ function extractExpenseWithGemini(attachment, apiKey) {
     '"categorie": "une seule valeur parmi Maintenance, Fournitures, Équipement EMS, Salaires, Logiciels, Loyer, Assurance, Électricité, Marketing, Autre"}. ' +
     'Si les taxes ne sont pas détaillées séparément mais qu\'un total est visible, ' +
     'calcule TPS = total × 5 ÷ 114.975 et TVQ = total × 9.975 ÷ 114.975 (taxes du Québec, Canada). ' +
-    'Si une information est manquante ou illisible, utilise 0 pour les nombres ou une estimation raisonnable pour la catégorie.';
+    'Si une information est manquante ou illisible, utilise 0 pour les nombres, une chaîne vide pour le texte, ou une estimation raisonnable pour la catégorie.';
 
   const payload = {
     contents: [{
