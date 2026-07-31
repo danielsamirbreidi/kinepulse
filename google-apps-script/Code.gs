@@ -1155,3 +1155,18 @@ function jsonResponse(obj) {
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+function testRechercheDepense() {
+  const threads = GmailApp.search('subject:depense has:attachment is:unread', 0, 20);
+  Logger.log('Nombre de fils trouvés (avec filtre complet) : ' + threads.length);
+
+  const threads2 = GmailApp.search('subject:depense', 0, 20);
+  Logger.log('Nombre de fils trouvés (juste "depense" dans le sujet) : ' + threads2.length);
+
+  threads2.forEach(function (t) {
+    const msg = t.getMessages()[0];
+    Logger.log('Sujet: "' + msg.getSubject() + '" | Non lu: ' + msg.isUnread() +
+               ' | Pièces jointes: ' + msg.getAttachments().length +
+               ' | De: ' + msg.getFrom());
+  });
+}
