@@ -72,7 +72,7 @@ const EMAIL_SIGNATURE =
   '\n\n—\n' +
   'Clinique KinéPulse\n' +
   '13301 Rue Sherbrooke E, bureau 216, Montréal, QC H1A 1C2\n' +
-  '(263) 378-2247 · cliniquekinepulse@gmail.com';
+  '(263) 378-2247 · info@kinepulse.ca';
 
 const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
