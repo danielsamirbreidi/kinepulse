@@ -252,10 +252,11 @@ function handleMassageBooking(data) {
   // 5. Confirmation au client (le lien de la fiche santé n'est envoyé
   // qu'aux NOUVEAUX clients — un client existant l'a déjà remplie)
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
-  GmailApp.sendEmail(
-    email,
-    'Confirmation de votre rendez-vous — Clinique KinéPulse',
-    'Bonjour ' + nom + ',\n\n' +
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
       'Votre rendez-vous est confirmé :\n\n' +
       'Massage thérapeutique ' + duration + ' minutes\n' +
       'Date : ' + dateLisible + '\n' +
@@ -266,9 +267,8 @@ function handleMassageBooking(data) {
           'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accueillir.' +
-      EMAIL_SIGNATURE,
-    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
-  );
+      EMAIL_SIGNATURE
+  });
 
   // 6. Notification au propriétaire
   notifyOwner(
@@ -311,10 +311,11 @@ function handleEmsLead(data) {
   // (ex: il a déjà réservé un massage avant)
   const needsHealthForm = !clientAlreadyHasHealthForm(telephone);
 
-  GmailApp.sendEmail(
-    email,
-    'Votre demande de consultation EMS — Clinique KinéPulse',
-    'Bonjour ' + nom + ',\n\n' +
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Votre demande de consultation EMS — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
       'Merci pour votre demande de consultation EMS.\n' +
       'Nous avons bien reçu vos informations et nous vous contacterons ' +
       'sous peu afin de planifier votre séance.\n\n' +
@@ -323,9 +324,8 @@ function handleEmsLead(data) {
           'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accompagner.' +
-      EMAIL_SIGNATURE,
-    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
-  );
+      EMAIL_SIGNATURE
+  });
 
   notifyOwner(
     'Nouveau lead EMS — ' + nom,
@@ -650,16 +650,16 @@ function sendAppointmentReminders() {
 
       if (!email) return;
 
-      GmailApp.sendEmail(
-        email,
-        'Rappel — votre rendez-vous demain chez KinéPulse',
-        'Bonjour ' + nom + ',\n\n' +
+      MailApp.sendEmail({
+        to: email,
+        subject: 'Rappel — votre rendez-vous demain chez KinéPulse',
+        body:
+          'Bonjour ' + nom + ',\n\n' +
           'Petit rappel : vous avez un rendez-vous demain à ' + heure + '.\n\n' +
           (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
           'Au plaisir de vous accueillir.' +
-          EMAIL_SIGNATURE,
-        { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
-      );
+          EMAIL_SIGNATURE
+      });
 
     } catch (err) {
       notifyOwner('Erreur rappel rendez-vous', err.message);
@@ -922,14 +922,14 @@ function handleContactMessage(data) {
   }
 
   // Confirmation au client
-  GmailApp.sendEmail(
-    email,
-    'Message reçu — Clinique KinéPulse',
-    'Bonjour ' + nom + ',\n\n' +
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Message reçu — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
       'Merci pour votre message. Nous vous répondrons dans les plus brefs délais.' +
-      EMAIL_SIGNATURE,
-    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
-  );
+      EMAIL_SIGNATURE
+  });
 
   return { success: true };
 }
@@ -984,15 +984,15 @@ function handleHealthIntake(data) {
     createNotionPage(DS_FICHE_SANTE, fiche);
   }
 
-  GmailApp.sendEmail(
-    email,
-    'Fiche santé reçue — Clinique KinéPulse',
-    'Bonjour ' + nom + ',\n\n' +
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Fiche santé reçue — Clinique KinéPulse',
+    body:
+      'Bonjour ' + nom + ',\n\n' +
       'Merci ! Votre fiche santé a bien été reçue et sera consultée avant votre visite.\n\n' +
       'À bientôt.' +
-      EMAIL_SIGNATURE,
-    { from: 'info@kinepulse.ca', name: 'Clinique KinéPulse' }
-  );
+      EMAIL_SIGNATURE
+  });
 
   notifyOwner(
     'Nouvelle fiche santé — ' + nom,
