@@ -530,7 +530,7 @@ function extractExpenseWithGemini(attachment, apiKey) {
   };
 
   const res = UrlFetchApp.fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' + apiKey,
     {
       method: 'post',
       contentType: 'application/json',
