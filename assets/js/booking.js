@@ -8,7 +8,7 @@ Google Apps Script (Calendar + Notion + courriels)
 
 // ⚠️ À REMPLACER après le déploiement du script Google Apps Script
 // (voir README-automatisation.md pour les étapes)
-const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbwSM2BxPoL_61BPHuusHHouzuDa5zmxRKAD7MN1NvmR_dW1Dl81sBnOUW2dfkchi7KyEw/exec";
+const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbyTwYzKDtkQWL8t3z7ccTHB31DZ_tJi_IcTv_sqcZggiJIaFNWaaaklGY0FGaAHhE0DyA/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
     initMassageBooking();
