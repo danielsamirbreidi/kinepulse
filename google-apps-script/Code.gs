@@ -264,7 +264,7 @@ function handleMassageBooking(data) {
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
       (!clientAlreadyHasHealthForm(telephone, clientId)
         ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
-          'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
+          'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accueillir.' +
       EMAIL_SIGNATURE
@@ -321,7 +321,7 @@ function handleEmsLead(data) {
       'sous peu afin de planifier votre séance.\n\n' +
       (needsHealthForm
         ? 'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
-          'https://danielsamirbreidi.github.io/kinepulse/pages/fiche-sante.html\n\n'
+          'https://kinepulse.ca/pages/fiche-sante.html\n\n'
         : '') +
       'Au plaisir de vous accompagner.' +
       EMAIL_SIGNATURE

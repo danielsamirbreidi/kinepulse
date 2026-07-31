@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://danielsamirbreidi.github.io/kinepulse/sitemap.xml
+Sitemap: https://kinepulse.ca/sitemap.xml
