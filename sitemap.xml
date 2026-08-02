@@ -26,6 +26,16 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://kinepulse.ca/pages/blogue.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://kinepulse.ca/pages/blog-bienfaits-massage-therapeutique.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://kinepulse.ca/pages/politique-de-confidentialite.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
