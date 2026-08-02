@@ -49,15 +49,15 @@ const DS_DEPENSES     = '3aa36ea7-3613-8021-af97-000bb7200726';
 const DS_KPI_MENSUEL  = '85be855d-6f86-4387-b584-069bba9bab8b';
 const DS_SERVICES     = '39936ea7-3613-80e1-935f-000b367127f7';
 
-// IDs des fiches Service (Massage 60/90 min) dans la base Services
+// IDs des fiches Service dans la base Services
 const SERVICE_MASSAGE_60 = '39936ea7-3613-81c4-99d1-e397542b5cd7';
-const SERVICE_MASSAGE_90 = '3ab36ea7-3613-80a0-aee0-d84d646d8f84';
+const SERVICE_MASSAGE_DETENTE_60 = '3b036ea7-3613-81fe-930d-fc792d9ba84d';
 const SERVICE_KINE_60    = '3b036ea7-3613-819f-9e5d-f9319fa21bd8';
 
 // Table de correspondance: valeur envoyée par le formulaire -> minutes, service Notion, libellé
 const SERVICE_LOOKUP = {
   'Massage 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_60, label: 'Massage thérapeutique 60 minutes' },
-  'Massage 90 minutes': { minutes: 90, serviceId: SERVICE_MASSAGE_90, label: 'Massage thérapeutique 90 minutes' },
+  'Massage détente 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_DETENTE_60, label: 'Massage détente 60 minutes' },
   'Kinésithérapie 60 minutes': { minutes: 60, serviceId: SERVICE_KINE_60, label: 'Kinésithérapie 60 minutes' }
 };
 
@@ -608,7 +608,7 @@ function syncCalendarToNotion() {
         'Heure': richTextProp(evTime),
         'Thérapeute': selectProp('Daniel'),
         'Statut': selectProp('Confirmé'),
-        'Service': relationProp([title.indexOf('90') !== -1 ? SERVICE_MASSAGE_90 : SERVICE_MASSAGE_60])
+        'Service': relationProp([SERVICE_MASSAGE_60])
       };
 
       // Essaie de retrouver un client existant dont le nom apparaît dans le titre
