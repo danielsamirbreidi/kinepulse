@@ -52,6 +52,14 @@ const DS_SERVICES     = '39936ea7-3613-80e1-935f-000b367127f7';
 // IDs des fiches Service (Massage 60/90 min) dans la base Services
 const SERVICE_MASSAGE_60 = '39936ea7-3613-81c4-99d1-e397542b5cd7';
 const SERVICE_MASSAGE_90 = '3ab36ea7-3613-80a0-aee0-d84d646d8f84';
+const SERVICE_KINE_60    = '3b036ea7-3613-819f-9e5d-f9319fa21bd8';
+
+// Table de correspondance: valeur envoyée par le formulaire -> minutes, service Notion, libellé
+const SERVICE_LOOKUP = {
+  'Massage 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_60, label: 'Massage thérapeutique 60 minutes' },
+  'Massage 90 minutes': { minutes: 90, serviceId: SERVICE_MASSAGE_90, label: 'Massage thérapeutique 90 minutes' },
+  'Kinésithérapie 60 minutes': { minutes: 60, serviceId: SERVICE_KINE_60, label: 'Kinésithérapie 60 minutes' }
+};
 
 // Horaire fixe des créneaux de massage (heures locales, format 24h)
 const MASSAGE_SLOTS = {
@@ -196,7 +204,8 @@ function handleMassageBooking(data) {
   const nom = (data.nom || '').trim();
   const telephone = (data.telephone || '').trim();
   const email = (data.email || '').trim();
-  const duration = data.duration === '90 minutes' ? 90 : 60;
+  const service = SERVICE_LOOKUP[data.duration] || SERVICE_LOOKUP['Massage 60 minutes'];
+  const duration = service.minutes;
   const dateStr = data.date;   // "2026-08-03"
   const timeStr = data.time;   // "16:00"
   const disponibilites = data.disponibilites || [];
@@ -219,7 +228,7 @@ function handleMassageBooking(data) {
 
   // 2. Crée l'événement Google Calendar
   const event = calendar.createEvent(
-    'Massage ' + duration + ' min — ' + nom,
+    service.label + ' — ' + nom,
     startDate,
     endDate,
     {
@@ -234,13 +243,12 @@ function handleMassageBooking(data) {
   const clientId = client.id;
 
   // 4. Crée la fiche Rendez-Vous dans Notion
-  const serviceId = duration === 90 ? SERVICE_MASSAGE_90 : SERVICE_MASSAGE_60;
   const rdv = createNotionPage(DS_RENDEZVOUS, {
-    'Rendez-vous': titleProp('Massage ' + duration + ' min — ' + nom),
+    'Rendez-vous': titleProp(service.label + ' — ' + nom),
     'Date': dateProp(dateStr),
     'Heure': richTextProp(timeStr),
     'Client': relationProp([clientId]),
-    'Service': relationProp([serviceId]),
+    'Service': relationProp([service.serviceId]),
     'Thérapeute': selectProp('Daniel'),
     'Statut': selectProp('Confirmé')
   });
@@ -258,7 +266,7 @@ function handleMassageBooking(data) {
     body:
       'Bonjour ' + nom + ',\n\n' +
       'Votre rendez-vous est confirmé :\n\n' +
-      'Massage thérapeutique ' + duration + ' minutes\n' +
+      service.label + '\n' +
       'Date : ' + dateLisible + '\n' +
       'Heure : ' + timeStr + '\n\n' +
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
@@ -272,8 +280,8 @@ function handleMassageBooking(data) {
 
   // 6. Notification au propriétaire
   notifyOwner(
-    'Nouveau massage réservé — ' + nom,
-    nom + ' a réservé un massage ' + duration + ' min le ' + dateLisible + ' à ' + timeStr +
+    'Nouveau rendez-vous réservé — ' + nom,
+    nom + ' a réservé : ' + service.label + ' le ' + dateLisible + ' à ' + timeStr +
     '.\nTéléphone: ' + telephone + '\nCourriel: ' + email
   );
 

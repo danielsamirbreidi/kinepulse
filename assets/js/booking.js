@@ -170,7 +170,7 @@ function initMassageBooking() {
 
     function loadSlots() {
 
-        const duration = form.querySelector('input[name="duration"]:checked').value === "90 minutes" ? 90 : 60;
+        const duration = form.querySelector('input[name="duration"]:checked').value.indexOf("90") !== -1 ? 90 : 60;
 
         gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
         timeslotsEl.innerHTML = "";
