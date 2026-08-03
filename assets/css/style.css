@@ -178,6 +178,7 @@ CONTAINER / SECTIONS
     margin-bottom:22px;
 }
 
+.section-title h1,
 .section-title h2{
     font-size:clamp(2rem,3.4vw,2.7rem);
     margin:0 0 18px;
@@ -2021,6 +2022,7 @@ RESPONSIVE GLOBAL
 @media(max-width:480px){
     body{ font-size:14px; }
     .hero{ padding-top:140px; }
+    .section-title h1,
     .section-title h2{ font-size:1.7rem; }
 }
 
