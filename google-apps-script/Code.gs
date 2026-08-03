@@ -466,7 +466,10 @@ function processExpenseEmails() {
         const categorieLabel = EXPENSE_CATEGORY_MAP[extracted.categorie] || '📌 Autre';
         const dateStr = extracted.date || Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
 
-        createNotionPage(DS_DEPENSES, {
+        // Sauvegarde la facture originale dans Google Drive et récupère un lien public
+        const documentUrl = saveReceiptToDrive(attachment, extracted.fournisseur, dateStr);
+
+        const depenseProps = {
           'Fournisseur': titleProp(extracted.fournisseur || 'Fournisseur inconnu'),
           'Montant avant taxes': numberProp(extracted.montant_avant_taxes || 0),
           'TPS': numberProp(extracted.tps || 0),
@@ -476,7 +479,15 @@ function processExpenseEmails() {
           'Statut paiement': selectProp('🟡 En attente'),
           'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier'),
           'Numéro de facture': richTextProp(extracted.numero_facture || '')
-        });
+        };
+
+        if (documentUrl) {
+          depenseProps['Document'] = {
+            files: [{ name: attachment.getName(), external: { url: documentUrl } }]
+          };
+        }
+
+        createNotionPage(DS_DEPENSES, depenseProps);
 
         Logger.log('Fiche Dépenses créée dans Notion avec succès.');
 
@@ -489,8 +500,9 @@ function processExpenseEmails() {
           'TPS : ' + (extracted.tps || 0) + ' $\n' +
           'TVQ : ' + (extracted.tvq || 0) + ' $\n' +
           'Date : ' + dateStr + '\n' +
-          'Catégorie : ' + categorieLabel + '\n\n' +
-          '⚠️ Vérifie ces montants dans Notion, l\'extraction automatique peut se tromper.'
+          'Catégorie : ' + categorieLabel + '\n' +
+          (documentUrl ? 'Facture originale : ' + documentUrl + '\n' : '') +
+          '\n⚠️ Vérifie ces montants dans Notion, l\'extraction automatique peut se tromper.'
         );
 
         message.markRead();
@@ -507,6 +519,25 @@ function processExpenseEmails() {
       }
     });
   });
+}
+
+function saveReceiptToDrive(attachment, fournisseur, dateStr) {
+  try {
+    const folderName = 'KinéPulse — Factures dépenses';
+    const folders = DriveApp.getFoldersByName(folderName);
+    const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+
+    const cleanName = (fournisseur || 'facture').replace(/[^a-zA-Z0-9À-ÿ ]/g, '').trim();
+    const fileName = dateStr + ' — ' + cleanName + ' (' + attachment.getName() + ')';
+
+    const file = folder.createFile(attachment.copyBlob().setName(fileName));
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    return file.getUrl();
+  } catch (err) {
+    Logger.log('Erreur sauvegarde Drive : ' + err.message);
+    return null;
+  }
 }
 
 function extractExpenseWithGemini(attachment, apiKey) {
