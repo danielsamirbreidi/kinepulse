@@ -63,12 +63,12 @@ const SERVICE_LOOKUP = {
 
 // Horaire fixe des créneaux de massage (heures locales, format 24h)
 const MASSAGE_SLOTS = {
-  1: ['16:00', '17:15'], // Lundi
-  2: ['16:00', '17:15'], // Mardi
-  3: ['16:00', '17:15'], // Mercredi
-  4: ['16:00', '17:15'], // Jeudi
-  5: ['16:00', '17:15'], // Vendredi
-  6: ['09:00', '10:15', '11:30', '12:45'], // Samedi
+  1: ['16:00', '17:15', '18:30'], // Lundi
+  2: ['16:00', '17:15', '18:30'], // Mardi
+  3: ['16:00', '17:15', '18:30'], // Mercredi
+  4: ['16:00', '17:15', '18:30'], // Jeudi
+  5: ['16:00', '17:15', '18:30'], // Vendredi
+  6: ['09:00', '10:30', '11:45', '13:00', '14:00'], // Samedi
   0: [] // Dimanche fermé
 };
 
