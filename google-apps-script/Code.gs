@@ -453,70 +453,78 @@ function processExpenseEmails() {
         return;
       }
 
-      try {
-        const attachment = attachments[0]; // la première pièce jointe
-        Logger.log('Envoi à Gemini : ' + attachment.getName() + ' (' + attachment.getContentType() + ')');
-        const extracted = extractExpenseWithGemini(attachment, geminiKey);
-        Logger.log('Réponse Gemini : ' + JSON.stringify(extracted));
+      let successCount = 0;
+      let errorCount = 0;
 
-        if (!extracted) {
-          throw new Error('Aucune donnée extraite par Gemini');
-        }
+      attachments.forEach(function (attachment) {
+        try {
+          Logger.log('Envoi à Gemini : ' + attachment.getName() + ' (' + attachment.getContentType() + ')');
+          const extracted = extractExpenseWithGemini(attachment, geminiKey);
+          Logger.log('Réponse Gemini : ' + JSON.stringify(extracted));
 
-        const categorieLabel = EXPENSE_CATEGORY_MAP[extracted.categorie] || '📌 Autre';
-        const dateStr = extracted.date || Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+          if (!extracted) {
+            throw new Error('Aucune donnée extraite par Gemini');
+          }
 
-        // Sauvegarde la facture originale dans Google Drive et récupère un lien public
-        const documentUrl = saveReceiptToDrive(attachment, extracted.fournisseur, dateStr);
+          const categorieLabel = EXPENSE_CATEGORY_MAP[extracted.categorie] || '📌 Autre';
+          const dateStr = extracted.date || Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
 
-        const depenseProps = {
-          'Fournisseur': titleProp(extracted.fournisseur || 'Fournisseur inconnu'),
-          'Montant avant taxes': numberProp(extracted.montant_avant_taxes || 0),
-          'TPS': numberProp(extracted.tps || 0),
-          'TVQ': numberProp(extracted.tvq || 0),
-          'Date': dateProp(dateStr),
-          'Catégorie': selectProp(categorieLabel),
-          'Statut paiement': selectProp('🟡 En attente'),
-          'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier'),
-          'Numéro de facture': richTextProp(extracted.numero_facture || '')
-        };
+          // Sauvegarde la facture originale dans Google Drive et récupère un lien public
+          const documentUrl = saveReceiptToDrive(attachment, extracted.fournisseur, dateStr);
 
-        if (documentUrl) {
-          depenseProps['Document'] = {
-            files: [{ name: attachment.getName(), external: { url: documentUrl } }]
+          const depenseProps = {
+            'Fournisseur': titleProp(extracted.fournisseur || 'Fournisseur inconnu'),
+            'Montant avant taxes': numberProp(extracted.montant_avant_taxes || 0),
+            'TPS': numberProp(extracted.tps || 0),
+            'TVQ': numberProp(extracted.tvq || 0),
+            'Date': dateProp(dateStr),
+            'Catégorie': selectProp(categorieLabel),
+            'Statut paiement': selectProp('🟡 En attente'),
+            'Description': richTextProp('Ajouté automatiquement par courriel (' + attachment.getName() + ') — à vérifier'),
+            'Numéro de facture': richTextProp(extracted.numero_facture || '')
           };
+
+          if (documentUrl) {
+            depenseProps['Document'] = {
+              files: [{ name: attachment.getName(), external: { url: documentUrl } }]
+            };
+          }
+
+          createNotionPage(DS_DEPENSES, depenseProps);
+
+          Logger.log('Fiche Dépenses créée dans Notion avec succès.');
+
+          notifyOwner(
+            '✅ Dépense ajoutée automatiquement — ' + (extracted.fournisseur || '?'),
+            'Une nouvelle dépense a été extraite automatiquement et ajoutée à Notion :\n\n' +
+            'Fournisseur : ' + (extracted.fournisseur || '?') + '\n' +
+            'Numéro de facture : ' + (extracted.numero_facture || 'non détecté') + '\n' +
+            'Montant avant taxes : ' + (extracted.montant_avant_taxes || '?') + ' $\n' +
+            'TPS : ' + (extracted.tps || 0) + ' $\n' +
+            'TVQ : ' + (extracted.tvq || 0) + ' $\n' +
+            'Date : ' + dateStr + '\n' +
+            'Catégorie : ' + categorieLabel + '\n' +
+            (documentUrl ? 'Facture originale : ' + documentUrl + '\n' : '') +
+            '\n⚠️ Vérifie ces montants dans Notion, l\'extraction automatique peut se tromper.'
+          );
+
+          successCount++;
+
+        } catch (err) {
+          Logger.log('ERREUR sur "' + attachment.getName() + '" : ' + err.message);
+          notifyOwner(
+            '⚠️ Échec extraction dépense automatique — ' + attachment.getName(),
+            'Une pièce jointe du courriel "' + message.getSubject() + '" (reçu de ' + message.getFrom() + ') n\'a pas pu être traitée automatiquement.\n\n' +
+            'Fichier : ' + attachment.getName() + '\n' +
+            'Erreur : ' + err.message + '\n\n' +
+            'Ajoute cette dépense manuellement dans Notion.'
+          );
+          errorCount++;
         }
+      });
 
-        createNotionPage(DS_DEPENSES, depenseProps);
-
-        Logger.log('Fiche Dépenses créée dans Notion avec succès.');
-
-        notifyOwner(
-          '✅ Dépense ajoutée automatiquement — ' + (extracted.fournisseur || '?'),
-          'Une nouvelle dépense a été extraite automatiquement et ajoutée à Notion :\n\n' +
-          'Fournisseur : ' + (extracted.fournisseur || '?') + '\n' +
-          'Numéro de facture : ' + (extracted.numero_facture || 'non détecté') + '\n' +
-          'Montant avant taxes : ' + (extracted.montant_avant_taxes || '?') + ' $\n' +
-          'TPS : ' + (extracted.tps || 0) + ' $\n' +
-          'TVQ : ' + (extracted.tvq || 0) + ' $\n' +
-          'Date : ' + dateStr + '\n' +
-          'Catégorie : ' + categorieLabel + '\n' +
-          (documentUrl ? 'Facture originale : ' + documentUrl + '\n' : '') +
-          '\n⚠️ Vérifie ces montants dans Notion, l\'extraction automatique peut se tromper.'
-        );
-
-        message.markRead();
-
-      } catch (err) {
-        Logger.log('ERREUR : ' + err.message);
-        notifyOwner(
-          '⚠️ Échec extraction dépense automatique',
-          'Un courriel avec le sujet "' + message.getSubject() + '" (reçu de ' + message.getFrom() + ') n\'a pas pu être traité automatiquement.\n\n' +
-          'Erreur : ' + err.message + '\n\n' +
-          'Ajoute cette dépense manuellement dans Notion.'
-        );
-        message.markRead();
-      }
+      Logger.log('Courriel traité : ' + successCount + ' dépense(s) ajoutée(s), ' + errorCount + ' erreur(s).');
+      message.markRead();
     });
   });
 }
