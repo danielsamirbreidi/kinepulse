@@ -579,15 +579,22 @@ function extractExpenseWithGemini(attachment, apiKey) {
     }
   };
 
-  const res = UrlFetchApp.fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' + apiKey,
-    {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    }
-  );
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=' + apiKey;
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  let res = UrlFetchApp.fetch(url, options);
+
+  // Si le modèle est temporairement surchargé (503), on réessaie une fois après une courte pause
+  if (res.getResponseCode() === 503) {
+    Logger.log('Gemini surchargé (503), nouvel essai dans 10s...');
+    Utilities.sleep(10000);
+    res = UrlFetchApp.fetch(url, options);
+  }
 
   if (res.getResponseCode() >= 300) {
     throw new Error('Erreur Gemini: ' + res.getContentText());
