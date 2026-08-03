@@ -56,7 +56,7 @@ const SERVICE_KINE_60    = '3b036ea7-3613-819f-9e5d-f9319fa21bd8';
 
 // Table de correspondance: valeur envoyée par le formulaire -> minutes, service Notion, libellé
 const SERVICE_LOOKUP = {
-  'Massage 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_60, label: 'Massage thérapeutique 60 minutes' },
+  'Massage thérapeutique 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_60, label: 'Massage thérapeutique 60 minutes' },
   'Massage détente 60 minutes': { minutes: 60, serviceId: SERVICE_MASSAGE_DETENTE_60, label: 'Massage détente 60 minutes' },
   'Kinésithérapie 60 minutes': { minutes: 60, serviceId: SERVICE_KINE_60, label: 'Kinésithérapie 60 minutes' }
 };
@@ -204,7 +204,7 @@ function handleMassageBooking(data) {
   const nom = (data.nom || '').trim();
   const telephone = (data.telephone || '').trim();
   const email = (data.email || '').trim();
-  const service = SERVICE_LOOKUP[data.duration] || SERVICE_LOOKUP['Massage 60 minutes'];
+  const service = SERVICE_LOOKUP[data.duration] || SERVICE_LOOKUP['Massage thérapeutique 60 minutes'];
   const duration = service.minutes;
   const dateStr = data.date;   // "2026-08-03"
   const timeStr = data.time;   // "16:00"
