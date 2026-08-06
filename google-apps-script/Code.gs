@@ -101,7 +101,19 @@ function doGet(e) {
 
     if (action === 'slots') {
       const duration = parseInt(e.parameter.duration || '60', 10);
+
+      // Cache de 60 secondes: évite de recalculer les créneaux à chaque
+      // visiteur — accélère nettement les chargements répétés
+      const cache = CacheService.getScriptCache();
+      const cacheKey = 'slots_' + duration;
+      const cached = cache.get(cacheKey);
+
+      if (cached) {
+        return jsonResponse({ success: true, slots: JSON.parse(cached), cached: true });
+      }
+
       const slots = getAvailableSlots(duration);
+      cache.put(cacheKey, JSON.stringify(slots), 60); // 60 secondes
       return jsonResponse({ success: true, slots: slots });
     }
 
@@ -237,6 +249,10 @@ function handleMassageBooking(data) {
       location: getOwnerProperty('CLINIC_ADDRESS', '')
     }
   );
+
+  // Invalide le cache des créneaux pour que le créneau qui vient d'être
+  // pris ne soit pas montré à quelqu'un d'autre pendant la fenêtre de cache
+  CacheService.getScriptCache().remove('slots_60');
 
   // 3. Trouve ou crée le client dans Notion (met aussi à jour "Dernière visite")
   const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr);
@@ -613,6 +629,8 @@ function extractExpenseWithGemini(attachment, apiKey) {
 }
 
 function syncCalendarToNotion() {
+  CacheService.getScriptCache().remove('slots_60'); // le calendrier a pu changer manuellement
+
   const calendar = CalendarApp.getDefaultCalendar();
   const now = new Date();
   const windowEnd = new Date(now.getTime() + 60 * 24 * 60 * 60000); // 60 jours
