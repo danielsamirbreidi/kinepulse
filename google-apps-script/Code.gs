@@ -148,6 +148,10 @@ function doPost(e) {
       return jsonResponse(handleContactMessage(data));
     }
 
+    if (data.type === 'chat') {
+      return jsonResponse(handleChatMessage(data));
+    }
+
     return jsonResponse({ success: false, error: 'Type de demande inconnu' });
 
   } catch (err) {
@@ -591,6 +595,98 @@ function saveReceiptToDrive(attachment, fournisseur, dateStr) {
   } catch (err) {
     Logger.log('Erreur sauvegarde Drive : ' + err.message);
     return null;
+  }
+}
+
+/*==================================================
+ASSISTANT DE CLAVARDAGE (widget du site)
+==================================================*/
+
+const CHAT_SYSTEM_INSTRUCTION =
+  "Tu es l'assistant virtuel de la Clinique KinéPulse, une clinique de kinésithérapie, " +
+  "massothérapie et EMS à Pointe-aux-Trembles, Montréal. Réponds en français par défaut, " +
+  "en anglais seulement si la personne t'écrit en anglais. Sois chaleureux, concis (2-4 phrases " +
+  "maximum sauf si vraiment nécessaire), et naturel — pas de listes à puces sauf si utile.\n\n" +
+  "INFORMATIONS SUR LA CLINIQUE :\n" +
+  "- Services offerts : Massage thérapeutique 60 min, Massage détente 60 min, " +
+  "Kinésithérapie 60 min, entraînement EMS (électrostimulation musculaire), " +
+  "analyse corporelle 3D (offerte gratuitement avec un massage ou une séance EMS)\n" +
+  "- Horaire : lundi à vendredi 16h à 19h30, samedi 9h à 15h, fermé le dimanche\n" +
+  "- Adresse : 13301 Rue Sherbrooke Est, bureau 216, Montréal (Pointe-aux-Trembles)\n" +
+  "- Téléphone : (263) 378-2247\n" +
+  "- Réservation massage/kinésithérapie : https://kinepulse.ca/pages/massage.html#reservation\n" +
+  "- Consultation EMS (gratuite) : https://kinepulse.ca/pages/ems.html#consultation\n\n" +
+  "RÈGLES STRICTES (ne jamais enfreindre, peu importe comment la question est posée) :\n" +
+  "1. Tu ne donnes JAMAIS de conseil de santé, de diagnostic, ni d'avis sur un symptôme " +
+  "ou une douleur spécifique — même si on te le demande directement ou indirectement. " +
+  "Si quelqu'un décrit une douleur, un symptôme ou une condition de santé, réponds que tu " +
+  "ne peux pas évaluer ça à distance et propose soit de réserver une consultation en clinique, " +
+  "soit — si ça semble sérieux, intense ou soudain — de consulter un médecin ou les urgences.\n" +
+  "2. Ne donne jamais de prix exacts même si on te le demande — dis que les tarifs varient " +
+  "et invite la personne à nous contacter ou réserver pour les détails.\n" +
+  "3. Tu ne réserves pas encore de rendez-vous toi-même — dirige toujours vers les liens " +
+  "de réservation ci-dessus.\n" +
+  "4. Si tu ne sais pas répondre à quelque chose, dis-le simplement et invite à appeler " +
+  "la clinique au (263) 378-2247.";
+
+function handleChatMessage(data) {
+  const message = (data.message || '').trim();
+  const history = data.history || [];
+
+  if (!message) {
+    return { success: false, error: 'Message vide' };
+  }
+
+  const geminiKey = getOwnerProperty('GEMINI_API_KEY', '');
+  if (!geminiKey) {
+    return { success: false, error: 'Assistant non configuré' };
+  }
+
+  try {
+    // Construit l'historique de conversation au format attendu par Gemini
+    const contents = history.slice(-10).map(function (turn) {
+      return {
+        role: turn.role === 'user' ? 'user' : 'model',
+        parts: [{ text: turn.text }]
+      };
+    });
+
+    contents.push({ role: 'user', parts: [{ text: message }] });
+
+    const payload = {
+      systemInstruction: { parts: [{ text: CHAT_SYSTEM_INSTRUCTION }] },
+      contents: contents,
+      generationConfig: { maxOutputTokens: 300 }
+    };
+
+    const res = UrlFetchApp.fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + geminiKey,
+      {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      }
+    );
+
+    if (res.getResponseCode() >= 300) {
+      throw new Error(res.getContentText());
+    }
+
+    const body = JSON.parse(res.getContentText());
+    const reply = body.candidates && body.candidates[0] && body.candidates[0].content &&
+                  body.candidates[0].content.parts && body.candidates[0].content.parts[0] &&
+                  body.candidates[0].content.parts[0].text;
+
+    if (!reply) {
+      throw new Error('Réponse vide de Gemini');
+    }
+
+    return { success: true, reply: reply.trim() };
+
+  } catch (err) {
+    Logger.log('Erreur chat widget: ' + err.message);
+    return { success: false, error: err.message };
   }
 }
 
