@@ -329,7 +329,7 @@ ASSISTANT DE CLAVARDAGE (CHAT WIDGET)
 
 function initChatWidget() {
 
-    const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbwSM2BxPoL_61BPHuusHHouzuDa5zmxRKAD7MN1NvmR_dW1Dl81sBnOUW2dfkchi7KyEw/exec";
+    const CHAT_API_URL = "https://script.google.com/macros/s/AKfycbyTwYzKDtkQWL8t3z7ccTHB31DZ_tJi_IcTv_sqcZggiJIaFNWaaaklGY0FGaAHhE0DyA/exec";
 
     // --- Construit le HTML du widget et l'ajoute à la page ---
     const btn = document.createElement("button");
