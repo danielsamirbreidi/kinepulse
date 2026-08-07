@@ -250,6 +250,10 @@ function handleMassageBooking(data) {
     }
   );
 
+  // Rappels garantis sur ton calendrier, peu importe tes réglages par défaut
+  event.addPopupReminder(60);   // 1h avant, notification sur le téléphone
+  event.addEmailReminder(24 * 60); // 24h avant, par courriel
+
   // Invalide le cache des créneaux pour que le créneau qui vient d'être
   // pris ne soit pas montré à quelqu'un d'autre pendant la fenêtre de cache
   CacheService.getScriptCache().remove('slots_60');
@@ -372,6 +376,32 @@ function dailyAutomation() {
   checkEmsRenewals();
   checkUpcomingExpenses();
   computeMonthlyKPIs();
+  sendOwnerDailySummary();
+}
+
+function sendOwnerDailySummary() {
+  const calendar = CalendarApp.getDefaultCalendar();
+  const today = new Date();
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+  const events = calendar.getEvents(startOfDay, endOfDay);
+
+  if (events.length === 0) {
+    return; // pas de rendez-vous aujourd'hui, pas besoin de courriel
+  }
+
+  events.sort(function (a, b) { return a.getStartTime() - b.getStartTime(); });
+
+  const lignes = events.map(function (ev) {
+    const heure = Utilities.formatDate(ev.getStartTime(), TIMEZONE, 'HH:mm');
+    return heure + ' — ' + ev.getTitle();
+  });
+
+  notifyOwner(
+    '📅 Tes rendez-vous d\'aujourd\'hui (' + events.length + ')',
+    lignes.join('\n')
+  );
 }
 
 function setupDailyTrigger() {
