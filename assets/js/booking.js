@@ -107,6 +107,7 @@ function initHealthIntake() {
             nom: formData.get("nom"),
             telephone: formData.get("telephone"),
             email: formData.get("email"),
+            dateNaissance: formData.get("date_naissance"),
             adresse: formData.get("adresse"),
             emploi: formData.get("emploi"),
             assurance: formData.get("assurance"),
@@ -320,7 +321,6 @@ function initMassageBooking() {
             telephone: formData.get("telephone"),
             email: formData.get("email"),
             duration: formData.get("duration"),
-            dateNaissance: formData.get("date_naissance"),
             date: date,
             time: time
         };

@@ -1038,7 +1038,7 @@ function handleHealthIntake(data) {
   const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
 
   // Trouve ou crée le client dans Notion (même logique que pour les réservations)
-  const clientResult = findOrCreateClient(nom, telephone, email, 'Massage', today);
+  const clientResult = findOrCreateClient(nom, telephone, email, 'Massage', today, data.dateNaissance);
   const clientId = clientResult.id;
 
   const fiche = {
@@ -1127,10 +1127,13 @@ function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr, dat
   if (existing.results && existing.results.length > 0) {
     const clientId = existing.results[0].id;
 
-    // Client existant: on met à jour seulement "Dernière visite".
-    // "Date première visite" et "Date naissance" ne bougent jamais une fois fixées.
+    // Client existant: on met à jour "Dernière visite", et la date de
+    // naissance si elle est fournie (ex: via la fiche santé) et absente jusqu'ici.
     try {
       const props = { 'Dernière visite': dateProp(visitDateStr) };
+      if (dateNaissance) {
+        props['Date naissance'] = dateProp(dateNaissance);
+      }
       const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + clientId, {
         method: 'patch',
         headers: notionHeaders(),
