@@ -288,7 +288,7 @@ function handleMassageBooking(data) {
       (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
       (!clientAlreadyHasHealthForm(telephone, clientId)
         ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
-          'https://kinepulse.ca/pages/fiche-sante.html\n\n'
+          buildIntakeLink(nom, telephone, email) + '\n\n'
         : '') +
       'Au plaisir de vous accueillir.' +
       EMAIL_SIGNATURE
@@ -345,7 +345,7 @@ function handleEmsLead(data) {
       'sous peu afin de planifier votre séance.\n\n' +
       (needsHealthForm
         ? 'Pour sauver du temps, vous pouvez déjà remplir votre fiche santé :\n' +
-          'https://kinepulse.ca/pages/fiche-sante.html\n\n'
+          buildIntakeLink(nom, telephone, email) + '\n\n'
         : '') +
       'Au plaisir de vous accompagner.' +
       EMAIL_SIGNATURE
@@ -945,6 +945,13 @@ function checkUpcomingExpenses() {
       upcoming.join('\n')
     );
   }
+}
+
+function buildIntakeLink(nom, telephone, email) {
+  return 'https://kinepulse.ca/pages/fiche-sante.html' +
+    '?nom=' + encodeURIComponent(nom) +
+    '&telephone=' + encodeURIComponent(telephone) +
+    '&email=' + encodeURIComponent(email);
 }
 
 function getNotionPage(pageId) {

@@ -85,6 +85,16 @@ function initHealthIntake() {
     const form = document.getElementById("intake-form");
     if (!form) return;
 
+    // Pré-remplit avec les infos déjà connues (lien personnalisé envoyé après une réservation)
+    const params = new URLSearchParams(window.location.search);
+    const nomField = document.getElementById("intake-nom");
+    const telField = document.getElementById("intake-telephone");
+    const emailField = document.getElementById("intake-email");
+
+    if (params.get("nom") && nomField) nomField.value = params.get("nom");
+    if (params.get("telephone") && telField) telField.value = params.get("telephone");
+    if (params.get("email") && emailField) emailField.value = params.get("email");
+
     form.addEventListener("submit", (event) => {
         event.preventDefault();
 
