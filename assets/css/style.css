@@ -2147,6 +2147,8 @@ ASSISTANT DE CLAVARDAGE (CHAT WIDGET)
     border-radius:14px;
     font-size:.88rem;
     line-height:1.5;
+    overflow-wrap:anywhere;
+    word-break:break-word;
 }
 
 .chat-msg.bot{
@@ -2157,14 +2159,21 @@ ASSISTANT DE CLAVARDAGE (CHAT WIDGET)
 }
 
 .chat-msg.bot a{
+    display:inline-block;
+    margin-top:4px;
+    padding:6px 14px;
+    background:var(--primary-tint);
     color:var(--primary-dark);
     font-weight:600;
-    text-decoration:underline;
+    font-size:.85rem;
+    text-decoration:none;
+    border-radius:999px;
     word-break:break-word;
 }
 
 .chat-msg.bot a:hover{
-    color:var(--primary);
+    background:var(--primary);
+    color:var(--white);
 }
 
 .chat-msg.user{

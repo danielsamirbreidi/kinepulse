@@ -380,7 +380,19 @@ function initChatWidget() {
             const trailing = url.match(/[.,!?;:]+$/);
             const clean = trailing ? url.slice(0, -trailing[0].length) : url;
             const punctuation = trailing ? trailing[0] : "";
-            return `<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${punctuation}`;
+
+            let label = clean;
+            if (clean.indexOf("ems.html") !== -1) {
+                label = "Demander ma consultation EMS →";
+            } else if (clean.indexOf("massage.html") !== -1) {
+                label = "Réserver maintenant →";
+            } else if (clean.indexOf("fiche-sante.html") !== -1) {
+                label = "Remplir ma fiche santé →";
+            } else if (clean.indexOf("contact.html") !== -1) {
+                label = "Nous contacter →";
+            }
+
+            return `<a href="${clean}" target="_blank" rel="noopener">${label}</a>${punctuation}`;
         });
     }
 
