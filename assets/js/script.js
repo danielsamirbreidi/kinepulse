@@ -367,10 +367,33 @@ function initChatWidget() {
     let history = []; // { role: "user"|"model", text: "..." }
     let opened = false;
 
+    function escapeHtml(str) {
+        const d = document.createElement("div");
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    function linkify(text) {
+        const urlPattern = /(https?:\/\/[^\s]+)/g;
+        return escapeHtml(text).replace(urlPattern, (url) => {
+            // Retire toute ponctuation collée à la fin du lien (ex: point final de phrase)
+            const trailing = url.match(/[.,!?;:]+$/);
+            const clean = trailing ? url.slice(0, -trailing[0].length) : url;
+            const punctuation = trailing ? trailing[0] : "";
+            return `<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${punctuation}`;
+        });
+    }
+
     function addMessage(role, text) {
         const div = document.createElement("div");
         div.className = "chat-msg " + (role === "user" ? "user" : "bot");
-        div.textContent = text;
+
+        if (role === "user") {
+            div.textContent = text; // jamais interprété comme HTML, par sécurité
+        } else {
+            div.innerHTML = linkify(text);
+        }
+
         messagesEl.appendChild(div);
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }

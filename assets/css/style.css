@@ -2156,6 +2156,17 @@ ASSISTANT DE CLAVARDAGE (CHAT WIDGET)
     border-bottom-left-radius:4px;
 }
 
+.chat-msg.bot a{
+    color:var(--primary-dark);
+    font-weight:600;
+    text-decoration:underline;
+    word-break:break-word;
+}
+
+.chat-msg.bot a:hover{
+    color:var(--primary);
+}
+
 .chat-msg.user{
     background:var(--primary);
     color:var(--white);
