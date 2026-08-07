@@ -10,6 +10,15 @@ Google Apps Script (Calendar + Notion + courriels)
 // (voir README-automatisation.md pour les étapes)
 const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbyTwYzKDtkQWL8t3z7ccTHB31DZ_tJi_IcTv_sqcZggiJIaFNWaaaklGY0FGaAHhE0DyA/exec";
 
+// Valide qu'un numéro de téléphone est plausible: exactement 10 chiffres
+// (11 si préfixé par 1), pas une suite de chiffres identiques (ex: 0000000000)
+function isValidPhone(rawValue) {
+    const digits = (rawValue || "").replace(/\D/g, "").replace(/^1(\d{10})$/, "$1");
+    if (digits.length !== 10) return false;
+    if (/^(\d)\1{9}$/.test(digits)) return false; // tous les chiffres identiques
+    return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initMassageBooking();
     initEmsLead();
@@ -30,6 +39,12 @@ function initContactForm() {
         event.preventDefault();
 
         const formData = new FormData(form);
+
+        if (!isValidPhone(formData.get("telephone"))) {
+            alert("Veuillez entrer un numéro de téléphone valide (10 chiffres).");
+            return;
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn.textContent;
 
@@ -99,6 +114,12 @@ function initHealthIntake() {
         event.preventDefault();
 
         const formData = new FormData(form);
+
+        if (!isValidPhone(formData.get("telephone"))) {
+            alert("Veuillez entrer un numéro de téléphone valide (10 chiffres).");
+            return;
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn.textContent;
 
@@ -315,6 +336,11 @@ function initMassageBooking() {
         const [date, time] = slotValue.split("|");
         const formData = new FormData(form);
 
+        if (!isValidPhone(formData.get("telephone"))) {
+            showStatus(statusEl, "Veuillez entrer un numéro de téléphone valide (10 chiffres).", true);
+            return;
+        }
+
         const payload = {
             type: "massage",
             nom: formData.get("nom"),
@@ -380,6 +406,12 @@ function initEmsLead() {
         event.preventDefault();
 
         const formData = new FormData(form);
+
+        if (!isValidPhone(formData.get("telephone"))) {
+            alert("Veuillez entrer un numéro de téléphone valide (10 chiffres).");
+            return;
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn.textContent;
 
