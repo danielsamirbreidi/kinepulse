@@ -1044,6 +1044,8 @@ function handleHealthIntake(data) {
   const fiche = {
     'Fiche': titleProp('Fiche santé — ' + nom),
     'Client': relationProp([clientId]),
+    'Téléphone': phoneProp(telephone),
+    'Courriel': emailProp(email),
     'Adresse': richTextProp(data.adresse || ''),
     'Emploi': richTextProp(data.emploi || ''),
     'Assurance': selectProp(data.assurance === 'Oui' ? 'Oui' : 'Non'),
