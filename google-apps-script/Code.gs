@@ -255,7 +255,7 @@ function handleMassageBooking(data) {
   CacheService.getScriptCache().remove('slots_60');
 
   // 3. Trouve ou crée le client dans Notion (met aussi à jour "Dernière visite")
-  const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr);
+  const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr, data.dateNaissance);
   const clientId = client.id;
 
   // 4. Crée la fiche Rendez-Vous dans Notion
@@ -1110,7 +1110,7 @@ function clientAlreadyHasHealthForm(telephone, knownClientId) {
 CLIENTS CRM — TROUVE OU CRÉE
 ==================================================*/
 
-function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr) {
+function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr, dateNaissance) {
   const existing = queryNotionDataSource(DS_CLIENTS, {
     filter: { property: 'Téléphone', phone_number: { equals: telephone } }
   });
@@ -1119,7 +1119,7 @@ function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr) {
     const clientId = existing.results[0].id;
 
     // Client existant: on met à jour seulement "Dernière visite".
-    // "Date première visite" ne bouge jamais une fois fixée.
+    // "Date première visite" et "Date naissance" ne bougent jamais une fois fixées.
     try {
       const props = { 'Dernière visite': dateProp(visitDateStr) };
       const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages/' + clientId, {
@@ -1138,14 +1138,20 @@ function findOrCreateClient(nom, telephone, email, typeClient, visitDateStr) {
     return { id: clientId, isNew: false };
   }
 
-  const created = createNotionPage(DS_CLIENTS, {
+  const newClientProps = {
     'Nom complet': titleProp(nom),
     'Téléphone': phoneProp(telephone),
     'Email': emailProp(email),
     'Type client': selectProp(typeClient),
     'Date première visite': dateProp(visitDateStr),
     'Dernière visite': dateProp(visitDateStr)
-  });
+  };
+
+  if (dateNaissance) {
+    newClientProps['Date naissance'] = dateProp(dateNaissance);
+  }
+
+  const created = createNotionPage(DS_CLIENTS, newClientProps);
 
   return { id: created.id, isNew: true };
 }

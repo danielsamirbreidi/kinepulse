@@ -310,6 +310,7 @@ function initMassageBooking() {
             telephone: formData.get("telephone"),
             email: formData.get("email"),
             duration: formData.get("duration"),
+            dateNaissance: formData.get("date_naissance"),
             date: date,
             time: time
         };
