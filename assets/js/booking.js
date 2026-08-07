@@ -19,6 +19,15 @@ function isValidPhone(rawValue) {
     return true;
 }
 
+// Valide qu'une adresse ressemble à une vraie adresse: assez longue et
+// contient au moins une lettre (pas juste un numéro civique isolé)
+function isValidAddress(rawValue) {
+    const value = (rawValue || "").trim();
+    if (value.length < 8) return false;
+    if (!/[a-zA-ZÀ-ÿ]/.test(value)) return false;
+    return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initMassageBooking();
     initEmsLead();
@@ -117,6 +126,11 @@ function initHealthIntake() {
 
         if (!isValidPhone(formData.get("telephone"))) {
             alert("Veuillez entrer un numéro de téléphone valide (10 chiffres).");
+            return;
+        }
+
+        if (!isValidAddress(formData.get("adresse"))) {
+            alert("Veuillez entrer une adresse complète (numéro, rue et ville).");
             return;
         }
 
