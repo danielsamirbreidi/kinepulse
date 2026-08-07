@@ -811,10 +811,22 @@ function syncCalendarToNotion() {
         'Service': relationProp([SERVICE_MASSAGE_60])
       };
 
-      // Essaie de retrouver un client existant dont le nom apparaît dans le titre
-      const matchedClientId = findClientByNameInText(title);
-      if (matchedClientId) {
-        props['Client'] = relationProp([matchedClientId]);
+      // Cherche un numéro de téléphone dans le titre (ex: "sylvain massage 514-555-1234")
+      // Si trouvé, crée ou retrouve le client automatiquement — sinon on essaie juste
+      // de faire correspondre un nom à un client déjà existant.
+      const phoneMatch = title.match(/(\+?1?[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+
+      if (phoneMatch) {
+        const phone = phoneMatch[0].replace(/\D/g, '').replace(/^1(\d{10})$/, '$1');
+        const nameOnly = title.replace(phoneMatch[0], '').replace(/massage/i, '').trim() || 'Client Calendar';
+        const client = findOrCreateClient(nameOnly, phone, '', 'Massage', evDate);
+        props['Client'] = relationProp([client.id]);
+      } else {
+        // Pas de téléphone détecté: essaie de retrouver un client existant par nom
+        const matchedClientId = findClientByNameInText(title);
+        if (matchedClientId) {
+          props['Client'] = relationProp([matchedClientId]);
+        }
       }
 
       createNotionPage(DS_RENDEZVOUS, props);
