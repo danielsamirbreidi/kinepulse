@@ -104,10 +104,55 @@ function initContactForm() {
 FICHE SANTÉ — ENVOI (LIÉE AU CLIENT DANS NOTION)
 ==================================================*/
 
+function initDobSelectors() {
+
+    const dayEl = document.getElementById("dob-day");
+    const monthEl = document.getElementById("dob-month");
+    const yearEl = document.getElementById("dob-year");
+    const hiddenEl = document.getElementById("dob-hidden");
+
+    if (!dayEl || !monthEl || !yearEl || !hiddenEl) return;
+
+    const MOIS_FR = [
+        ["01", "Janvier"], ["02", "Février"], ["03", "Mars"], ["04", "Avril"],
+        ["05", "Mai"], ["06", "Juin"], ["07", "Juillet"], ["08", "Août"],
+        ["09", "Septembre"], ["10", "Octobre"], ["11", "Novembre"], ["12", "Décembre"]
+    ];
+
+    for (let d = 1; d <= 31; d++) {
+        const val = String(d).padStart(2, "0");
+        dayEl.insertAdjacentHTML("beforeend", `<option value="${val}">${d}</option>`);
+    }
+
+    MOIS_FR.forEach(([val, label]) => {
+        monthEl.insertAdjacentHTML("beforeend", `<option value="${val}">${label}</option>`);
+    });
+
+    // De l'année courante jusqu'à 100 ans en arrière, en ordre décroissant
+    // (les années récentes s'affichent en premier dans la liste déroulante,
+    // mais on peut sélectionner directement n'importe quelle année sans défiler)
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= currentYear - 100; y--) {
+        yearEl.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`);
+    }
+
+    function updateHidden() {
+        if (dayEl.value && monthEl.value && yearEl.value) {
+            hiddenEl.value = `${yearEl.value}-${monthEl.value}-${dayEl.value}`;
+        } else {
+            hiddenEl.value = "";
+        }
+    }
+
+    [dayEl, monthEl, yearEl].forEach(el => el.addEventListener("change", updateHidden));
+}
+
 function initHealthIntake() {
 
     const form = document.getElementById("intake-form");
     if (!form) return;
+
+    initDobSelectors();
 
     // Pré-remplit avec les infos déjà connues (lien personnalisé envoyé après une réservation)
     const params = new URLSearchParams(window.location.search);
@@ -123,6 +168,11 @@ function initHealthIntake() {
         event.preventDefault();
 
         const formData = new FormData(form);
+
+        if (!formData.get("date_naissance")) {
+            alert("Veuillez indiquer votre date de naissance complète (jour, mois et année).");
+            return;
+        }
 
         if (!isValidPhone(formData.get("telephone"))) {
             alert("Veuillez entrer un numéro de téléphone valide (10 chiffres).");
