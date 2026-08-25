@@ -111,7 +111,23 @@
 
             <label style="font-size:.9rem;font-weight:500;color:var(--secondary);margin-bottom:-4px;">Date de naissance *</label>
 
-            <input class="booking-input" type="date" name="date_naissance" max="2026-08-06" required>
+            <div style="display:flex; gap:8px;">
+
+                <select class="booking-input" id="dob-day" required style="flex:1;">
+                    <option value="" disabled selected>Jour</option>
+                </select>
+
+                <select class="booking-input" id="dob-month" required style="flex:1.6;">
+                    <option value="" disabled selected>Mois</option>
+                </select>
+
+                <select class="booking-input" id="dob-year" required style="flex:1.2;">
+                    <option value="" disabled selected>Année</option>
+                </select>
+
+            </div>
+
+            <input type="hidden" name="date_naissance" id="dob-hidden" required>
 
             <input class="booking-input" type="text" name="adresse" id="intake-adresse" placeholder="Adresse complète (ex: 123 rue Principale, Montréal)" required>
 
