@@ -73,6 +73,7 @@ const MASSAGE_SLOTS = {
 };
 
 const BOOKING_WINDOW_DAYS = 60; // combien de jours à l'avance on ouvre la réservation (~2 mois)
+const MIN_BOOKING_LEAD_DAYS = 1; // délai minimum avant un rendez-vous (1 = pas de réservation le jour même, seulement à partir de demain)
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 const EXPENSE_ALERT_DAYS = 7; // combien de jours avant une depense recurrente on t'alerte
 
@@ -175,7 +176,7 @@ function getAvailableSlots(durationMinutes) {
   // que de vérifier chaque créneau individuellement)
   const events = calendar.getEvents(windowStart, windowEnd);
 
-  for (let d = 0; d < BOOKING_WINDOW_DAYS; d++) {
+  for (let d = MIN_BOOKING_LEAD_DAYS; d < BOOKING_WINDOW_DAYS; d++) {
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
     const dayOfWeek = day.getDay();
     const times = MASSAGE_SLOTS[dayOfWeek] || [];
@@ -183,7 +184,7 @@ function getAvailableSlots(durationMinutes) {
     times.forEach(function (timeStr) {
       const startDate = buildDateTime(day, timeStr);
 
-      // On ignore les créneaux déjà passés aujourd'hui
+      // Sécurité additionnelle : on ignore quand même tout créneau qui serait dans le passé
       if (startDate <= now) return;
 
       const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
