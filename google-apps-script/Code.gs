@@ -181,11 +181,17 @@ function getAvailableSlots(durationMinutes) {
     const dayOfWeek = day.getDay();
     const times = MASSAGE_SLOTS[dayOfWeek] || [];
 
-    times.forEach(function (timeStr) {
+    // Remplissage séquentiel : on parcourt les créneaux du jour en ordre
+    // chronologique et on offre SEULEMENT le premier qui est encore libre.
+    // Ça empêche un client de réserver un créneau plus tard dans la journée
+    // en laissant un trou vide avant lui (ex: réserver 14h alors que 11h30
+    // et 12h45 sont encore libres).
+    for (let i = 0; i < times.length; i++) {
+      const timeStr = times[i];
       const startDate = buildDateTime(day, timeStr);
 
       // Sécurité additionnelle : on ignore quand même tout créneau qui serait dans le passé
-      if (startDate <= now) return;
+      if (startDate <= now) continue;
 
       const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
 
@@ -199,8 +205,11 @@ function getAvailableSlots(durationMinutes) {
           time: timeStr,
           label: formatDateFr(day) + ' — ' + timeStr
         });
+        break; // un seul créneau offert par jour : le prochain dans l'ordre
       }
-    });
+      // Si ce créneau est déjà pris (hasConflict), on continue la boucle
+      // pour vérifier le suivant — mais on ne l'ajoute jamais lui-même.
+    }
   }
 
   return slots;
