@@ -710,6 +710,12 @@ function handleChatMessage(data) {
   }
 }
 
+// Liste de modèles Gemini à essayer, du plus récent/stable au plus "toujours à jour".
+// Si le premier n'existe plus (Google en retire souvent, parfois après
+// seulement quelques mois), le script bascule automatiquement sur le suivant
+// SANS qu'on ait besoin de modifier le code à chaque fois.
+const GEMINI_MODEL_FALLBACKS = ['gemini-3.6-flash', 'gemini-flash-latest'];
+
 function extractExpenseWithGemini(attachment, apiKey) {
   const base64Data = Utilities.base64Encode(attachment.getBytes());
   const mimeType = attachment.getContentType();
@@ -741,7 +747,6 @@ function extractExpenseWithGemini(attachment, apiKey) {
     }
   };
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
   const options = {
     method: 'post',
     contentType: 'application/json',
@@ -749,23 +754,45 @@ function extractExpenseWithGemini(attachment, apiKey) {
     muteHttpExceptions: true
   };
 
-  let res = UrlFetchApp.fetch(url, options);
+  let res;
+  let lastError = '';
 
-  // Si le modèle est temporairement surchargé (503), on réessaie plusieurs fois
-  // avec un délai croissant avant d'abandonner (Google recommande ça pour les pics de trafic)
-  let attempt = 0;
-  const maxRetries = 3;
-  const delaysMs = [10000, 20000, 40000]; // 10s, 20s, 40s
+  for (let m = 0; m < GEMINI_MODEL_FALLBACKS.length; m++) {
+    const modelName = GEMINI_MODEL_FALLBACKS[m];
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
 
-  while (res.getResponseCode() === 503 && attempt < maxRetries) {
-    Logger.log('Gemini surchargé (503), nouvel essai dans ' + (delaysMs[attempt] / 1000) + 's... (tentative ' + (attempt + 1) + '/' + maxRetries + ')');
-    Utilities.sleep(delaysMs[attempt]);
     res = UrlFetchApp.fetch(url, options);
-    attempt++;
+
+    // Si le modèle est temporairement surchargé (503), on réessaie plusieurs fois
+    // avec un délai croissant avant d'abandonner
+    let attempt = 0;
+    const maxRetries = 3;
+    const delaysMs = [10000, 20000, 40000]; // 10s, 20s, 40s
+
+    while (res.getResponseCode() === 503 && attempt < maxRetries) {
+      Logger.log('Gemini (' + modelName + ') surchargé (503), nouvel essai dans ' + (delaysMs[attempt] / 1000) + 's... (tentative ' + (attempt + 1) + '/' + maxRetries + ')');
+      Utilities.sleep(delaysMs[attempt]);
+      res = UrlFetchApp.fetch(url, options);
+      attempt++;
+    }
+
+    // Si le modèle n'existe plus (404) ou n'est plus accessible, on passe
+    // directement au modèle suivant de la liste, sans attendre.
+    if (res.getResponseCode() === 404) {
+      Logger.log('Modèle ' + modelName + ' indisponible (404), on essaie le suivant...');
+      lastError = res.getContentText();
+      continue;
+    }
+
+    if (res.getResponseCode() < 300) {
+      break; // succès, pas besoin d'essayer les modèles suivants
+    }
+
+    lastError = res.getContentText();
   }
 
-  if (res.getResponseCode() >= 300) {
-    throw new Error('Erreur Gemini: ' + res.getContentText());
+  if (!res || res.getResponseCode() >= 300) {
+    throw new Error('Erreur Gemini (tous les modèles ont échoué): ' + lastError);
   }
 
   const body = JSON.parse(res.getContentText());
