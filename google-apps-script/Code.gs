@@ -751,11 +751,17 @@ function extractExpenseWithGemini(attachment, apiKey) {
 
   let res = UrlFetchApp.fetch(url, options);
 
-  // Si le modèle est temporairement surchargé (503), on réessaie une fois après une courte pause
-  if (res.getResponseCode() === 503) {
-    Logger.log('Gemini surchargé (503), nouvel essai dans 10s...');
-    Utilities.sleep(10000);
+  // Si le modèle est temporairement surchargé (503), on réessaie plusieurs fois
+  // avec un délai croissant avant d'abandonner (Google recommande ça pour les pics de trafic)
+  let attempt = 0;
+  const maxRetries = 3;
+  const delaysMs = [10000, 20000, 40000]; // 10s, 20s, 40s
+
+  while (res.getResponseCode() === 503 && attempt < maxRetries) {
+    Logger.log('Gemini surchargé (503), nouvel essai dans ' + (delaysMs[attempt] / 1000) + 's... (tentative ' + (attempt + 1) + '/' + maxRetries + ')');
+    Utilities.sleep(delaysMs[attempt]);
     res = UrlFetchApp.fetch(url, options);
+    attempt++;
   }
 
   if (res.getResponseCode() >= 300) {
