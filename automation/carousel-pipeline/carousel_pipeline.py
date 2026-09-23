@@ -3,37 +3,46 @@
 KinéPulse / KinéSportif — Carousel Pipeline (Instagram + Facebook)
 ====================================================================
 
-Génère un carrousel d'images informatives à partir d'un thème :
+Génère un carrousel d'images informatives à partir d'UN SEUL thème, envoyé
+UNE FOIS — il produit automatiquement les DEUX versions :
+  - KinéPulse : en français, tel quel
+  - KinéSportif : en arabe (Claude traduit/adapte le même thème — pas de
+    traduction littérale mot à mot)
+
+Étapes internes :
   1. Claude API écrit le contenu des slides (titre, points, caption, hashtags)
+     — une fois par compte, dans sa langue
   2. Chaque slide est rendue en PNG (Playwright + template HTML/CSS de marque
      — mêmes couleurs/polices que kinepulse.ca)
   3. Les PNG sont copiées dans le dossier que ton serveur sert publiquement
-  4. Le lot est mis en file d'attente pour approbation via un projet Apps
-     Script DÉDIÉ au carrousel (voir CarouselApproval.gs dans ce dossier —
-     complètement séparé du pipeline vidéo : sa propre Google Sheet, son
-     propre déploiement, son propre email) — un clic "Approuver" publie au
-     prochain créneau de pointe du compte. Rien n'est publié automatiquement
-     sans ton accord.
+  4. Chaque carrousel (un par compte) est mis en file d'attente pour
+     approbation via un projet Apps Script DÉDIÉ (voir CarouselApproval.gs
+     dans ce dossier — complètement séparé du pipeline vidéo) — un clic
+     "Approuver" publie au prochain créneau de pointe DE CE compte. Rien
+     n'est publié automatiquement sans ton accord.
 
 Usage:
-  Test (génère et sauvegarde localement, ne met PAS en file d'attente) :
+  Test (génère et sauvegarde localement, ne met PAS en file d'attente,
+  un seul compte à la fois) :
     python carousel_pipeline.py test kinepulse "5 signes qu'il faut consulter en kinésithérapie"
 
-  Génère + met en file d'attente (Facebook + Instagram) :
-    python carousel_pipeline.py kinepulse "Les bienfaits du massage thérapeutique"
+  Génère les DEUX carrousels depuis un seul thème (usage normal) :
+    python carousel_pipeline.py both "Les bienfaits du massage thérapeutique"
+
+  Génère UN SEUL des deux carrousels (ajustement manuel/ciblé) :
+    python carousel_pipeline.py kinepulse "<thème>"
     python carousel_pipeline.py kinesportif "<thème>"
 
-  Mode dossier (comme la vidéo) — traite le thème le plus ancien en attente :
-    python carousel_pipeline.py daily kinepulse
-    python carousel_pipeline.py daily kinesportif
+  Mode dossier (comme la vidéo) — traite le thème le plus ancien en attente,
+  génère les DEUX carrousels à partir de lui :
+    python carousel_pipeline.py daily
     (dépose un fichier .txt contenant un thème, une ligne, dans
-    ./themes_a_traiter_kinepulse/ ou ./themes_a_traiter_kinesportif/)
+    ./themes_a_traiter/)
 
   Depuis ton téléphone (bot Telegram DÉDIÉ, séparé de celui de la vidéo) :
     python carousel_pipeline.py check-telegram
-    (cron toutes les 15-30 min — envoie un message au bot pour ajouter un
-    thème : texte seul -> KinéPulse, "ks <thème>" -> KinéSportif,
-    "status" -> nombre de thèmes en attente)
+    (cron toutes les 15-30 min — chaque message envoyé au bot ajoute un
+    thème à la file ; "status" répond le nombre de thèmes en attente)
 
 Requirements (en plus de celles déjà utilisées pour la vidéo) :
   pip install playwright requests --break-system-packages
@@ -128,16 +137,13 @@ CLOSING_SLIDE = {
     },
 }
 
-DEFAULT_HASHTAGS_FR = "#kinesitherapie #massotherapie #Montreal #PointeAuxTrembles #sante"
-DEFAULT_HASHTAGS_EN = "#physiotherapy #wellness #Lebanon #fitness #sport"
-
-THEMES_FOLDER = {
-    "kinepulse": Path("./themes_a_traiter_kinepulse"),
-    "kinesportif": Path("./themes_a_traiter_kinesportif"),
-}
+# UN SEUL dossier de thèmes en attente — chaque thème génère AUTOMATIQUEMENT
+# les deux carrousels (KinéPulse en français tel quel, KinéSportif en arabe
+# traduit/adapté par Claude). Pas besoin d'envoyer le sujet deux fois.
+THEMES_FOLDER = Path("./themes_a_traiter")
 THEMES_PROCESSED = Path("./themes_traitees")
-for folder in list(THEMES_FOLDER.values()) + [THEMES_PROCESSED]:
-    folder.mkdir(exist_ok=True)
+THEMES_FOLDER.mkdir(exist_ok=True)
+THEMES_PROCESSED.mkdir(exist_ok=True)
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -175,13 +181,19 @@ def generate_carousel_content(topic: str, account: str) -> dict:
         instruction = (
             "You write the content for an informative Instagram/Facebook "
             "carousel for KinéSportif, a sports/kinesiology academy account "
-            "testing market interest in Lebanon. Reply ONLY with a valid JSON "
-            "object (nothing else, no ```), in this EXACT format:\n"
-            '{"cover_heading": "catchy carousel title, 4-8 words", '
-            '"slides": [{"heading": "short point title, 3-6 words", '
-            '"body": "1-2 clear, concrete sentences"}], '
-            '"caption": "Instagram/Facebook caption, 2-3 warm and engaging '
-            'sentences", '
+            "testing market interest in Lebanon. The topic you're given may be "
+            "written in French (it's the same topic used for the sister French "
+            "account, KinéPulse) — translate and adapt it naturally into "
+            "Modern Standard Arabic (fusha), don't translate literally word for "
+            "word. ALL text content (cover_heading, every slide's heading and "
+            "body, caption) MUST be written in Arabic script — only the "
+            "hashtags are in English. Reply ONLY with a valid JSON object "
+            "(nothing else, no ```), in this EXACT format:\n"
+            '{"cover_heading": "catchy carousel title in Arabic, 4-8 words", '
+            '"slides": [{"heading": "short point title in Arabic, 3-6 words", '
+            '"body": "1-2 clear, concrete sentences in Arabic"}], '
+            '"caption": "Instagram/Facebook caption in Arabic, 2-3 warm and '
+            'engaging sentences", '
             '"hashtags": "exactly 5 hashtags relevant to this specific topic '
             '(not generic), in English, space-separated, prefixed with #"}\n'
             'Generate between 4 and 6 items in "slides" (the carousel will '
@@ -406,9 +418,9 @@ def send_failure_alert(context: str, error: Exception):
 
 def check_telegram_and_create_topics():
     """Cron this every 15-30 min. Format des messages envoyés au bot :
-      <thème>            -> themes_a_traiter_kinepulse/   (compte par défaut)
-      ks <thème>         -> themes_a_traiter_kinesportif/
-      status             -> répond avec le nombre de thèmes en attente
+      <thème>   -> ajouté à la file (un seul thème -> les DEUX carrousels,
+                   KinéPulse en français + KinéSportif en arabe traduit)
+      status    -> répond avec le nombre de thèmes en attente
     """
     if not CAROUSEL_TELEGRAM_BOT_TOKEN:
         print("  (pas de CAROUSEL_TELEGRAM_BOT_TOKEN configuré — étape ignorée)")
@@ -435,32 +447,22 @@ def check_telegram_and_create_topics():
         highest_id = max(highest_id, update["update_id"])
         message = update.get("message", {})
         chat_id = str(message.get("chat", {}).get("id", ""))
-        text = message.get("text", "").strip()
+        topic = message.get("text", "").strip()
 
         if CAROUSEL_TELEGRAM_CHAT_ID and chat_id != CAROUSEL_TELEGRAM_CHAT_ID:
             continue  # ignore les messages de quelqu'un d'autre
 
-        if not text:
-            continue
-
-        if text.lower() == "status":
-            send_telegram_reply(chat_id, build_topic_status_message())
-            continue
-
-        if text.lower().startswith("ks "):
-            account = "kinesportif"
-            topic = text[3:].strip()
-        else:
-            account = "kinepulse"
-            topic = text
-
         if not topic:
             continue
 
+        if topic.lower() == "status":
+            send_telegram_reply(chat_id, build_topic_status_message())
+            continue
+
         filename = f"telegram_{update['update_id']}.txt"
-        (THEMES_FOLDER[account] / filename).write_text(topic, encoding="utf-8")
+        (THEMES_FOLDER / filename).write_text(topic, encoding="utf-8")
         created += 1
-        print(f"  Créé {THEMES_FOLDER[account].name}/{filename} -> {topic!r}")
+        print(f"  Créé {THEMES_FOLDER.name}/{filename} -> {topic!r}")
 
     TELEGRAM_STATE_FILE.write_text(str(highest_id), encoding="utf-8")
     print(f"Traité {len(updates)} message(s), créé {created} thème(s).")
@@ -474,17 +476,13 @@ def send_telegram_reply(chat_id: str, text: str):
 
 
 def build_topic_status_message() -> str:
-    kp_count = len(list(THEMES_FOLDER["kinepulse"].glob("*.txt")))
-    ks_count = len(list(THEMES_FOLDER["kinesportif"].glob("*.txt")))
-    total = kp_count + ks_count
+    count = len(list(THEMES_FOLDER.glob("*.txt")))
 
-    if total == 0:
-        return "📭 Aucun thème en attente. Envoie un message pour en ajouter (ou 'ks <thème>' pour KinéSportif)."
+    if count == 0:
+        return "📭 Aucun thème en attente. Envoie un message pour en ajouter."
 
     return (
-        f"📋 {total} thème(s) en attente\n"
-        f"  • {kp_count} pour KinéPulse\n"
-        f"  • {ks_count} pour KinéSportif\n\n"
+        f"📋 {count} thème(s) en attente (chacun génère KinéPulse + KinéSportif)\n\n"
         f"Traités automatiquement par le cron quotidien."
     )
 
@@ -518,26 +516,39 @@ def run_carousel(account: str, topic: str, test_mode: bool = False):
           "la publication a lieu au prochain créneau de pointe du compte, pas immédiatement)")
 
 
-def get_next_theme(account: str) -> Path | None:
-    folder = THEMES_FOLDER[account]
-    candidates = [p for p in folder.iterdir() if p.is_file() and p.suffix.lower() == ".txt"]
+def run_carousel_both(topic: str):
+    """Un seul thème -> les DEUX carrousels : KinéPulse en français (le
+    thème tel quel) et KinéSportif en arabe (Claude traduit/adapte le même
+    thème — voir l'instruction dans generate_carousel_content). Chaque
+    compte est indépendant : si l'un échoue, l'autre continue quand même."""
+    for account in ("kinepulse", "kinesportif"):
+        try:
+            print(f"=== {ACCOUNT_LABELS[account]} ===")
+            run_carousel(account, topic)
+        except Exception as e:
+            print(f"  ÉCHEC pour {account} : {e}")
+            send_failure_alert(f"run_carousel_both ({account})", e)
+
+
+def get_next_theme() -> Path | None:
+    candidates = [p for p in THEMES_FOLDER.iterdir() if p.is_file() and p.suffix.lower() == ".txt"]
     if not candidates:
         return None
     return min(candidates, key=lambda p: p.stat().st_mtime)
 
 
-def run_carousel_daily(account: str):
-    theme_file = get_next_theme(account)
+def run_carousel_daily():
+    theme_file = get_next_theme()
     if theme_file is None:
-        msg = (f"Aucun thème en attente dans {THEMES_FOLDER[account].resolve()} — "
+        msg = (f"Aucun thème en attente dans {THEMES_FOLDER.resolve()} — "
                f"dépose un fichier .txt (un thème par ligne) avant le prochain run.")
         print(msg)
-        send_failure_alert(f"daily carousel ({account}) — dossier vide", Exception(msg))
+        send_failure_alert("daily carousel — dossier vide", Exception(msg))
         return
 
     topic = theme_file.read_text(encoding="utf-8").strip().splitlines()[0].strip()
     print(f"Thème repris depuis {theme_file.name} : {topic!r}")
-    run_carousel(account, topic)
+    run_carousel_both(topic)
 
     processed_path = THEMES_PROCESSED / theme_file.name
     shutil.move(str(theme_file), str(processed_path))
@@ -556,16 +567,24 @@ if __name__ == "__main__":
         run_carousel(sys.argv[2], sys.argv[3], test_mode=True)
 
     elif sys.argv[1] == "daily":
-        if len(sys.argv) < 3 or sys.argv[2] not in THEMES_FOLDER:
-            print("Usage: python carousel_pipeline.py daily <kinepulse|kinesportif>")
-            sys.exit(1)
         try:
-            run_carousel_daily(sys.argv[2])
+            run_carousel_daily()
         except Exception as e:
             print(f"PIPELINE FAILED: {e}")
-            send_failure_alert(f"run_carousel_daily ({sys.argv[2]})", e)
+            send_failure_alert("run_carousel_daily", e)
+
+    elif sys.argv[1] == "both":
+        # Génère les deux carrousels (KinéPulse fr + KinéSportif ar) depuis
+        # un seul thème donné en ligne de commande, sans passer par la file
+        # d'attente de fichiers .txt.
+        if len(sys.argv) < 3:
+            print('Usage: python carousel_pipeline.py both "<thème>"')
+            sys.exit(1)
+        run_carousel_both(sys.argv[2])
 
     elif sys.argv[1] in ("kinepulse", "kinesportif"):
+        # Génère UN SEUL des deux carrousels — utile pour un ajustement
+        # manuel ou un test ciblé sur un seul compte.
         if len(sys.argv) < 3:
             print(f'Usage: python carousel_pipeline.py {sys.argv[1]} "<thème>"')
             sys.exit(1)

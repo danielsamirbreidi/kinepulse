@@ -12,24 +12,32 @@ aucun risque de casser ou de mélanger les deux.
 généré (texte court). Le rendu des slides utilise Playwright (Chromium
 headless, gratuit) directement sur ton serveur.
 
+**Un seul thème envoyé = les deux carrousels générés.** Tu n'envoies le
+sujet qu'une fois (en français) — KinéPulse le reçoit tel quel, et
+KinéSportif reçoit une version traduite/adaptée en arabe, générée par
+Claude à partir du même thème. Deux emails d'approbation séparés arrivent
+(un par compte), chacun publié à son propre créneau de pointe.
+
 ## Comment ça marche
 
 ```
 carousel_pipeline.py (ton serveur)
-  1. Claude API écrit le contenu (titre, points, caption, hashtags)
+  1. Claude API écrit le contenu — DEUX FOIS à partir du même thème :
+     KinéPulse en français (tel quel), KinéSportif en arabe (traduit/adapté)
   2. Playwright rend chaque slide en PNG (template HTML/CSS aux couleurs
-     du site : Fraunces/Inter, teal + laiton)
+     du site : Fraunces/Inter, teal + laiton) — pour les deux comptes
   3. Les PNG sont copiés dans le dossier public (nginx)
-  4. POST vers CarouselApproval.gs (projet Apps Script DÉDIÉ, séparé de
-     celui de la vidéo)
+  4. POST vers CarouselApproval.gs — une fois par compte (projet Apps
+     Script DÉDIÉ, séparé de celui de la vidéo)
         |
         v
 CarouselApproval.gs (nouveau projet Apps Script, sa propre Sheet)
-  5. Email d'approbation groupé (miniatures des slides + caption + hashtags)
+  5. Un email d'approbation par compte (miniatures des slides + caption +
+     hashtags) — donc 2 emails au total pour 1 thème envoyé
   6. Ton clic "Approuver" (ou 6h sans réponse) marque le lot approuvé —
      ne publie PAS tout de suite
-  7. Au prochain créneau de pointe du compte, publication automatique sur
-     Facebook + Instagram (carrousel natif)
+  7. Au prochain créneau de pointe DE CE compte, publication automatique
+     sur Facebook + Instagram (carrousel natif)
 ```
 
 ## Étape 1 — Créer une NOUVELLE Google Sheet (dédiée au carrousel)
@@ -124,31 +132,39 @@ publier ni les mettre en file d'attente — regarde-les avant de continuer.
 
 ## Étape 10 — Générer et mettre en file d'attente pour de vrai
 
+Un seul thème (en français) génère automatiquement les deux carrousels :
+
 ```bash
-python carousel_pipeline.py kinepulse "Les bienfaits du massage thérapeutique"
-python carousel_pipeline.py kinesportif "<thème>"
+python carousel_pipeline.py both "Les bienfaits du massage thérapeutique"
 ```
 
-Tu reçois l'email d'approbation habituel. Rien n'est publié avant ton clic
-(ou 6h d'attente automatique), et même après approbation, la publication
-n'a lieu qu'au prochain créneau de pointe du compte.
+Tu reçois **deux** emails d'approbation (un pour KinéPulse en français, un
+pour KinéSportif en arabe traduit/adapté par Claude à partir du même
+thème). Rien n'est publié avant ton clic sur chacun (ou 6h d'attente
+automatique), et même après approbation, la publication n'a lieu qu'au
+prochain créneau de pointe de chaque compte.
+
+Pour générer un seul des deux (ajustement manuel/ciblé) :
+```bash
+python carousel_pipeline.py kinepulse "<thème>"
+python carousel_pipeline.py kinesportif "<thème>"
+```
 
 ## Étape 11 (optionnel) — Automatiser avec un dossier de thèmes + cron
 
 Comme pour la vidéo, dépose un fichier `.txt` (un thème par ligne) dans :
 
-- `./themes_a_traiter_kinepulse/`
-- `./themes_a_traiter_kinesportif/`
+- `./themes_a_traiter/`
 
 Puis cron (exemple : tous les jours à 7h) :
 
 ```bash
-0 7 * * * cd /chemin/vers/le/script && python3 carousel_pipeline.py daily kinepulse
-5 7 * * * cd /chemin/vers/le/script && python3 carousel_pipeline.py daily kinesportif
+0 7 * * * cd /chemin/vers/le/script && python3 carousel_pipeline.py daily
 ```
 
-Chaque run traite le thème le plus ancien en attente, génère le carrousel,
-et le déplace vers `themes_traitees/` une fois fait.
+Chaque run traite le thème le plus ancien en attente, génère les **deux**
+carrousels à partir de lui, et déplace le fichier vers `themes_traitees/`
+une fois fait.
 
 ## Étape 12 (optionnel) — Ajouter les thèmes depuis ton téléphone (Telegram)
 
@@ -174,13 +190,12 @@ un deuxième bot (gratuit) évite le problème plutôt que de le contourner.
    ```
 
 **Format des messages** que tu envoies au bot :
-- `Les bienfaits du massage thérapeutique` → ajouté pour **KinéPulse**
-- `ks <thème>` → ajouté pour **KinéSportif**
+- `Les bienfaits du massage thérapeutique` → thème ajouté à la file —
+  génèrera **les deux carrousels** (KinéPulse français + KinéSportif arabe)
 - `status` → répond combien de thèmes sont en attente
 
-Le thème part ensuite dans le même dossier que le mode manuel
-(`themes_a_traiter_kinepulse/` ou `themes_a_traiter_kinesportif/`) — le
-cron de l'étape 11 (`daily`) le traite normalement.
+Le thème part dans le même dossier que le mode manuel (`themes_a_traiter/`)
+— le cron de l'étape 11 (`daily`) le traite normalement.
 
 ## Limites actuelles
 
