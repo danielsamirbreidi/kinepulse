@@ -33,7 +33,7 @@ const SHEET_ID = '1MSxA4W8574RqOZd6LIpeNmNJ-CaHVd9pGfGGqBnlIrA';
 
 // TODO : remplace par l'URL /exec de CE déploiement (Apps Script >
 // Déployer > Gérer les déploiements) — pas celle du pipeline vidéo.
-const WEBAPP_URL = 'COLLE_ICI_L_URL_DE_CE_DEPLOIEMENT';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwQm3NvXVDwEESWSOqd1RXh8XTB5t1MDGp2jrGW56I-OUdqa8Lti2ij6emFxsjZha24/exec';
 
 const APPROVAL_DELAY_HOURS = 6;
 
