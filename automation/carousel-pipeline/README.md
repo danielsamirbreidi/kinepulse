@@ -71,10 +71,19 @@ CarouselApproval.gs (nouveau projet Apps Script, sa propre Sheet)
 | `IG_ACCESS_TOKEN_KINESPORTIF` | token Instagram KinéSportif |
 | `FB_PAGE_ID_KINESPORTIF` | ID Page Facebook KinéSportif |
 | `FB_PAGE_TOKEN_KINESPORTIF` | token Page Facebook KinéSportif |
+| `FB_APP_SECRET` | secret de ton App Meta (nécessaire pour le renouvellement automatique des tokens) |
+| `FB_USER_TOKEN` | ton token utilisateur Facebook long-lived (idem) |
 
 Ce sont les **mêmes valeurs** que celles déjà utilisées dans ton projet
 Apps Script vidéo (les tokens Meta ne changent pas selon le type de
 contenu) — copie-les simplement d'un projet à l'autre.
+
+**Pourquoi copier `FB_APP_SECRET`/`FB_USER_TOKEN` aussi ?** Ce projet a son
+propre stockage de propriétés, séparé de celui de la vidéo — sans ça, les
+tokens copiés ici resteraient figés et finiraient par expirer, puisque le
+renouvellement automatique du pipeline vidéo ne peut rafraîchir que ses
+propres tokens à lui. `setupTriggers()` (étape 5) installe un renouvellement
+hebdomadaire dédié au carrousel, complètement indépendant.
 
 ## Étape 4 — Déployer comme application Web
 
@@ -92,12 +101,18 @@ Dans l'éditeur Apps Script, sélectionne **`setupTriggers`** dans le menu
 déroulant en haut, clique **▶ Exécuter**. À faire **une seule fois** — ça
 active :
 - la vérification des approbations en attente (toutes les 30 min)
+- le renouvellement des tokens Meta (chaque semaine)
 - la publication au créneau de pointe (toutes les heures)
 
 ### Test rapide
 
 Exécute `testEmailCarouselKinePulse` — tu dois recevoir un email
 d'approbation avec 3 images de test et les boutons Approuver/Rejeter.
+
+Exécute aussi `testRenewal` une fois pour vérifier que le renouvellement
+des tokens fonctionne — regarde les logs (menu **Exécutions** ou
+**Affichage → Journaux**) : tu dois voir les 4 tokens renouvelés, sans
+erreur.
 
 ## Étape 6 — Installer Playwright sur ton serveur
 

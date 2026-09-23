@@ -20,7 +20,10 @@
  *   3. Propriétés du script (Paramètres du projet > Propriétés du script) :
  *        APPROVAL_EMAIL, IG_BUSINESS_ACCOUNT_ID(_KINESPORTIF),
  *        IG_ACCESS_TOKEN(_KINESPORTIF), FB_PAGE_ID(_KINESPORTIF),
- *        FB_PAGE_TOKEN(_KINESPORTIF)
+ *        FB_PAGE_TOKEN(_KINESPORTIF), FB_APP_SECRET, FB_USER_TOKEN
+ *        (ces deux dernières sont nécessaires pour le renouvellement
+ *        automatique des tokens — copie les mêmes valeurs que le projet
+ *        vidéo)
  *   4. Déploie comme application Web, copie l'URL dans WEBAPP_URL,
  *      redéploie une deuxième fois avec cette URL collée dans le code
  *   5. Exécute setupTriggers() une fois (menu déroulant > setupTriggers > ▶)
@@ -381,11 +384,101 @@ function sendErrorEmail(subject, details, severity) {
   GmailApp.sendEmail(APPROVAL_EMAIL, fullSubject, '', { htmlBody: body });
 }
 
+// ============ RENOUVELLEMENT DES TOKENS META ============
+// Ce projet Apps Script a SES PROPRES Propriétés du script, séparées de
+// celles du pipeline vidéo — une copie figée des tokens au moment où tu les
+// as collés. Sans ce renouvellement, ils expirent silencieusement au bout
+// de quelques semaines/mois. Même App Meta et mêmes Pages que le pipeline
+// vidéo (FB_APP_ID et les deux Page ID Facebook sont les tiens, réels).
+const FB_APP_ID = '1601080298464923';
+const FB_PAGE_ID_KINEPULSE_NUM = '1277403592131553';
+const FB_PAGE_ID_KINESPORTIF_NUM = '1242305195640340';
+
+function renewAllTokens() {
+  try {
+    renewFacebookUserToken();
+  } catch (err) {
+    sendErrorEmail('Carrousel — Échec renouvellement token utilisateur Facebook', err.message, 'critique');
+    return; // sans token utilisateur frais, inutile de continuer
+  }
+
+  try {
+    renewFacebookPageToken('kinepulse', FB_PAGE_ID_KINEPULSE_NUM);
+  } catch (err) {
+    sendErrorEmail('Carrousel — Échec renouvellement Page Token KinéPulse', err.message, 'critique');
+  }
+
+  try {
+    renewFacebookPageToken('kinesportif', FB_PAGE_ID_KINESPORTIF_NUM);
+  } catch (err) {
+    sendErrorEmail('Carrousel — Échec renouvellement Page Token KinéSportif', err.message, 'critique');
+  }
+
+  try {
+    renewInstagramToken('kinepulse');
+  } catch (err) {
+    sendErrorEmail('Carrousel — Échec renouvellement token Instagram KinéPulse', err.message, 'critique');
+  }
+
+  try {
+    renewInstagramToken('kinesportif');
+  } catch (err) {
+    sendErrorEmail('Carrousel — Échec renouvellement token Instagram KinéSportif', err.message, 'critique');
+  }
+}
+
+function renewFacebookUserToken() {
+  const appSecret = props.getProperty('FB_APP_SECRET');
+  const currentUserToken = props.getProperty('FB_USER_TOKEN');
+
+  const exchangeRes = UrlFetchApp.fetch(
+    `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${appSecret}&fb_exchange_token=${currentUserToken}`
+  );
+  const newUserToken = JSON.parse(exchangeRes.getContentText()).access_token;
+  props.setProperty('FB_USER_TOKEN', newUserToken);
+}
+
+function renewFacebookPageToken(account, pageId) {
+  const userToken = props.getProperty('FB_USER_TOKEN');
+  const suffix = account === 'kinesportif' ? '_KINESPORTIF' : '';
+
+  const pagesRes = UrlFetchApp.fetch(
+    `https://graph.facebook.com/v21.0/me/accounts?access_token=${userToken}`
+  );
+  const pages = JSON.parse(pagesRes.getContentText()).data;
+  const page = pages.find(function(p) { return p.id === pageId; });
+
+  if (page) {
+    props.setProperty(`FB_PAGE_TOKEN${suffix}`, page.access_token);
+  } else {
+    throw new Error(`Page ${pageId} (${account}) introuvable dans /me/accounts.`);
+  }
+}
+
+function renewInstagramToken(account) {
+  const suffix = account === 'kinesportif' ? '_KINESPORTIF' : '';
+  const currentToken = props.getProperty(`IG_ACCESS_TOKEN${suffix}`);
+
+  const res = UrlFetchApp.fetch(
+    `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${currentToken}`
+  );
+  const newToken = JSON.parse(res.getContentText()).access_token;
+  props.setProperty(`IG_ACCESS_TOKEN${suffix}`, newToken);
+}
+
+function testRenewal() {
+  renewAllTokens();
+  Logger.log('FB Page Token KinéPulse: ' + props.getProperty('FB_PAGE_TOKEN').substring(0, 20) + '...');
+  Logger.log('FB Page Token KinéSportif: ' + props.getProperty('FB_PAGE_TOKEN_KINESPORTIF').substring(0, 20) + '...');
+  Logger.log('IG Token KinéPulse: ' + props.getProperty('IG_ACCESS_TOKEN').substring(0, 20) + '...');
+  Logger.log('IG Token KinéSportif: ' + props.getProperty('IG_ACCESS_TOKEN_KINESPORTIF').substring(0, 20) + '...');
+}
+
 // ============ INSTALLATION DES DÉCLENCHEURS (à exécuter UNE SEULE FOIS) ============
 function setupTriggers() {
   ScriptApp.getProjectTriggers().forEach(function(t) {
     const fn = t.getHandlerFunction();
-    if (fn === 'checkPendingApprovals' || fn === 'checkPeakTimePublish') {
+    if (fn === 'checkPendingApprovals' || fn === 'checkPeakTimePublish' || fn === 'renewAllTokens') {
       ScriptApp.deleteTrigger(t);
     }
   });
@@ -396,13 +489,19 @@ function setupTriggers() {
     .everyMinutes(30)
     .create();
 
+  // Renouvelle les tokens Meta chaque semaine (avant qu'ils n'expirent)
+  ScriptApp.newTrigger('renewAllTokens')
+    .timeBased()
+    .everyDays(7)
+    .create();
+
   // Vérifie le créneau de pointe toutes les heures
   ScriptApp.newTrigger('checkPeakTimePublish')
     .timeBased()
     .everyHours(1)
     .create();
 
-  Logger.log('Déclencheurs installés : checkPendingApprovals (30 min), checkPeakTimePublish (1h).');
+  Logger.log('Déclencheurs installés : checkPendingApprovals (30 min), renewAllTokens (7 jours), checkPeakTimePublish (1h).');
 }
 
 // ============ TEST ============
