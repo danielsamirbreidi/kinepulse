@@ -345,11 +345,30 @@ def queue_carousel_for_approval(account: str, image_urls: list[str], caption: st
         "hashtags": hashtags,
     }, allow_redirects=False)
 
+    # doPost() a déjà fini de s'exécuter (et donc déjà créé le lot + envoyé
+    # l'email) au moment où ce 302 initial arrive — tout ce qui suit ne sert
+    # qu'à récupérer la confirmation JSON, pas à déclencher le travail.
+    # Le deuxième saut (googleusercontent.com/echo) se comporte parfois de
+    # façon peu fiable en dehors d'un navigateur (il peut retomber sur une
+    # page HTML au lieu du JSON) — donc une confirmation manquante ou non-JSON
+    # ici est traitée comme un avertissement, pas une erreur fatale : le
+    # courriel d'approbation est le signal fiable que ça a fonctionné.
     if resp.status_code in (301, 302, 303, 307, 308) and "Location" in resp.headers:
-        resp = requests.get(resp.headers["Location"])
+        try:
+            resp = requests.get(resp.headers["Location"], timeout=15)
+        except requests.exceptions.RequestException as e:
+            print(f"  (avertissement : impossible de confirmer la mise en file d'attente ({e}) — "
+                  f"vérifie quand même ton courriel, le lot a probablement été créé)")
+            return None
 
-    resp.raise_for_status()
-    result = resp.json()
+    try:
+        resp.raise_for_status()
+        result = resp.json()
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"  (avertissement : réponse de confirmation illisible ({e}) — "
+              f"vérifie quand même ton courriel, le lot a probablement été créé)")
+        return None
+
     if not result.get("success"):
         print(f"  (Apps Script queue error: {result.get('error')})")
     return result
