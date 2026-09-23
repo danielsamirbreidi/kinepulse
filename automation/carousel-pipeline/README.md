@@ -1,9 +1,12 @@
 # Pipeline Carrousel — Guide de déploiement
 
 Ce guide t'explique comment activer la génération + publication (avec ton
-approbation) de carrousels Instagram/Facebook, en réutilisant exactement la
-même mécanique que ton pipeline vidéo (mêmes comptes, mêmes créneaux de
-pointe, même Sheet "Queue", même email d'approbation).
+approbation) de carrousels Instagram/Facebook.
+
+**Important : ce système est complètement SÉPARÉ de ton pipeline vidéo.**
+Sa propre Google Sheet, son propre projet Apps Script, son propre email
+d'approbation, sa propre variable d'environnement. Rien n'est partagé —
+aucun risque de casser ou de mélanger les deux.
 
 **Coût : 0$ fixe.** Seule l'API Claude coûte quelques centimes par carrousel
 généré (texte court). Le rendu des slides utilise Playwright (Chromium
@@ -17,10 +20,11 @@ carousel_pipeline.py (ton serveur)
   2. Playwright rend chaque slide en PNG (template HTML/CSS aux couleurs
      du site : Fraunces/Inter, teal + laiton)
   3. Les PNG sont copiés dans le dossier public (nginx)
-  4. POST vers PipelineApproval.gs (même Apps Script que la vidéo)
+  4. POST vers CarouselApproval.gs (projet Apps Script DÉDIÉ, séparé de
+     celui de la vidéo)
         |
         v
-PipelineApproval.gs (Apps Script, déjà en place)
+CarouselApproval.gs (nouveau projet Apps Script, sa propre Sheet)
   5. Email d'approbation groupé (miniatures des slides + caption + hashtags)
   6. Ton clic "Approuver" (ou 6h sans réponse) marque le lot approuvé —
      ne publie PAS tout de suite
@@ -28,37 +32,66 @@ PipelineApproval.gs (Apps Script, déjà en place)
      Facebook + Instagram (carrousel natif)
 ```
 
-## Étape 1 — Mettre à jour ton script Apps Script existant
+## Étape 1 — Créer une NOUVELLE Google Sheet (dédiée au carrousel)
 
-1. Ouvre le projet Apps Script qui contient déjà ton flux d'approbation
-   vidéo (celui avec `queueBatchForApproval`, `publishToInstagram`, etc.).
-2. Remplace tout le contenu de `Code.gs` (ou le fichier équivalent) par le
-   contenu de **`PipelineApproval.gs`** fourni dans ce dossier. Il contient
-   tout ton code existant, inchangé, plus le support carrousel.
-3. Redéploie : **Déployer** → **Gérer les déploiements** → icône crayon →
-   **Nouvelle version** → **Déployer**. L'URL reste la même.
+1. Va sur [sheets.google.com](https://sheets.google.com), crée une feuille
+   vide, nomme-la par exemple **"KinéPulse — Carrousels"**.
+2. Copie son ID depuis l'URL — la partie entre `/d/` et `/edit` :
+   `https://docs.google.com/spreadsheets/d/CET_ID_ICI/edit`
 
-### Si ta feuille Google Sheet "Queue" existe déjà
+## Étape 2 — Créer un NOUVEAU projet Apps Script (dédié, séparé de la vidéo)
 
-Ouvre-la et ajoute deux colonnes d'en-tête sur la ligne 1 (n'importe où,
-l'ordre n'a pas d'importance) :
+1. Va sur [script.google.com](https://script.google.com) → **Nouveau projet**
+2. Renomme-le `KinéPulse Carrousel Backend`
+3. Supprime le code par défaut, colle le contenu de **`CarouselApproval.gs`**
+   fourni dans ce dossier
+4. En haut du fichier, remplace :
+   - `SHEET_ID` par l'ID copié à l'étape 1
+   - `WEBAPP_URL` — laisse tel quel pour l'instant, tu le rempliras à
+     l'étape 4 après le premier déploiement
 
-| Nouvelle colonne | Rôle |
+## Étape 3 — Ajouter tes clés (Paramètres du projet → Propriétés du script)
+
+| Propriété | Valeur |
 |---|---|
-| `media_type` | `video` ou `carousel` (les anciennes lignes vidéo peuvent rester vides — traité comme `video` par défaut) |
-| `media_urls` | JSON des URLs d'images, seulement pour les lignes `carousel` |
+| `APPROVAL_EMAIL` | ton courriel, pour recevoir les demandes d'approbation |
+| `IG_BUSINESS_ACCOUNT_ID` | ID Instagram KinéPulse (même valeur que dans ton projet vidéo) |
+| `IG_ACCESS_TOKEN` | token Instagram KinéPulse (`IGAA...`) |
+| `FB_PAGE_ID` | ID Page Facebook KinéPulse |
+| `FB_PAGE_TOKEN` | token Page Facebook KinéPulse |
+| `IG_BUSINESS_ACCOUNT_ID_KINESPORTIF` | ID Instagram KinéSportif |
+| `IG_ACCESS_TOKEN_KINESPORTIF` | token Instagram KinéSportif |
+| `FB_PAGE_ID_KINESPORTIF` | ID Page Facebook KinéSportif |
+| `FB_PAGE_TOKEN_KINESPORTIF` | token Page Facebook KinéSportif |
 
-Ou lance une fois la fonction `fixHeaderRow()` depuis l'éditeur Apps Script
-(menu déroulant en haut → sélectionne `fixHeaderRow` → ▶ Exécuter) — elle
-réécrit l'en-tête complet automatiquement.
+Ce sont les **mêmes valeurs** que celles déjà utilisées dans ton projet
+Apps Script vidéo (les tokens Meta ne changent pas selon le type de
+contenu) — copie-les simplement d'un projet à l'autre.
+
+## Étape 4 — Déployer comme application Web
+
+1. **Déployer** → **Nouveau déploiement** → Type : **Application Web**
+2. Exécuter en tant que : **Moi** — Qui a accès : **Tout le monde**
+3. **Déployer**, autorise l'accès à Gmail/Sheets si demandé
+4. Copie l'**URL de l'application Web** (`https://script.google.com/macros/s/.../exec`)
+5. Colle cette URL dans la constante `WEBAPP_URL` en haut du code
+6. Redéploie une deuxième fois (**Nouvelle version**) pour que le code à
+   jour (avec la bonne URL) soit actif
+
+## Étape 5 — Activer les déclencheurs automatiques
+
+Dans l'éditeur Apps Script, sélectionne **`setupTriggers`** dans le menu
+déroulant en haut, clique **▶ Exécuter**. À faire **une seule fois** — ça
+active :
+- la vérification des approbations en attente (toutes les 30 min)
+- la publication au créneau de pointe (toutes les heures)
 
 ### Test rapide
 
-Dans l'éditeur Apps Script, exécute `testEmailCarouselKinePulse` — tu dois
-recevoir un email d'approbation avec 3 images de test (picsum.photos) et
-les boutons Approuver/Rejeter.
+Exécute `testEmailCarouselKinePulse` — tu dois recevoir un email
+d'approbation avec 3 images de test et les boutons Approuver/Rejeter.
 
-## Étape 2 — Installer Playwright sur ton serveur
+## Étape 6 — Installer Playwright sur ton serveur
 
 Sur le même serveur (Oracle Cloud) qui fait déjà tourner `kinepulse_pipeline.py` :
 
@@ -67,25 +100,20 @@ pip install playwright requests --break-system-packages
 playwright install chromium --with-deps
 ```
 
-## Étape 3 — Configurer les variables d'environnement
-
-Réutilise les variables déjà en place pour la vidéo (`ANTHROPIC_API_KEY`,
-`APPSCRIPT_WEBAPP_URL`, `PIPELINE_SECRET`, alertes email) et ajoute :
+## Étape 7 — Configurer les variables d'environnement
 
 ```bash
-export PUBLIC_MEDIA_BASE_URL="https://ton-domaine.com/media"   # ou la même valeur que PUBLIC_VIDEO_BASE_URL
-export PUBLIC_MEDIA_DIR="/var/www/media"                        # dossier local servi par nginx
+export ANTHROPIC_API_KEY="..."                                  # même clé que la vidéo
+export CAROUSEL_APPSCRIPT_WEBAPP_URL="https://script.google.com/macros/s/.../exec"  # URL de l'étape 4 — PAS celle de la vidéo
+export PUBLIC_MEDIA_BASE_URL="https://ton-domaine.com/media"    # ou la même valeur que PUBLIC_VIDEO_BASE_URL
+export PUBLIC_MEDIA_DIR="/var/www/media"                         # dossier local servi par nginx
 ```
 
-Si ton nginx sert déjà un dossier public générique (pas seulement les
-vidéos), tu peux simplement pointer `PUBLIC_MEDIA_DIR` vers ce même dossier.
+## Étape 8 — Copier le script et les templates
 
-## Étape 4 — Copier le script et les templates
+Copie `carousel_pipeline.py` et le dossier `templates/` sur ton serveur.
 
-Copie `carousel_pipeline.py` et le dossier `templates/` sur ton serveur,
-au même niveau que `kinepulse_pipeline.py`.
-
-## Étape 5 — Tester avant de publier pour de vrai
+## Étape 9 — Tester avant de publier pour de vrai
 
 ```bash
 python carousel_pipeline.py test kinepulse "5 signes qu'il faut consulter en kinésithérapie"
@@ -94,7 +122,7 @@ python carousel_pipeline.py test kinepulse "5 signes qu'il faut consulter en kin
 Ça génère les images localement dans `./carousel_output/` **sans** les
 publier ni les mettre en file d'attente — regarde-les avant de continuer.
 
-## Étape 6 — Générer et mettre en file d'attente pour de vrai
+## Étape 10 — Générer et mettre en file d'attente pour de vrai
 
 ```bash
 python carousel_pipeline.py kinepulse "Les bienfaits du massage thérapeutique"
@@ -105,7 +133,7 @@ Tu reçois l'email d'approbation habituel. Rien n'est publié avant ton clic
 (ou 6h d'attente automatique), et même après approbation, la publication
 n'a lieu qu'au prochain créneau de pointe du compte.
 
-## Étape 7 (optionnel) — Automatiser avec un dossier de thèmes + cron
+## Étape 11 (optionnel) — Automatiser avec un dossier de thèmes + cron
 
 Comme pour la vidéo, dépose un fichier `.txt` (un thème par ligne) dans :
 
@@ -125,11 +153,9 @@ et le déplace vers `themes_traitees/` une fois fait.
 ## Limites actuelles
 
 - **TikTok n'est pas inclus** pour le carrousel (Instagram + Facebook
-  seulement, comme demandé). TikTok supporte les posts photo via une API
-  séparée — possible à ajouter plus tard si besoin.
+  seulement, comme demandé).
 - **Format des slides** : 1080×1350 (ratio 4:5, recommandé par Instagram
-  pour maximiser l'espace dans le fil). Toutes les slides d'un même
-  carrousel gardent le même ratio.
+  pour maximiser l'espace dans le fil).
 - **4 à 6 slides de contenu** générées par Claude, plus une couverture et
   une fermeture (donc 6 à 8 images au total) — ajustable dans le prompt de
   `generate_carousel_content()` si tu veux plus ou moins.

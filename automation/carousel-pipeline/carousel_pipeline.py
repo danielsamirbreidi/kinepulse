@@ -8,10 +8,12 @@ Génère un carrousel d'images informatives à partir d'un thème :
   2. Chaque slide est rendue en PNG (Playwright + template HTML/CSS de marque
      — mêmes couleurs/polices que kinepulse.ca)
   3. Les PNG sont copiées dans le dossier que ton serveur sert publiquement
-  4. Le lot est mis en file d'attente pour approbation via LE MÊME Apps
-     Script que la vidéo (voir PipelineApproval.gs dans ce dossier) — un
-     clic "Approuver" publie au prochain créneau de pointe du compte, comme
-     pour les vidéos. Rien n'est publié automatiquement sans ton accord.
+  4. Le lot est mis en file d'attente pour approbation via un projet Apps
+     Script DÉDIÉ au carrousel (voir CarouselApproval.gs dans ce dossier —
+     complètement séparé du pipeline vidéo : sa propre Google Sheet, son
+     propre déploiement, son propre email) — un clic "Approuver" publie au
+     prochain créneau de pointe du compte. Rien n'est publié automatiquement
+     sans ton accord.
 
 Usage:
   Test (génère et sauvegarde localement, ne met PAS en file d'attente) :
@@ -31,10 +33,11 @@ Requirements (en plus de celles déjà utilisées pour la vidéo) :
   pip install playwright requests --break-system-packages
   playwright install chromium --with-deps
 
-Variables d'environnement (réutilise celles déjà en place pour la vidéo — voir
-kinepulse_pipeline.py — plus deux nouvelles) :
-  ANTHROPIC_API_KEY
-  APPSCRIPT_WEBAPP_URL, PIPELINE_SECRET
+Variables d'environnement :
+  ANTHROPIC_API_KEY      -> réutilise la même clé que le pipeline vidéo
+  CAROUSEL_APPSCRIPT_WEBAPP_URL -> URL /exec du projet Apps Script DÉDIÉ au
+                             carrousel (CarouselApproval.gs) — PAS la même
+                             URL que le pipeline vidéo
   PUBLIC_MEDIA_BASE_URL   -> URL HTTPS publique du dossier servi par nginx
                              (peut être la même valeur que PUBLIC_VIDEO_BASE_URL
                              si ton nginx sert déjà un dossier public générique)
@@ -72,8 +75,11 @@ SLIDE_TEMPLATE = TEMPLATE_PATH.read_text(encoding="utf-8")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = "claude-sonnet-4-6"
 
-APPSCRIPT_WEBAPP_URL = os.environ.get("APPSCRIPT_WEBAPP_URL", "")
-PIPELINE_SECRET = os.environ.get("PIPELINE_SECRET", "")
+# NOTE : projet Apps Script SÉPARÉ du pipeline vidéo (CarouselApproval.gs,
+# sa propre Google Sheet, son propre déploiement) — volontairement une
+# variable d'environnement différente de celle du pipeline vidéo
+# (APPSCRIPT_WEBAPP_URL) pour ne jamais mélanger les deux systèmes.
+CAROUSEL_APPSCRIPT_WEBAPP_URL = os.environ.get("CAROUSEL_APPSCRIPT_WEBAPP_URL", "")
 
 PUBLIC_MEDIA_BASE_URL = os.environ.get("PUBLIC_MEDIA_BASE_URL", os.environ.get("PUBLIC_VIDEO_BASE_URL", ""))
 PUBLIC_MEDIA_DIR = os.environ.get("PUBLIC_MEDIA_DIR", "")
@@ -303,18 +309,17 @@ def publish_images_publicly(image_paths: list[Path]) -> list[str]:
 # ──────────────────────────────────────────────────────────────────────────
 
 def queue_carousel_for_approval(account: str, image_urls: list[str], caption: str, hashtags: str) -> dict | None:
-    """POST vers LE MÊME Apps Script que la vidéo (media_type: 'carousel'),
-    même logique de redirection que queue_batch_for_approval() côté vidéo —
-    voir la note dans kinepulse_pipeline.py sur pourquoi les redirections
-    sont suivies manuellement, sans en-têtes."""
-    if not APPSCRIPT_WEBAPP_URL:
-        print("  (APPSCRIPT_WEBAPP_URL non configuré — impossible de mettre en file d'attente)")
+    """POST vers le projet Apps Script DÉDIÉ au carrousel (CarouselApproval.gs
+    — complètement séparé du pipeline vidéo). Même logique de redirection
+    que côté vidéo — voir la note dans kinepulse_pipeline.py sur pourquoi
+    les redirections sont suivies manuellement, sans en-têtes."""
+    if not CAROUSEL_APPSCRIPT_WEBAPP_URL:
+        print("  (CAROUSEL_APPSCRIPT_WEBAPP_URL non configuré — impossible de mettre en file d'attente)")
         return None
 
-    resp = requests.post(APPSCRIPT_WEBAPP_URL, json={
+    resp = requests.post(CAROUSEL_APPSCRIPT_WEBAPP_URL, json={
         "account": account,
         "platforms": ["facebook", "instagram"],
-        "media_type": "carousel",
         "media_urls": image_urls,
         "caption": caption,
         "hashtags": hashtags,
