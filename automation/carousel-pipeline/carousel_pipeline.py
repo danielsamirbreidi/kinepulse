@@ -29,6 +29,12 @@ Usage:
     (dépose un fichier .txt contenant un thème, une ligne, dans
     ./themes_a_traiter_kinepulse/ ou ./themes_a_traiter_kinesportif/)
 
+  Depuis ton téléphone (bot Telegram DÉDIÉ, séparé de celui de la vidéo) :
+    python carousel_pipeline.py check-telegram
+    (cron toutes les 15-30 min — envoie un message au bot pour ajouter un
+    thème : texte seul -> KinéPulse, "ks <thème>" -> KinéSportif,
+    "status" -> nombre de thèmes en attente)
+
 Requirements (en plus de celles déjà utilisées pour la vidéo) :
   pip install playwright requests --break-system-packages
   playwright install chromium --with-deps
@@ -45,6 +51,10 @@ Variables d'environnement :
                              les PNG sont copiés pour devenir accessibles)
   ALERT_EMAIL_FROM / ALERT_EMAIL_APP_PASSWORD / ALERT_EMAIL_TO (optionnel,
                              réutilise les mêmes valeurs que la vidéo)
+  CAROUSEL_TELEGRAM_BOT_TOKEN / CAROUSEL_TELEGRAM_CHAT_ID (optionnel — un
+                             DEUXIÈME bot Telegram, distinct de celui de la
+                             vidéo, pour ajouter des thèmes depuis ton
+                             téléphone sans SSH)
 """
 from __future__ import annotations
 
@@ -87,6 +97,16 @@ PUBLIC_MEDIA_DIR = os.environ.get("PUBLIC_MEDIA_DIR", "")
 ALERT_EMAIL_FROM = os.environ.get("ALERT_EMAIL_FROM", "")
 ALERT_EMAIL_APP_PASSWORD = os.environ.get("ALERT_EMAIL_APP_PASSWORD", "")
 ALERT_EMAIL_TO = os.environ.get("ALERT_EMAIL_TO", ALERT_EMAIL_FROM)
+
+# Bot Telegram DÉDIÉ au carrousel — volontairement un bot séparé de celui de
+# la vidéo (CAROUSEL_TELEGRAM_BOT_TOKEN, pas TELEGRAM_BOT_TOKEN). Deux
+# process qui interrogent (getUpdates) le MÊME bot se marchent dessus : côté
+# Telegram, un offset envoyé par l'un des deux fait "oublier" les messages
+# pour l'autre aussi — donc un deuxième bot, gratuit, évite ce problème
+# plutôt que de le contourner.
+CAROUSEL_TELEGRAM_BOT_TOKEN = os.environ.get("CAROUSEL_TELEGRAM_BOT_TOKEN", "")
+CAROUSEL_TELEGRAM_CHAT_ID = os.environ.get("CAROUSEL_TELEGRAM_CHAT_ID", "")
+TELEGRAM_STATE_FILE = WORKDIR / "telegram_last_update_id.txt"
 
 SLIDE_WIDTH = 1080
 SLIDE_HEIGHT = 1350
@@ -362,6 +382,95 @@ def send_failure_alert(context: str, error: Exception):
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# TELEGRAM — dépose un thème depuis ton téléphone, sans SSH
+# ──────────────────────────────────────────────────────────────────────────
+
+def check_telegram_and_create_topics():
+    """Cron this every 15-30 min. Format des messages envoyés au bot :
+      <thème>            -> themes_a_traiter_kinepulse/   (compte par défaut)
+      ks <thème>         -> themes_a_traiter_kinesportif/
+      status             -> répond avec le nombre de thèmes en attente
+    """
+    if not CAROUSEL_TELEGRAM_BOT_TOKEN:
+        print("  (pas de CAROUSEL_TELEGRAM_BOT_TOKEN configuré — étape ignorée)")
+        return
+
+    last_id = 0
+    if TELEGRAM_STATE_FILE.exists():
+        last_id = int(TELEGRAM_STATE_FILE.read_text(encoding="utf-8").strip() or 0)
+
+    resp = requests.get(
+        f"https://api.telegram.org/bot{CAROUSEL_TELEGRAM_BOT_TOKEN}/getUpdates",
+        params={"offset": last_id + 1, "timeout": 5},
+    )
+    resp.raise_for_status()
+    updates = resp.json().get("result", [])
+
+    if not updates:
+        print("  (aucun nouveau message Telegram)")
+        return
+
+    highest_id = last_id
+    created = 0
+    for update in updates:
+        highest_id = max(highest_id, update["update_id"])
+        message = update.get("message", {})
+        chat_id = str(message.get("chat", {}).get("id", ""))
+        text = message.get("text", "").strip()
+
+        if CAROUSEL_TELEGRAM_CHAT_ID and chat_id != CAROUSEL_TELEGRAM_CHAT_ID:
+            continue  # ignore les messages de quelqu'un d'autre
+
+        if not text:
+            continue
+
+        if text.lower() == "status":
+            send_telegram_reply(chat_id, build_topic_status_message())
+            continue
+
+        if text.lower().startswith("ks "):
+            account = "kinesportif"
+            topic = text[3:].strip()
+        else:
+            account = "kinepulse"
+            topic = text
+
+        if not topic:
+            continue
+
+        filename = f"telegram_{update['update_id']}.txt"
+        (THEMES_FOLDER[account] / filename).write_text(topic, encoding="utf-8")
+        created += 1
+        print(f"  Créé {THEMES_FOLDER[account].name}/{filename} -> {topic!r}")
+
+    TELEGRAM_STATE_FILE.write_text(str(highest_id), encoding="utf-8")
+    print(f"Traité {len(updates)} message(s), créé {created} thème(s).")
+
+
+def send_telegram_reply(chat_id: str, text: str):
+    requests.post(
+        f"https://api.telegram.org/bot{CAROUSEL_TELEGRAM_BOT_TOKEN}/sendMessage",
+        json={"chat_id": chat_id, "text": text},
+    )
+
+
+def build_topic_status_message() -> str:
+    kp_count = len(list(THEMES_FOLDER["kinepulse"].glob("*.txt")))
+    ks_count = len(list(THEMES_FOLDER["kinesportif"].glob("*.txt")))
+    total = kp_count + ks_count
+
+    if total == 0:
+        return "📭 Aucun thème en attente. Envoie un message pour en ajouter (ou 'ks <thème>' pour KinéSportif)."
+
+    return (
+        f"📋 {total} thème(s) en attente\n"
+        f"  • {kp_count} pour KinéPulse\n"
+        f"  • {ks_count} pour KinéSportif\n\n"
+        f"Traités automatiquement par le cron quotidien."
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # ORCHESTRATION
 # ──────────────────────────────────────────────────────────────────────────
 
@@ -447,6 +556,13 @@ if __name__ == "__main__":
             print(f"PIPELINE FAILED: {e}")
             send_failure_alert(f"run_carousel ({sys.argv[1]})", e)
             sys.exit(1)
+
+    elif sys.argv[1] == "check-telegram":
+        try:
+            check_telegram_and_create_topics()
+        except Exception as e:
+            print(f"CHECK-TELEGRAM FAILED: {e}")
+            send_failure_alert("check_telegram_and_create_topics", e)
 
     else:
         print(__doc__)

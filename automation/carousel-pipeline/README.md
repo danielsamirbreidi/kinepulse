@@ -150,6 +150,38 @@ Puis cron (exemple : tous les jours à 7h) :
 Chaque run traite le thème le plus ancien en attente, génère le carrousel,
 et le déplace vers `themes_traitees/` une fois fait.
 
+## Étape 12 (optionnel) — Ajouter les thèmes depuis ton téléphone (Telegram)
+
+Comme pour la vidéo, mais avec **un bot Telegram séparé** (pas celui de la
+vidéo) — deux processus qui écoutent le même bot se marchent dessus, donc
+un deuxième bot (gratuit) évite le problème plutôt que de le contourner.
+
+1. Ouvre Telegram, cherche **@BotFather**, envoie `/newbot`, suis les
+   instructions (nom + identifiant du bot) — tu reçois un token
+2. Envoie n'importe quel message à ton nouveau bot pour l'activer
+3. Trouve ton `chat_id` : va sur
+   `https://api.telegram.org/bot<TON_TOKEN>/getUpdates` dans un navigateur
+   juste après avoir envoyé ton message — le `chat_id` apparaît dans la
+   réponse JSON
+4. Ajoute à tes variables d'environnement :
+   ```bash
+   export CAROUSEL_TELEGRAM_BOT_TOKEN="123456:ABC-..."
+   export CAROUSEL_TELEGRAM_CHAT_ID="123456789"
+   ```
+5. Cron (toutes les 20 minutes par exemple) :
+   ```bash
+   */20 * * * * cd /chemin/vers/le/script && python3 carousel_pipeline.py check-telegram
+   ```
+
+**Format des messages** que tu envoies au bot :
+- `Les bienfaits du massage thérapeutique` → ajouté pour **KinéPulse**
+- `ks <thème>` → ajouté pour **KinéSportif**
+- `status` → répond combien de thèmes sont en attente
+
+Le thème part ensuite dans le même dossier que le mode manuel
+(`themes_a_traiter_kinepulse/` ou `themes_a_traiter_kinesportif/`) — le
+cron de l'étape 11 (`daily`) le traite normalement.
+
 ## Limites actuelles
 
 - **TikTok n'est pas inclus** pour le carrousel (Instagram + Facebook
