@@ -70,6 +70,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import re
 import shutil
 import smtplib
 import sys
@@ -413,14 +414,54 @@ def send_failure_alert(context: str, error: Exception):
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# TELEGRAM — dépose un thème depuis ton téléphone, sans SSH
+# EXTRACTION DE THÈMES — un message/fichier peut contenir plusieurs thèmes,
+# un par ligne (ex: une liste copiée depuis un calendrier de contenu).
+# Partagé entre le bot Telegram et l'import en masse (import-themes).
+# ──────────────────────────────────────────────────────────────────────────
+
+_NUMBERED_LINE = re.compile(r'^\d+[.)]\s*(.+)')
+_CATEGORY_HEADER = re.compile(r'\(\d+\)\s*$')  # ex: "Massage détente (16)"
+
+
+def extract_topics_from_text(text: str) -> list[str]:
+    """Découpe un texte en une liste de thèmes, un par ligne :
+      - lignes vides -> ignorées
+      - lignes d'en-tête de catégorie du style "Nom (16)" -> ignorées
+      - lignes numérotées ("1. ", "12) ") -> la numérotation est retirée
+      - toute autre ligne -> gardée telle quelle (permet d'envoyer un seul
+        thème sans aucune numérotation, comme avant)
+    """
+    topics = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        numbered = _NUMBERED_LINE.match(line)
+        if numbered:
+            topics.append(numbered.group(1).strip())
+        elif not _CATEGORY_HEADER.search(line):
+            topics.append(line)
+    return topics
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# TELEGRAM — dépose un ou plusieurs thèmes depuis ton téléphone, sans SSH
 # ──────────────────────────────────────────────────────────────────────────
 
 def check_telegram_and_create_topics():
     """Cron this every 15-30 min. Format des messages envoyés au bot :
-      <thème>   -> ajouté à la file (un seul thème -> les DEUX carrousels,
-                   KinéPulse en français + KinéSportif en arabe traduit)
-      status    -> répond avec le nombre de thèmes en attente
+      <thème>          -> ajouté à la file (un seul thème -> les DEUX
+                          carrousels, KinéPulse français + KinéSportif arabe)
+      <thème 1>
+      <thème 2>
+      ...              -> plusieurs lignes -> plusieurs thèmes ajoutés
+                          d'un coup (voir extract_topics_from_text)
+      status           -> répond avec le nombre de thèmes en attente
+
+    NOTE : Telegram limite un message texte à ~4096 caractères — pour une
+    liste plus longue (ex: un calendrier de contenu de 100 thèmes), utilise
+    plutôt `python carousel_pipeline.py import-themes` directement sur le
+    serveur (voir README), qui n'a pas cette limite.
     """
     if not CAROUSEL_TELEGRAM_BOT_TOKEN:
         print("  (pas de CAROUSEL_TELEGRAM_BOT_TOKEN configuré — étape ignorée)")
@@ -447,25 +488,28 @@ def check_telegram_and_create_topics():
         highest_id = max(highest_id, update["update_id"])
         message = update.get("message", {})
         chat_id = str(message.get("chat", {}).get("id", ""))
-        topic = message.get("text", "").strip()
+        raw_text = message.get("text", "").strip()
 
         if CAROUSEL_TELEGRAM_CHAT_ID and chat_id != CAROUSEL_TELEGRAM_CHAT_ID:
             continue  # ignore les messages de quelqu'un d'autre
 
-        if not topic:
+        if not raw_text:
             continue
 
-        if topic.lower() == "status":
+        if raw_text.lower() == "status":
             send_telegram_reply(chat_id, build_topic_status_message())
             continue
 
-        filename = f"telegram_{update['update_id']}.txt"
-        (THEMES_FOLDER / filename).write_text(topic, encoding="utf-8")
-        created += 1
-        print(f"  Créé {THEMES_FOLDER.name}/{filename} -> {topic!r}")
+        topics = extract_topics_from_text(raw_text)
+        for i, topic in enumerate(topics):
+            filename = f"telegram_{update['update_id']}_{i:03d}.txt"
+            (THEMES_FOLDER / filename).write_text(topic, encoding="utf-8")
+            created += 1
+        if topics:
+            print(f"  {len(topics)} thème(s) créé(s) depuis le message {update['update_id']}")
 
     TELEGRAM_STATE_FILE.write_text(str(highest_id), encoding="utf-8")
-    print(f"Traité {len(updates)} message(s), créé {created} thème(s).")
+    print(f"Traité {len(updates)} message(s), créé {created} thème(s) au total.")
 
 
 def send_telegram_reply(chat_id: str, text: str):
@@ -555,6 +599,19 @@ def run_carousel_daily():
     print(f"Déplacé {theme_file.name} -> {processed_path}")
 
 
+def import_themes_from_text(text: str) -> int:
+    """Importe en masse : un thème par ligne, avec la même logique de
+    nettoyage que le bot Telegram (ignore les lignes vides et les en-têtes
+    de catégorie du style "Nom (16)", retire la numérotation). Retourne le
+    nombre de thèmes créés."""
+    topics = extract_topics_from_text(text)
+    timestamp = int(time.time())
+    for i, topic in enumerate(topics):
+        filename = f"import_{timestamp}_{i:03d}.txt"
+        (THEMES_FOLDER / filename).write_text(topic, encoding="utf-8")
+    return len(topics)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__)
@@ -601,6 +658,13 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"CHECK-TELEGRAM FAILED: {e}")
             send_failure_alert("check_telegram_and_create_topics", e)
+
+    elif sys.argv[1] == "import-themes":
+        # Lit une liste de thèmes depuis l'entrée standard (pas de limite de
+        # longueur, contrairement à un message Telegram) — voir README.
+        text = sys.stdin.read()
+        count = import_themes_from_text(text)
+        print(f"{count} thème(s) importé(s) dans {THEMES_FOLDER}/")
 
     else:
         print(__doc__)

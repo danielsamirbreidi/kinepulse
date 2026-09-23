@@ -205,12 +205,52 @@ un deuxième bot (gratuit) évite le problème plutôt que de le contourner.
    ```
 
 **Format des messages** que tu envoies au bot :
-- `Les bienfaits du massage thérapeutique` → thème ajouté à la file —
-  génèrera **les deux carrousels** (KinéPulse français + KinéSportif arabe)
+- `Les bienfaits du massage thérapeutique` → un seul thème ajouté à la file
+- Un message avec **plusieurs lignes** → plusieurs thèmes ajoutés d'un coup :
+  ```
+  Les bienfaits du massage thérapeutique
+  Pourquoi consulter en kinésithérapie
+  Comment fonctionne l'EMS
+  ```
+- Une liste numérotée avec des en-têtes de catégorie fonctionne aussi — la
+  numérotation est retirée et les en-têtes (ex: `Massage détente (16)`)
+  sont ignorés automatiquement
 - `status` → répond combien de thèmes sont en attente
 
-Le thème part dans le même dossier que le mode manuel (`themes_a_traiter/`)
-— le cron de l'étape 11 (`daily`) le traite normalement.
+Le(s) thème(s) partent dans le même dossier que le mode manuel
+(`themes_a_traiter/`) — le cron de l'étape 11 (`daily`) les traite un par
+jour, dans l'ordre où ils ont été ajoutés.
+
+⚠️ **Limite Telegram : ~4096 caractères par message.** Pour une longue
+liste (calendrier de contenu de dizaines de thèmes), le message serait
+tronqué ou refusé — utilise plutôt l'import en masse ci-dessous.
+
+## Étape 13 (optionnel) — Importer une longue liste de thèmes en masse
+
+Pas de limite de longueur ici, contrairement à Telegram — utile pour un
+calendrier de contenu préparé à l'avance (ex: 100 thèmes organisés par
+catégorie). Même logique de nettoyage que le bot (numérotation retirée,
+en-têtes de catégorie ignorés).
+
+Sur ton serveur :
+
+```bash
+cd ~/carousel-pipeline
+cat > /tmp/mes_themes.txt <<'EOF'
+Massage détente (16)
+
+1. Pourquoi le corps a besoin de relâcher, pas juste de se reposer
+2. Le lien entre stress chronique et tension dans les épaules
+...colle ici toute ta liste...
+EOF
+
+python3 carousel_pipeline.py import-themes < /tmp/mes_themes.txt
+```
+
+Ça affiche le nombre de thèmes importés (ex: `100 thème(s) importé(s)`).
+Le cron `daily` de l'étape 11 les traitera ensuite un par jour, dans
+l'ordre — pour 100 thèmes à raison d'un par jour, compte environ 3 mois
+pour tous les publier.
 
 ## Limites actuelles
 
