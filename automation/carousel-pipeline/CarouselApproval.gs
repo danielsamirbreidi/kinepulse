@@ -29,7 +29,7 @@
 // TODO : remplace par l'ID de TA nouvelle Google Sheet (dédiée au carrousel,
 // différente de celle des vidéos) — visible dans son URL :
 // https://docs.google.com/spreadsheets/d/CET_ID_ICI/edit
-const SHEET_ID = 'COLLE_ICI_L_ID_DE_TA_NOUVELLE_SHEET_CARROUSEL';
+const SHEET_ID = '1MSxA4W8574RqOZd6LIpeNmNJ-CaHVd9pGfGGqBnlIrA';
 
 // TODO : remplace par l'URL /exec de CE déploiement (Apps Script >
 // Déployer > Gérer les déploiements) — pas celle du pipeline vidéo.
