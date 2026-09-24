@@ -258,6 +258,8 @@ pour tous les publier.
   seulement, comme demandé).
 - **Format des slides** : 1080×1350 (ratio 4:5, recommandé par Instagram
   pour maximiser l'espace dans le fil).
-- **4 à 6 slides de contenu** générées par Claude, plus une couverture et
-  une fermeture (donc 6 à 8 images au total) — ajustable dans le prompt de
-  `generate_carousel_content()` si tu veux plus ou moins.
+- **4 images au total** : couverture (accroche/question), 2 slides de
+  contenu (titre percutant + description courte), fermeture — format
+  volontairement condensé, façon publicité plutôt qu'article informatif.
+  Ajustable dans le prompt de `generate_carousel_content()` si tu veux
+  plus de slides.

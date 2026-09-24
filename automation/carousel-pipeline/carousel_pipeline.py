@@ -160,47 +160,68 @@ def generate_carousel_content(topic: str, account: str) -> dict:
 
     if lang == "fr":
         instruction = (
-            "Tu écris le contenu d'un carrousel Instagram/Facebook informatif "
-            "pour KinéPulse, une clinique de kinésithérapie/massothérapie/EMS à "
-            "Montréal. Réponds UNIQUEMENT avec un objet JSON valide (rien "
-            "d'autre, pas de ```), au format EXACT :\n"
-            '{"cover_heading": "titre accrocheur du carrousel, 4-8 mots", '
-            '"slides": [{"heading": "titre court du point, 3-6 mots", '
-            '"body": "1-2 phrases, claires et concrètes"}], '
-            '"caption": "légende Instagram/Facebook, 2-3 phrases chaleureuses '
-            'et professionnelles, ton de clinique (pas familier)", '
-            '"hashtags": "exactement 5 hashtags pertinents au sujet précis du '
-            'thème (pas génériques), en français, séparés par des espaces, '
+            "Tu es un expert en marketing de contenu pour réseaux sociaux. Tu "
+            "écris le contenu d'un carrousel Instagram/Facebook COURT et "
+            "percutant pour KinéPulse, une clinique de kinésithérapie/"
+            "massothérapie/EMS à Montréal. Règle absolue : chaque texte doit "
+            "être scannable en 2 secondes — AUCUN paragraphe, aucune phrase "
+            "longue. On vise l'impact d'une accroche publicitaire, pas un texte "
+            "informatif classique. Réponds UNIQUEMENT avec un objet JSON valide "
+            "(rien d'autre, pas de ```), au format EXACT :\n"
+            '{"cover_heading": "accroche de couverture, SOUS FORME DE QUESTION '
+            'qui pique la curiosité et donne envie de swiper (ex: \'Ton dos '
+            'te fait mal après 8h de bureau ?\'), 6-12 mots maximum", '
+            '"slides": [{"heading": "titre percutant, 3-5 mots maximum, comme '
+            'un titre de magazine", '
+            '"body": "UNE seule phrase courte et concrète, 10-15 mots maximum '
+            '— jamais un paragraphe, jamais deux phrases"}], '
+            '"caption": "UNE seule phrase courte et accrocheuse avec un vrai '
+            'crochet (hook) qui donne envie de réagir ou de lire la suite — '
+            'JAMAIS un paragraphe de 2-3 phrases, style expert en copywriting '
+            'marketing, pas de ton corporatif plat", '
+            '"hashtags": "exactement 5 hashtags spécifiques et professionnels '
+            'liés au sujet précis (évite les hashtags génériques trop larges '
+            'comme #sante ou #bienetre), en français, séparés par des espaces, '
             'précédés de #"}\n'
-            'Génère entre 4 et 6 éléments dans "slides" (le carrousel aura donc '
-            "6 à 8 images au total en comptant la couverture et la fermeture). "
-            "Contenu factuel et utile. Ne donne JAMAIS de conseil médical "
-            "personnalisé ni de diagnostic — reste général et informatif, et "
-            "invite à consulter pour un avis personnalisé si pertinent."
+            'Génère EXACTEMENT 2 éléments dans "slides" (le carrousel aura donc '
+            "4 images au total : couverture + 2 points + fermeture). Contenu "
+            "factuel mais ultra condensé — si une idée demande plus qu'une "
+            "phrase pour être comprise, simplifie-la ou coupe-la. Ne donne "
+            "JAMAIS de conseil médical personnalisé ni de diagnostic."
         )
     else:
         instruction = (
-            "You write the content for an informative Instagram/Facebook "
-            "carousel for KinéSportif, a sports/kinesiology academy account "
-            "testing market interest in Lebanon. The topic you're given may be "
-            "written in French (it's the same topic used for the sister French "
-            "account, KinéPulse) — translate and adapt it naturally into "
-            "Modern Standard Arabic (fusha), don't translate literally word for "
-            "word. ALL text content (cover_heading, every slide's heading and "
-            "body, caption) MUST be written in Arabic script — only the "
-            "hashtags are in English. Reply ONLY with a valid JSON object "
-            "(nothing else, no ```), in this EXACT format:\n"
-            '{"cover_heading": "catchy carousel title in Arabic, 4-8 words", '
-            '"slides": [{"heading": "short point title in Arabic, 3-6 words", '
-            '"body": "1-2 clear, concrete sentences in Arabic"}], '
-            '"caption": "Instagram/Facebook caption in Arabic, 2-3 warm and '
-            'engaging sentences", '
-            '"hashtags": "exactly 5 hashtags relevant to this specific topic '
-            '(not generic), in English, space-separated, prefixed with #"}\n'
-            'Generate between 4 and 6 items in "slides" (the carousel will '
-            "therefore have 6-8 images total counting cover + closing). "
-            "Factual, useful content. NEVER give personalized medical advice "
-            "or a diagnosis — stay general and informative."
+            "You are a social media content marketing expert. You write the "
+            "content for a SHORT, punchy Instagram/Facebook carousel for "
+            "KinéSportif, a sports/kinesiology academy account testing market "
+            "interest in Lebanon. Absolute rule: every piece of text must be "
+            "scannable in 2 seconds — NO paragraphs, no long sentences. Aim "
+            "for the impact of an ad headline, not an informative article. The "
+            "topic you're given may be written in French (it's the same topic "
+            "used for the sister French account, KinéPulse) — translate and "
+            "adapt it naturally into Modern Standard Arabic (fusha), don't "
+            "translate literally word for word. ALL text content (cover_heading, "
+            "every slide's heading and body, caption) MUST be written in "
+            "Arabic script — only the hashtags are in English. Reply ONLY with "
+            "a valid JSON object (nothing else, no ```), in this EXACT format:\n"
+            '{"cover_heading": "cover hook, PHRASED AS A QUESTION that creates '
+            'curiosity and makes people want to swipe, in Arabic, 6-12 words max", '
+            '"slides": [{"heading": "punchy title in Arabic, 3-5 words max, '
+            'like a magazine headline", '
+            '"body": "ONE short concrete sentence in Arabic, 10-15 words max '
+            '— never a paragraph, never two sentences"}], '
+            '"caption": "ONE short, catchy sentence in Arabic with a real hook '
+            'that makes people want to react or keep reading — NEVER a 2-3 '
+            'sentence paragraph, expert marketing copywriter style, not flat '
+            'corporate tone", '
+            '"hashtags": "exactly 5 specific, professional hashtags relevant '
+            'to this precise topic (avoid overly generic ones), in English, '
+            'space-separated, prefixed with #"}\n'
+            'Generate EXACTLY 2 items in "slides" (the carousel will therefore '
+            "have 4 images total: cover + 2 points + closing). Factual but "
+            "ultra condensed content — if an idea needs more than one sentence "
+            "to land, simplify or cut it. NEVER give personalized medical "
+            "advice or a diagnosis."
         )
 
     resp = requests.post(
