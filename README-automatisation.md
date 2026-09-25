@@ -90,6 +90,75 @@ savoir qu'il faut le rappeler.
 **Forfait EMS qui approche du renouvellement** → tu reçois un résumé
 par courriel 5 jours avant, automatiquement.
 
+## Étape 7 — Campagne de réactivation (base de patients dormante)
+
+Ce système envoie un courriel de relance à d'anciens patients, avec des
+garde-fous pour ne **jamais** envoyer aux vrais patients par accident.
+
+### 7.1 — Préparer la liste
+
+1. Importe ton fichier Excel/CSV dans **Google Sheets** (Fichier → Importer).
+2. Renomme l'onglet exactement **`Patients`**.
+3. Assure-toi que les colonnes sont dans cet ordre :
+   `A: Nom | B: Courriel | C: Téléphone | D: Statut | E: Date envoi`
+   (laisse D et E vides — le script les remplit automatiquement).
+4. Copie l'**ID du Google Sheet** depuis l'URL :
+   `https://docs.google.com/spreadsheets/d/CET_ID_ICI/edit`
+
+### 7.2 — Ajouter le fichier au projet Apps Script
+
+Dans l'éditeur Apps Script (script.google.com, même projet `KinéPulse
+Backend`) : **+** à côté de "Fichiers" → **Script** → colle le contenu de
+`google-apps-script/ReactivationCampaign.gs`.
+
+### 7.3 — Configurer les propriétés du script
+
+**Paramètres du projet** → **Propriétés du script** → ajoute :
+
+| Propriété | Valeur |
+|---|---|
+| `REACTIVATION_SHEET_ID` | l'ID copié à l'étape 7.1 |
+| `REACTIVATION_TEST_EMAILS` | tes courriels de test, séparés par des virgules |
+
+**Ne mets PAS encore `REACTIVATION_CONFIRM_SEND`** — tant que cette
+propriété n'existe pas (ou n'est pas exactement `OUI_ENVOYER`), l'envoi réel
+est bloqué par le script, même si tu exécutes la fonction par erreur.
+
+### 7.4 — Valider le message AVANT tout envoi
+
+Dans l'ordre :
+
+1. Exécute **`previewReactivationEmail`** → regarde le résultat dans
+   **Exécutions** / **Journaux** (`Ctrl+Entrée` ou menu Affichage → Journaux).
+   Ça n'envoie rien, ça montre juste le sujet et le corps du courriel.
+2. Édite le texte dans `buildReactivationEmail_()` (dans
+   `ReactivationCampaign.gs`) — en particulier la ligne `[OFFRE DE LANCEMENT
+   À CONFIRMER]`, à remplacer par ta vraie offre.
+3. Exécute **`sendReactivationTest`** → envoie le courriel réel, mais
+   seulement à tes adresses de test. Vérifie le rendu dans ta boîte de
+   réception (mobile ET ordinateur).
+4. Répète 2-3 jusqu'à ce que le message te convienne.
+
+### 7.5 — Lancer l'envoi réel (seulement quand tu es prêt)
+
+1. Ajoute la propriété de script `REACTIVATION_CONFIRM_SEND` avec la valeur
+   exacte `OUI_ENVOYER`.
+2. Exécute **`sendReactivationCampaign`** manuellement pour le premier lot
+   (max ~450 courriels/jour pour rester sous la limite Gmail).
+3. Optionnel : exécute **`setupReactivationTrigger`** une fois pour que le
+   script envoie automatiquement un lot chaque jour à 9h jusqu'à ce que la
+   liste soit épuisée (statut "Envoyé" sur toutes les lignes).
+4. Exécute **`processReactivationUnsubscribes`** de temps en temps (ou
+   ajoute-la aussi à un déclencheur quotidien) pour marquer automatiquement
+   "Désabonné" les patients qui répondent "ARRÊT".
+
+### Pour arrêter la campagne
+
+Supprime la propriété `REACTIVATION_CONFIRM_SEND` (ou change sa valeur) —
+`sendReactivationCampaign` refusera de s'exécuter tant qu'elle n'est pas
+remise à `OUI_ENVOYER`. Supprime aussi le déclencheur dans **Déclencheurs**
+(icône horloge à gauche) si tu en as créé un.
+
 ## Si tu dois modifier l'horaire des créneaux plus tard
 
 Dans `Code.gs`, modifie la section `MASSAGE_SLOTS` en haut du fichier,
