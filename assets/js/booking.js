@@ -411,6 +411,7 @@ function initMassageBooking() {
             telephone: formData.get("telephone"),
             email: formData.get("email"),
             duration: formData.get("duration"),
+            source: formData.get("source"),
             date: date,
             time: time
         };
@@ -485,6 +486,7 @@ function initEmsLead() {
             telephone: formData.get("telephone"),
             email: formData.get("email"),
             objectif: formData.get("objectif"),
+            source: formData.get("source"),
             disponibilites: formData.getAll("disponibilites")
         };
 
