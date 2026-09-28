@@ -8,7 +8,7 @@ Google Apps Script (Calendar + Notion + courriels)
 
 // ⚠️ À REMPLACER après le déploiement du script Google Apps Script
 // (voir README-automatisation.md pour les étapes)
-const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbyTwYzKDtkQWL8t3z7ccTHB31DZ_tJi_IcTv_sqcZggiJIaFNWaaaklGY0FGaAHhE0DyA/exec";
+const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbyasy-JiGIQAF1uolLvJht1nHkpnIC2yXYmz2JXAXwaAOfC5Wpi3ZRX59v23QfBVxWoBA/exec";
 
 // Valide qu'un numéro de téléphone est plausible: exactement 10 chiffres
 // (11 si préfixé par 1), pas une suite de chiffres identiques (ex: 0000000000)
