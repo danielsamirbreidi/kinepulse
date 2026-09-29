@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initAnimations();
 
+    initFloatingCallButton();
+
 });
 
 
@@ -131,6 +133,54 @@ function initBackToTop() {
         });
 
     });
+
+}
+
+/*==================================================
+BOUTON D'APPEL FLOTTANT (mobile uniquement)
+Un visiteur pressé sur téléphone doit pouvoir appeler
+en un tap, sans chercher le numéro sur la page.
+==================================================*/
+
+function initFloatingCallButton() {
+
+    if (document.getElementById("floatingCallBtn")) return; // déjà présent
+
+    const style = document.createElement("style");
+    style.textContent = `
+        #floatingCallBtn {
+            display: none;
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: #0a7c3a;
+            color: #fff;
+            text-decoration: none;
+            padding: 13px 24px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+            align-items: center;
+            gap: 8px;
+        }
+        #floatingCallBtn svg { width: 18px; height: 18px; fill: currentColor; }
+        @media (max-width: 768px) {
+            #floatingCallBtn { display: inline-flex; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    const btn = document.createElement("a");
+    btn.id = "floatingCallBtn";
+    btn.href = "tel:+12633782247";
+    btn.innerHTML =
+        '<svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>' +
+        '<span>Appeler la clinique</span>';
+
+    document.body.appendChild(btn);
 
 }
 /*==================================================
