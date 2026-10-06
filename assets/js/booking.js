@@ -467,6 +467,17 @@ function initEmsLead() {
     const form = document.getElementById("ems-lead-form");
     if (!form) return;
 
+    // Champ texte "Autre" : visible seulement si la case est cochée
+    const autreCheck = document.getElementById("dispo-autre-check");
+    const autreText = document.getElementById("dispo-autre-text");
+    if (autreCheck && autreText) {
+        autreCheck.addEventListener("change", () => {
+            autreText.style.display = autreCheck.checked ? "block" : "none";
+            if (autreCheck.checked) autreText.focus();
+            else autreText.value = "";
+        });
+    }
+
     form.addEventListener("submit", (event) => {
         event.preventDefault();
 
@@ -480,6 +491,12 @@ function initEmsLead() {
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn.textContent;
 
+        // "Autre" : remplace par le texte libre écrit par le client
+        const autreTexte = (formData.get("disponibilite_autre") || "").trim();
+        const disponibilites = formData.getAll("disponibilites").map(v =>
+            v === "Autre" ? (autreTexte ? "Autre : " + autreTexte : "Autre") : v
+        );
+
         const payload = {
             type: "ems",
             nom: formData.get("nom"),
@@ -487,7 +504,7 @@ function initEmsLead() {
             email: formData.get("email"),
             objectif: formData.get("objectif"),
             source: formData.get("source"),
-            disponibilites: formData.getAll("disponibilites")
+            disponibilites: disponibilites
         };
 
         submitBtn.disabled = true;
