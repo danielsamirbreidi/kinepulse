@@ -1,0 +1,19 @@
+# Règles fixées par Dandoun. Les agents ne peuvent PAS les modifier.
+budget:
+  monthly_cap_cad: 500        # plafond total pubs / mois
+  auto_max_change_cad: 0      # aucune dépense autonome : tout ajout de budget demande approbation
+auto_actions:                 # actions sans approbation (ne coûtent rien, réversibles, ou protègent le budget)
+  - add_negative_keyword
+  - pause_ad
+  - pause_campaign
+  - log_report
+ask_actions:                  # toujours approbation via Telegram (coûte de l'argent ou remet une campagne en ligne)
+  - enable_campaign
+  - new_campaign
+  - new_creative
+  - budget_change
+  - post_content
+  - reply_review
+  - send_message
+  - site_change
+agents: [director, google, meta, creative, tracking, retention, conversion]

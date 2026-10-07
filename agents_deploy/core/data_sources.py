@@ -223,6 +223,14 @@ def _collect_google():
     budget_rows = list(ga_service.search(customer_id=customer_id(), query=budget_query))
     budget_cad = round(budget_rows[0].campaign_budget.amount_micros / 1_000_000, 2) if budget_rows else None
 
+    # Vraies réservations Notion (pas le compteur de conversions Google Ads,
+    # qui n'est pas configuré) — source = "Recherche Google", 30 derniers jours.
+    rdv_data = _query_data_source(DS_RENDEZVOUS)
+    vraies_reservations_google = None
+    if not rdv_data.get("error"):
+        counts, _ = _count_by_source(rdv_data.get("results", []), source_property="Source", days=30)
+        vraies_reservations_google = counts.get("Recherche Google", 0)
+
     return {
         "campagne": "KinéPulse - Massothérapie - Search",
         "statut": campaign["status"],
@@ -230,6 +238,8 @@ def _collect_google():
         "derniers_7_jours": period(7),
         "derniers_30_jours": period(30),
         "mots_cles_negatifs_actuels": negatives,
+        "vraies_reservations_source_recherche_google_30j": vraies_reservations_google,
+        "note_conversions": "Le suivi de conversion Google Ads n'est pas configuré techniquement — 'conversions' ci-dessus vaut toujours 0. Utilise 'vraies_reservations_source_recherche_google_30j' (vient de Notion) comme vérité terrain, pas les conversions Google Ads.",
     }
 
 

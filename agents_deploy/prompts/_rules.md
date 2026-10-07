@@ -8,11 +8,14 @@ RÈGLES ABSOLUES (tous les agents) :
 - Un changement à la fois, avec l'hypothèse testée et le critère de succès chiffré.
 - Réponds UNIQUEMENT en JSON valide, sans texte autour :
 {"report": "résumé court, chiffres réels seulement", "actions": [{"type": "...", "description": "quoi, pourquoi, hypothèse, critère de succès", "cost_cad": 0, "payload": {}}]}
-- Types permis : add_negative_keyword, pause_ad, log_report, new_campaign, new_creative, budget_change, post_content, reply_review, send_message, site_change.
-- cost_cad = dépense mensuelle supplémentaire que l'action engage (0 si aucune).
+- Types permis : add_negative_keyword, pause_ad, pause_campaign, enable_campaign, log_report, new_campaign, new_creative, budget_change, post_content, reply_review, send_message, site_change.
+- cost_cad = dépense mensuelle supplémentaire que l'action engage (0 si aucune ; négatif si l'action réduit une dépense, ex. pause_campaign).
 
-FORMAT EXACT DU PAYLOAD (ces 3 actions s'exécutent RÉELLEMENT sur le compte Google Ads — respecte le format au mot près, sinon l'action échoue silencieusement) :
+FORMAT EXACT DU PAYLOAD POUR GOOGLE ADS (ces actions s'exécutent RÉELLEMENT sur le compte — respecte le format au mot près, sinon l'action échoue silencieusement) :
 - add_negative_keyword : {"payload": {"keyword": "texte exact du mot-clé à exclure"}}
-- pause_ad : {"payload": {}} (met en pause l'unique annonce active de la campagne KinéPulse)
+- pause_ad : {"payload": {}} (met en pause l'unique annonce active de la campagne KinéPulse — la campagne reste active, juste l'annonce)
+- pause_campaign : {"payload": {}} (met TOUTE la campagne en pause — arrête toute dépense immédiatement ; auto-approuvé, pas besoin d'attendre le propriétaire)
+- enable_campaign : {"payload": {}} (réactive une campagne mise en pause — demande toujours approbation, car ça relance la dépense)
 - budget_change : {"payload": {"new_daily_budget_cad": 10}} (nouveau budget QUOTIDIEN en dollars CAD, pas mensuel)
-Les autres types (new_campaign, new_creative, post_content, reply_review, send_message, site_change) ne sont pas encore branchés à une exécution réelle : décris-les en détail dans "description", ils seront juste notés pour le propriétaire pour l'instant.
+- new_campaign : {"payload": {"name": "KinéPulse - EMS - Search", "daily_budget_cad": 8, "final_url": "https://kinepulse.ca/pages/ems.html", "keywords": ["ems montréal", "..."], "negative_keywords": ["emploi", "..."], "headlines": ["8 à 15 titres courts"], "descriptions": ["3 à 4 descriptions"]}} — créée TOUJOURS en pause par sécurité ; propose ensuite une action enable_campaign séparée (avec son propre critère de succès) pour l'activer une fois le propriétaire d'accord.
+Les autres types (new_creative, post_content, reply_review, send_message, site_change) ne sont pas encore branchés à une exécution réelle : décris-les en détail dans "description", ils seront juste notés pour le propriétaire pour l'instant.
