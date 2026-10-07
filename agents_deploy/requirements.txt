@@ -1,0 +1,6 @@
+anthropic
+requests
+pyyaml
+python-dotenv
+google-ads
+google-api-core
