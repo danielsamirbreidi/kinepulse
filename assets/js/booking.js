@@ -471,6 +471,9 @@ function initEmsLead() {
     const autreCheck = document.getElementById("dispo-autre-check");
     const autreText = document.getElementById("dispo-autre-text");
     if (autreCheck && autreText) {
+        if (autreText.type === "date") {
+            autreText.min = new Date().toISOString().split("T")[0];
+        }
         autreCheck.addEventListener("change", () => {
             autreText.style.display = autreCheck.checked ? "block" : "none";
             if (autreCheck.checked) autreText.focus();
@@ -491,8 +494,13 @@ function initEmsLead() {
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalLabel = submitBtn.textContent;
 
-        // "Autre" : remplace par le texte libre écrit par le client
-        const autreTexte = (formData.get("disponibilite_autre") || "").trim();
+        // "Autre" : remplace par la date choisie par le client (format JJ/MM/AAAA)
+        const autreDateRaw = (formData.get("disponibilite_autre") || "").trim();
+        let autreTexte = "";
+        if (autreDateRaw) {
+            const [y, m, d] = autreDateRaw.split("-");
+            autreTexte = d && m && y ? `${d}/${m}/${y}` : autreDateRaw;
+        }
         const disponibilites = formData.getAll("disponibilites").map(v =>
             v === "Autre" ? (autreTexte ? "Autre : " + autreTexte : "Autre") : v
         );
