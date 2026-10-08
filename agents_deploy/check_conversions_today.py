@@ -14,7 +14,7 @@ client = GoogleAdsClient.load_from_dict({
 ga_service = client.get_service("GoogleAdsService")
 query = """
     SELECT segments.conversion_action_name, segments.date,
-           metrics.conversions, metrics.all_conversions
+           metrics.all_conversions
     FROM campaign
     WHERE segments.date DURING TODAY
         AND metrics.all_conversions > 0
@@ -24,4 +24,4 @@ if not rows:
     print("Aucune conversion enregistrée aujourd'hui pour l'instant (normal, délai de quelques heures possible).")
 else:
     for row in rows:
-        print(f"{row.segments.conversion_action_name} — {row.segments.date} — conversions: {row.metrics.conversions}, all_conversions: {row.metrics.all_conversions}")
+        print(f"{row.segments.conversion_action_name} — {row.segments.date} — all_conversions: {row.metrics.all_conversions}")
