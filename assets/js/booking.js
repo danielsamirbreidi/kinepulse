@@ -438,6 +438,14 @@ function initMassageBooking() {
                         </div>
                     `;
                     form.scrollIntoView({ behavior: "smooth", block: "center" });
+                    // Conversion Google Ads : Réservation Massothérapie
+                    if (typeof gtag === "function") {
+                        gtag('event', 'conversion', {
+                            'send_to': 'AW-18483395101/rBAFCNeJ7ZUdEJ30yO1E',
+                            'value': 110.0,
+                            'currency': 'CAD'
+                        });
+                    }
                 } else if (data.error === "SLOT_TAKEN") {
                     showStatus(statusEl, "Ce créneau vient d'être réservé par quelqu'un d'autre. Choisissez-en un autre.", true);
                     submitBtn.disabled = false;
@@ -534,6 +542,14 @@ function initEmsLead() {
                         </div>
                     `;
                     form.scrollIntoView({ behavior: "smooth", block: "center" });
+                    // Conversion Google Ads : Demande EMS
+                    if (typeof gtag === "function") {
+                        gtag('event', 'conversion', {
+                            'send_to': 'AW-18483395101/goaGCIzX7pUdEJ30yO1E',
+                            'value': 165.0,
+                            'currency': 'CAD'
+                        });
+                    }
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalLabel;
