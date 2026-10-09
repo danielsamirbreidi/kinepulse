@@ -243,6 +243,43 @@ def _collect_google():
     }
 
 
+
+
+SITE_PAGES = {
+    "accueil": "index.html",
+    "massotherapie": "pages/massage.html",
+    "ems": "pages/ems.html",
+    "analyse_3d": "pages/analyse.html",
+}
+
+
+def _collect_conversion():
+    """Contenu réel des pages clés du site, pour que l'agent Conversion
+    puisse proposer des changements précis (texte exact à trouver/remplacer)."""
+    try:
+        from core.github_api import get_file
+    except Exception as e:
+        return {"erreur": True, "note": f"Erreur d'import github_api : {e}"}
+
+    pages = {}
+    for label, path in SITE_PAGES.items():
+        try:
+            f = get_file(path)
+            if f:
+                # Tronqué pour rester raisonnable en taille — assez pour voir
+                # les titres, boutons, textes d'offre.
+                pages[label] = {"chemin": path, "contenu": f["content"][:6000]}
+            else:
+                pages[label] = {"chemin": path, "erreur": "fichier introuvable"}
+        except Exception as e:
+            pages[label] = {"chemin": path, "erreur": str(e)}
+
+    return {
+        "note": "Voici le contenu RÉEL actuel des pages. Pour proposer un site_change, cite un extrait EXACT du texte actuel dans 'find' (copié-collé depuis ci-dessous, pas reformulé).",
+        "pages": pages,
+    }
+
+
 def collect(agent_name):
     if agent_name == "tracking":
         return _collect_tracking()
@@ -250,6 +287,8 @@ def collect(agent_name):
         return _collect_retention()
     if agent_name == "google":
         return _collect_google()
+    if agent_name == "conversion":
+        return _collect_conversion()
     if agent_name == "director":
         return {
             "suivi": _collect_tracking(),

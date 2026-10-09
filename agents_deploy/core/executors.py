@@ -283,18 +283,57 @@ def new_creative(action):
 
 
 def site_change(action):
-    """Pas d'accès direct au code du site depuis l'agent — envoie les
-    détails complets du changement proposé sur Telegram pour que Dandoun
-    demande l'implémentation (à Claude, dans sa session de travail)."""
+    """Modifie réellement un fichier du site sur GitHub (ce qui met à jour
+    kinepulse.ca automatiquement). Le payload doit contenir 'file' (chemin
+    du fichier), 'find' (texte exact actuel à remplacer, doit apparaître
+    UNE SEULE fois) et 'replace' (nouveau texte). Si ce format précis n'est
+    pas fourni (ex: changement trop complexe pour un simple find/replace),
+    on envoie les détails sur Telegram à la place, pour implémentation manuelle."""
     payload = action.get("payload", {})
+    file_path = payload.get("file")
+    find = payload.get("find")
+    replace = payload.get("replace")
     details = payload.get("details") or action.get("description", "")
+
+    if not (file_path and find and replace):
+        try:
+            telegram.notify(
+                "🌐 Changement de site proposé (trop complexe pour une exécution automatique) — "
+                "à demander à Claude pour l'implémenter :\n\n" + details
+            )
+            print("[FAIT] Détails du changement de site envoyés sur Telegram (implémentation manuelle)")
+            return True
+        except Exception as e:
+            print(f"[ERREUR] site_change (notification) : {e}")
+            return False
+
     try:
-        telegram.notify(
-            "🌐 Changement de site proposé — à demander à Claude pour l'implémenter :\n\n" + details
+        from core.github_api import get_file, update_file
+        current = get_file(file_path)
+        if not current:
+            telegram.notify(f"❌ site_change : fichier introuvable sur GitHub : {file_path}")
+            print(f"[ERREUR] site_change : fichier introuvable : {file_path}")
+            return False
+
+        count = current["content"].count(find)
+        if count != 1:
+            telegram.notify(
+                f"❌ site_change : le texte à remplacer apparaît {count} fois dans {file_path} "
+                f"(il en faut exactement 1) — changement annulé par sécurité.\n\nDétails : {details}"
+            )
+            print(f"[ERREUR] site_change : 'find' trouvé {count} fois, attendu 1")
+            return False
+
+        new_content = current["content"].replace(find, replace)
+        update_file(
+            file_path, new_content, current["sha"],
+            message=f"Agent Conversion : {details[:200]}"
         )
-        print("[FAIT] Détails du changement de site envoyés sur Telegram")
+        telegram.notify(f"✅ Site modifié : {file_path}\n\n{details}")
+        print(f"[FAIT] {file_path} modifié directement sur GitHub")
         return True
     except Exception as e:
+        telegram.notify(f"❌ Erreur en modifiant le site : {e}")
         print(f"[ERREUR] site_change : {e}")
         return False
 
