@@ -5,7 +5,9 @@ MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")
 def run_agent(name, task, data):
     client = anthropic.Anthropic()
     read = lambda f: open(os.path.join(BASE, "prompts", f), encoding="utf-8").read()
-    system = read(f"{name}.md") + "\n\n" + read("_context.md") + "\n\n" + read("_rules.md")
+    from core.memory import read_memory
+    system = (read(f"{name}.md") + "\n\n" + read("_context.md") + "\n\n" + read("_rules.md")
+              + "\n\nHISTORIQUE DE L'ÉQUIPE (actions déjà prises, refusées ou bloquées — ne répète pas ce qui est déjà fait, appuie-toi dessus) :\n" + read_memory())
     msg = client.messages.create(
         model=MODEL, max_tokens=4000, system=system,
         messages=[{"role": "user", "content": f"TÂCHE : {task}\nDONNÉES :\n{json.dumps(data, ensure_ascii=False)}"}])
@@ -30,7 +32,9 @@ Réponds TOUJOURS en JSON strict avec ce format exact, rien d'autre :
 def run_chat(name, user_message, data):
     client = anthropic.Anthropic()
     read = lambda f: open(os.path.join(BASE, "prompts", f), encoding="utf-8").read()
-    system = read(f"{name}.md") + "\n\n" + read("_context.md") + "\n\n" + read("_rules.md") + "\n\n" + CHAT_INSTRUCTIONS
+    from core.memory import read_memory
+    system = (read(f"{name}.md") + "\n\n" + read("_context.md") + "\n\n" + read("_rules.md") + "\n\n" + CHAT_INSTRUCTIONS
+              + "\n\nHISTORIQUE DE L'ÉQUIPE (actions déjà prises, refusées ou bloquées — ne répète pas ce qui est déjà fait, appuie-toi dessus) :\n" + read_memory())
     msg = client.messages.create(
         model=MODEL, max_tokens=4000, system=system,
         messages=[{"role": "user", "content": f"MESSAGE DE DANDOUN :\n{user_message}\n\nDONNÉES ACTUELLES DU COMPTE :\n{json.dumps(data, ensure_ascii=False)}"}])

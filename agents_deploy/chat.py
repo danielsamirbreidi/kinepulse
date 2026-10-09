@@ -7,7 +7,7 @@ import os, time, json
 from dotenv import load_dotenv
 load_dotenv()
 import requests
-from core import guard, telegram
+from core import guard, telegram, memory
 from core.agent import run_chat
 from core.executors import EXECUTORS
 from core.data_sources import collect
@@ -38,16 +38,23 @@ def handle_message(text):
     res = run_chat(AGENT_NAME, text, data)
     reply = res.get("reply") or res.get("report") or "..."
     telegram.notify(reply)
+    memory.log(AGENT_NAME, f"Dandoun a dit : \"{text}\" — Réponse : {reply[:300]}")
     for a in res.get("actions", []):
         d = guard.decide(a)
         label = f"[{AGENT_NAME}] {a['type']} ({a.get('cost_cad', 0)} $/mois)\n{a['description']}"
         if d == "block":
             telegram.notify("⛔ Bloqué (plafond ou action non permise)\n" + label)
+            memory.log(AGENT_NAME, f"BLOQUÉ : {a['type']} — {a['description']}")
         elif d == "auto" or (d == "ask" and telegram.ask(label)):
             ok = EXECUTORS[a["type"]](a)
             telegram.notify("✅ Fait." if ok else "❌ Erreur lors de l'exécution.")
             if ok:
                 guard.record_commit(a.get("cost_cad", 0))
+                memory.log(AGENT_NAME, f"FAIT (demandé par Dandoun en conversation) : {a['type']} — {a['description']}")
+            else:
+                memory.log(AGENT_NAME, f"ÉCHEC D'EXÉCUTION : {a['type']} — {a['description']}")
+        else:
+            memory.log(AGENT_NAME, f"REFUSÉ par Dandoun : {a['type']} — {a['description']}")
 
 
 def main():
