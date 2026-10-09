@@ -1,10 +1,14 @@
 """
 Un exécuteur par type d'action. Branchés un par un aux APIs réelles.
 Google Ads : branché (mot-clé négatif, pause annonce, pause/reprise campagne,
-changement de budget, création de nouvelle campagne).
-Meta/Instagram, site, messages, avis : pas encore branchés (prochaine étape).
+changement de budget, création de nouvelle campagne, nouvelle annonce/créatif).
+Site (changements à faire sur kinepulse.ca) : notifie Dandoun avec les détails
+complets sur Telegram pour qu'il demande l'implémentation (pas d'accès direct
+au code du site depuis l'agent).
+Meta/Instagram, messages, avis Google : pas encore branchés (bloqués ou à venir).
 """
 from google.api_core import protobuf_helpers
+from core import telegram
 
 
 def _todo(action):
@@ -227,6 +231,74 @@ def new_campaign(action):
         return False
 
 
+
+def new_creative(action):
+    """Ajoute une nouvelle annonce (variante créative) au groupe d'annonces
+    existant, avec de nouveaux titres/descriptions. L'annonce est activée
+    immédiatement — Google fait automatiquement tourner les variantes et
+    privilégie les meilleures avec le temps. Ne crée pas de nouvelle dépense
+    en soi (reste dans le même budget de campagne)."""
+    payload = action.get("payload", {})
+    headlines = payload.get("headlines", [])
+    descriptions = payload.get("descriptions", [])
+    final_url = payload.get("final_url", "https://kinepulse.ca")
+
+    if len(headlines) < 3 or len(descriptions) < 2:
+        print("[ERREUR] new_creative : il faut au moins 3 titres et 2 descriptions")
+        return False
+
+    try:
+        from core.google_ads_api import get_client, customer_id, find_campaign, find_ad_group
+        client = get_client()
+        cid = customer_id()
+        campaign = find_campaign(client)
+        if not campaign:
+            print("[ERREUR] new_creative : campagne introuvable")
+            return False
+        ad_group = find_ad_group(client, campaign["resource_name"])
+        if not ad_group:
+            print("[ERREUR] new_creative : groupe d'annonces introuvable")
+            return False
+
+        service = client.get_service("AdGroupAdService")
+        op = client.get_type("AdGroupAdOperation")
+        ad_group_ad = op.create
+        ad_group_ad.ad_group = ad_group["resource_name"]
+        ad_group_ad.status = client.enums.AdGroupAdStatusEnum.ENABLED
+        ad_group_ad.ad.final_urls.append(final_url)
+        for h in headlines[:15]:
+            headline = client.get_type("AdTextAsset")
+            headline.text = h
+            ad_group_ad.ad.responsive_search_ad.headlines.append(headline)
+        for d in descriptions[:4]:
+            desc = client.get_type("AdTextAsset")
+            desc.text = d
+            ad_group_ad.ad.responsive_search_ad.descriptions.append(desc)
+        service.mutate_ad_group_ads(customer_id=cid, operations=[op])
+        print(f"[FAIT] Nouvelle annonce créée avec {len(headlines)} titres et {len(descriptions)} descriptions")
+        return True
+    except Exception as e:
+        print(f"[ERREUR] new_creative : {e}")
+        return False
+
+
+def site_change(action):
+    """Pas d'accès direct au code du site depuis l'agent — envoie les
+    détails complets du changement proposé sur Telegram pour que Dandoun
+    demande l'implémentation (à Claude, dans sa session de travail)."""
+    payload = action.get("payload", {})
+    details = payload.get("details") or action.get("description", "")
+    try:
+        telegram.notify(
+            "🌐 Changement de site proposé — à demander à Claude pour l'implémenter :\n\n" + details
+        )
+        print("[FAIT] Détails du changement de site envoyés sur Telegram")
+        return True
+    except Exception as e:
+        print(f"[ERREUR] site_change : {e}")
+        return False
+
+
 EXECUTORS = {
     "add_negative_keyword": add_negative_keyword,   # Google Ads — branché
     "pause_ad": pause_ad,                            # Google Ads — branché
@@ -234,10 +306,10 @@ EXECUTORS = {
     "enable_campaign": enable_campaign,               # Google Ads — branché
     "budget_change": budget_change,                   # Google Ads — branché
     "new_campaign": new_campaign,                     # Google Ads — branché (créée EN PAUSE)
-    "new_creative": _todo,     # Meta — prochaine étape
-    "post_content": _todo,     # Google Business Profile / Meta
-    "reply_review": _todo,     # Google Business Profile
-    "send_message": _todo,
-    "site_change": _todo,
+    "new_creative": new_creative,                     # Google Ads — branché (nouvelle annonce/variante)
+    "site_change": site_change,                       # Branché (notifie Dandoun sur Telegram avec les détails)
+    "post_content": _todo,     # Meta — à venir
+    "reply_review": _todo,     # Bloqué : Google restreint cet accès API aux grandes plateformes
+    "send_message": _todo,     # Meta — à venir
     "log_report": lambda a: True,
 }

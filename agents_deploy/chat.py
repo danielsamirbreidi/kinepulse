@@ -14,7 +14,7 @@ from core.data_sources import collect
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 OFFSET_FILE = os.path.join(BASE, "chat_offset.json")
-AGENT_NAME = "google"   # pour l'instant, le chat parle à l'agent Google
+AGENT_NAME = "director"   # le chat parle au Directeur, qui a la vue d'ensemble (Google + suivi + fidélisation)
 
 
 def _api():

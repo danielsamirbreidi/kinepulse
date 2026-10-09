@@ -56,3 +56,19 @@ def find_ad_group_ad(client, campaign_resource_name):
         return None
     r = rows[0]
     return {"resource_name": r.ad_group_ad.resource_name, "status": r.ad_group_ad.status.name}
+
+
+def find_ad_group(client, campaign_resource_name):
+    """Retourne le premier groupe d'annonces de la campagne, ou None."""
+    ga_service = client.get_service("GoogleAdsService")
+    query = f"""
+        SELECT ad_group.resource_name, ad_group.status
+        FROM ad_group
+        WHERE campaign.resource_name = '{campaign_resource_name}'
+        LIMIT 1
+    """
+    rows = list(ga_service.search(customer_id=customer_id(), query=query))
+    if not rows:
+        return None
+    r = rows[0]
+    return {"resource_name": r.ad_group.resource_name, "status": r.ad_group.status.name}
