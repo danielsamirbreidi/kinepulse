@@ -231,15 +231,26 @@ def _collect_google():
         counts, _ = _count_by_source(rdv_data.get("results", []), source_property="Source", days=30)
         vraies_reservations_google = counts.get("Recherche Google", 0)
 
+    from core.history import read_history, record_snapshot
+    d7 = period(7)
+    record_snapshot({
+        "cout_cad_7j": d7["cout_cad"], "clics_7j": d7["clics"], "impressions_7j": d7["impressions"],
+        "ctr_pct_7j": d7["ctr_pct"], "cpc_moyen_cad_7j": d7["cpc_moyen_cad"],
+        "vraies_reservations_30j": vraies_reservations_google,
+        "budget_quotidien_cad": budget_cad,
+    })
+
     return {
         "campagne": "KinéPulse - Massothérapie - Search",
         "statut": campaign["status"],
         "budget_quotidien_cad": budget_cad,
-        "derniers_7_jours": period(7),
+        "derniers_7_jours": d7,
         "derniers_30_jours": period(30),
         "mots_cles_negatifs_actuels": negatives,
         "vraies_reservations_source_recherche_google_30j": vraies_reservations_google,
         "note_conversions": "Le suivi de conversion Google Ads n'est pas configuré techniquement — 'conversions' ci-dessus vaut toujours 0. Utilise 'vraies_reservations_source_recherche_google_30j' (vient de Notion) comme vérité terrain, pas les conversions Google Ads.",
+        "tendance_jour_par_jour": read_history(21),
+        "note_tendance": "Liste des instantanés quotidiens passés (si disponibles) — utilise ça pour voir si les chiffres s'améliorent ou empirent dans le temps, pas juste leur valeur actuelle.",
     }
 
 
