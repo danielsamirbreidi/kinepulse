@@ -32,11 +32,12 @@ def run_chat(name, user_message, data):
     read = lambda f: open(os.path.join(BASE, "prompts", f), encoding="utf-8").read()
     system = read(f"{name}.md") + "\n\n" + read("_context.md") + "\n\n" + read("_rules.md") + "\n\n" + CHAT_INSTRUCTIONS
     msg = client.messages.create(
-        model=MODEL, max_tokens=2000, system=system,
+        model=MODEL, max_tokens=4000, system=system,
         messages=[{"role": "user", "content": f"MESSAGE DE DANDOUN :\n{user_message}\n\nDONNÉES ACTUELLES DU COMPTE :\n{json.dumps(data, ensure_ascii=False)}"}])
     raw = next((b.text for b in msg.content if getattr(b, "type", None) == "text"), "")
     text = re.sub(r"^```(?:json)?|```$", "", raw.strip(), flags=re.M).strip()
     try:
         return json.loads(text)
     except Exception:
-        return {"reply": "Désolé, je n'ai pas bien compris, tu peux reformuler ? (" + text[:200] + ")", "actions": []}
+        print(f"[ERREUR JSON chat] Réponse brute reçue :\n{raw}")
+        return {"reply": "Désolé, je n'ai pas bien compris, tu peux reformuler ? (" + text[:300] + ")", "actions": []}
