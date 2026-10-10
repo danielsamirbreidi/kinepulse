@@ -34,6 +34,25 @@ def _save_offset(offset):
 
 def handle_message(text):
     print(f"Reçu : {text}")
+    try:
+        _handle_message_inner(text)
+    except Exception as e:
+        # Trouvé lors de l'audit du 2026-10-09 : avant ce garde-fou, une erreur
+        # ici (ex. réseau coupé juste après une approbation Telegram) faisait
+        # perdre l'action silencieusement — Dandoun croyait avoir approuvé
+        # quelque chose qui n'avait jamais eu lieu, sans aucun message.
+        print(f"[ERREUR interne handle_message] {e}")
+        try:
+            telegram.notify(
+                "⚠️ Une erreur interne a interrompu le traitement de ton dernier message. "
+                "Si tu avais approuvé une action juste avant, elle n'a PAS été exécutée — renvoie ta demande."
+            )
+            memory.log(AGENT_NAME, f"ERREUR INTERNE en traitant \"{text}\" : {e}")
+        except Exception:
+            pass
+
+
+def _handle_message_inner(text):
     data = collect(AGENT_NAME)
     res = run_chat(AGENT_NAME, text, data)
     reply = res.get("reply") or res.get("report") or "..."
@@ -43,7 +62,7 @@ def handle_message(text):
         d = guard.decide(a)
         label = f"[{AGENT_NAME}] {a['type']} ({a.get('cost_cad', 0)} $/mois)\n{a['description']}"
         if d == "block":
-            telegram.notify("⛔ Bloqué (plafond ou action non permise)\n" + label)
+            telegram.notify("⛔ Bloqué (plafond, action non permise, ou coût déclaré incohérent avec les paramètres)\n" + label)
             memory.log(AGENT_NAME, f"BLOQUÉ : {a['type']} — {a['description']}")
         elif d == "auto" or (d == "ask" and telegram.ask(label)):
             ok = EXECUTORS[a["type"]](a)

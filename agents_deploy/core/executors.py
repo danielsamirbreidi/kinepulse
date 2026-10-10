@@ -28,6 +28,7 @@ def add_negative_keyword(action):
         campaign = find_campaign(client)
         if not campaign:
             print("[ERREUR] add_negative_keyword : campagne introuvable")
+            telegram.notify("❌ add_negative_keyword : campagne introuvable.")
             return False
         criterion_service = client.get_service("CampaignCriterionService")
         op = client.get_type("CampaignCriterionOperation")
@@ -41,6 +42,7 @@ def add_negative_keyword(action):
         return True
     except Exception as e:
         print(f"[ERREUR] add_negative_keyword : {e}")
+        telegram.notify(f"❌ Erreur en ajoutant le mot-clé négatif '{keyword}' : {e}")
         return False
 
 
@@ -51,10 +53,12 @@ def pause_ad(action):
         campaign = find_campaign(client)
         if not campaign:
             print("[ERREUR] pause_ad : campagne introuvable")
+            telegram.notify("❌ pause_ad : campagne introuvable.")
             return False
         ad = find_ad_group_ad(client, campaign["resource_name"])
         if not ad:
             print("[ERREUR] pause_ad : annonce introuvable")
+            telegram.notify("❌ pause_ad : annonce introuvable.")
             return False
         service = client.get_service("AdGroupAdService")
         op = client.get_type("AdGroupAdOperation")
@@ -66,6 +70,7 @@ def pause_ad(action):
         return True
     except Exception as e:
         print(f"[ERREUR] pause_ad : {e}")
+        telegram.notify(f"❌ Erreur en mettant l'annonce en pause : {e}")
         return False
 
 
@@ -81,6 +86,7 @@ def budget_change(action):
         campaign = find_campaign(client)
         if not campaign:
             print("[ERREUR] budget_change : campagne introuvable")
+            telegram.notify("❌ budget_change : campagne introuvable.")
             return False
         service = client.get_service("CampaignBudgetService")
         op = client.get_type("CampaignBudgetOperation")
@@ -92,6 +98,7 @@ def budget_change(action):
         return True
     except Exception as e:
         print(f"[ERREUR] budget_change : {e}")
+        telegram.notify(f"❌ Erreur en changeant le budget : {e}")
         return False
 
 
@@ -103,6 +110,7 @@ def _set_campaign_status(status_name):
             campaign = find_campaign(client)
             if not campaign:
                 print(f"[ERREUR] campagne introuvable")
+                telegram.notify(f"❌ Changement de statut ({status_name}) : campagne introuvable.")
                 return False
             service = client.get_service("CampaignService")
             op = client.get_type("CampaignOperation")
@@ -114,6 +122,7 @@ def _set_campaign_status(status_name):
             return True
         except Exception as e:
             print(f"[ERREUR] changement de statut campagne ({status_name}) : {e}")
+            telegram.notify(f"❌ Erreur en changeant le statut de la campagne ({status_name}) : {e}")
             return False
     return _run
 
@@ -325,10 +334,20 @@ def site_change(action):
             print(f"[ERREUR] site_change : 'find' trouvé {count} fois, attendu 1")
             return False
 
+        new_content = current["content"].replace(find, replace)
+
+        from core.html_check import is_html_balanced
+        if file_path.endswith(".html") and not is_html_balanced(new_content):
+            telegram.notify(
+                f"❌ site_change annulé par sécurité : le remplacement casserait une balise HTML "
+                f"dans {file_path} (balises mal équilibrées après le changement).\n\nDétails : {details}"
+            )
+            print(f"[ERREUR] site_change : HTML mal équilibré après remplacement dans {file_path}, annulé")
+            return False
+
         # Sauvegarde du contenu AVANT modification, pour pouvoir revenir en arrière
         backup.save_backup(file_path, current["content"], details)
 
-        new_content = current["content"].replace(find, replace)
         update_file(
             file_path, new_content, current["sha"],
             message=f"Agent Conversion : {details[:200]}"
