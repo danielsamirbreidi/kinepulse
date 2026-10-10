@@ -309,6 +309,7 @@ def site_change(action):
 
     try:
         from core.github_api import get_file, update_file
+        from core import backup
         current = get_file(file_path)
         if not current:
             telegram.notify(f"❌ site_change : fichier introuvable sur GitHub : {file_path}")
@@ -324,17 +325,53 @@ def site_change(action):
             print(f"[ERREUR] site_change : 'find' trouvé {count} fois, attendu 1")
             return False
 
+        # Sauvegarde du contenu AVANT modification, pour pouvoir revenir en arrière
+        backup.save_backup(file_path, current["content"], details)
+
         new_content = current["content"].replace(find, replace)
         update_file(
             file_path, new_content, current["sha"],
             message=f"Agent Conversion : {details[:200]}"
         )
-        telegram.notify(f"✅ Site modifié : {file_path}\n\n{details}")
-        print(f"[FAIT] {file_path} modifié directement sur GitHub")
+        telegram.notify(f"✅ Site modifié : {file_path}\n\n{details}\n\n(une sauvegarde de l'ancienne version a été gardée — dis \"annule le dernier changement de {file_path}\" pour revenir en arrière)")
+        print(f"[FAIT] {file_path} modifié directement sur GitHub (sauvegarde créée)")
         return True
     except Exception as e:
         telegram.notify(f"❌ Erreur en modifiant le site : {e}")
         print(f"[ERREUR] site_change : {e}")
+        return False
+
+
+def site_rollback(action):
+    """Restaure la dernière version sauvegardée d'un fichier du site (avant
+    le dernier site_change effectué sur ce fichier). Payload : {'file': '...'}"""
+    payload = action.get("payload", {})
+    file_path = payload.get("file")
+    if not file_path:
+        print("[ERREUR] site_rollback : 'file' manquant dans payload")
+        return False
+    try:
+        from core.github_api import get_file, update_file
+        from core import backup
+        last = backup.get_last_backup(file_path)
+        if not last:
+            telegram.notify(f"❌ Aucune sauvegarde trouvée pour {file_path} — impossible de revenir en arrière.")
+            print(f"[ERREUR] site_rollback : aucune sauvegarde pour {file_path}")
+            return False
+        current = get_file(file_path)
+        if not current:
+            telegram.notify(f"❌ site_rollback : fichier introuvable sur GitHub : {file_path}")
+            return False
+        update_file(
+            file_path, last["content"], current["sha"],
+            message=f"Retour arrière demandé par Dandoun : {file_path}"
+        )
+        telegram.notify(f"↩️ {file_path} restauré à la version d'avant le dernier changement (sauvegardée le {last['date']}).")
+        print(f"[FAIT] {file_path} restauré depuis la sauvegarde du {last['date']}")
+        return True
+    except Exception as e:
+        telegram.notify(f"❌ Erreur en restaurant le site : {e}")
+        print(f"[ERREUR] site_rollback : {e}")
         return False
 
 
@@ -346,7 +383,8 @@ EXECUTORS = {
     "budget_change": budget_change,                   # Google Ads — branché
     "new_campaign": new_campaign,                     # Google Ads — branché (créée EN PAUSE)
     "new_creative": new_creative,                     # Google Ads — branché (nouvelle annonce/variante)
-    "site_change": site_change,                       # Branché (notifie Dandoun sur Telegram avec les détails)
+    "site_change": site_change,                       # Branché (modifie le site, garde une sauvegarde avant)
+    "site_rollback": site_rollback,                   # Branché (restaure la dernière sauvegarde d'un fichier)
     "post_content": _todo,     # Meta — à venir
     "reply_review": _todo,     # Bloqué : Google restreint cet accès API aux grandes plateformes
     "send_message": _todo,     # Meta — à venir

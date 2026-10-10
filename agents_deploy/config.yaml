@@ -16,4 +16,5 @@ ask_actions:                  # toujours approbation via Telegram (coûte de l'a
   - reply_review
   - send_message
   - site_change
+  - site_rollback
 agents: [director, google, meta, creative, tracking, retention, conversion]
