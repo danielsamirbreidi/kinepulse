@@ -20,7 +20,8 @@ current = get_file("index.html")
 if not current:
     raise SystemExit("❌ index.html introuvable sur GitHub")
 
-meta_tag = f'<meta name="google-site-verification" content="{token}" />'
+# Le jeton renvoyé par Google est déjà la balise <meta> complète.
+meta_tag = token
 if meta_tag in current["content"]:
     print("   Déjà présente, on passe à l'étape suivante.")
 else:
@@ -30,8 +31,8 @@ else:
     update_file("index.html", new_content, current["sha"], message="Ajout de la vérification Google Search Console")
     print("   Balise ajoutée et poussée sur GitHub.")
 
-print("3) Attente de 30 secondes que le site se mette à jour...")
-time.sleep(30)
+print("3) Attente de 45 secondes que le site se mette à jour...")
+time.sleep(45)
 
 print("4) Confirmation de la vérification auprès de Google...")
 try:
