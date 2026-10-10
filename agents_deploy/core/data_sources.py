@@ -331,18 +331,31 @@ def _collect_seo():
         except Exception as e:
             pages[label] = {"chemin": path, "erreur": str(e)}
 
+    try:
+        from core.search_console_api import get_search_analytics
+        analytics = get_search_analytics(28)
+    except Exception as e:
+        analytics = {"disponible": False, "detail": f"Search Console pas encore configuré : {e}"}
+
+    note = (
+        "Voici le title/meta description/H1/contenu RÉELS de chaque page. "
+        "Pour proposer un site_change, cite un extrait EXACT du texte actuel dans 'find'."
+    )
+    if analytics.get("disponible"):
+        note += (" 'donnees_recherche_google' contient les VRAIES requêtes, clics, impressions et positions "
+                  "des 28 derniers jours (Google Search Console) — utilise-les en priorité, jamais de chiffre inventé.")
+    else:
+        note += (" Aucune donnée de classement/trafic organique réel n'est encore disponible "
+                  "('donnees_recherche_google' le confirme) — ne jamais inventer un rang ou un volume de recherche.")
+
     return {
-        "note": (
-            "Voici le title/meta description/H1/contenu RÉELS de chaque page. "
-            "Aucune donnée de classement Google, de volume de recherche ou de concurrents n'est disponible ici "
-            "(pas d'API de référencement branchée) — ne jamais inventer un rang ou un chiffre de trafic organique. "
-            "Pour proposer un site_change, cite un extrait EXACT du texte actuel dans 'find'."
-        ),
+        "note": note,
         "mots_cles_cibles_locaux": [
             "massothérapie Pointe-aux-Trembles", "kinésithérapie Montréal-Est",
             "entraînement EMS Montréal", "analyse posturale 3D Montréal",
             "clinique physiothérapie Pointe-aux-Trembles",
         ],
+        "donnees_recherche_google": analytics,
         "pages": pages,
     }
 
