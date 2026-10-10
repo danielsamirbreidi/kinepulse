@@ -4,3 +4,4 @@ pyyaml
 python-dotenv
 google-ads
 google-api-core
+pytest
