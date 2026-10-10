@@ -33,10 +33,20 @@ def committed_this_month():
     return _locked(lambda: float(_load().get(_month(), 0.0)))
 
 
-def record_commit(amount):
+def _channel_key(channel):
+    return f"{_month()}::{channel}"
+
+
+def committed_this_month_by_channel(channel):
+    return _locked(lambda: float(_load().get(_channel_key(channel), 0.0)))
+
+
+def record_commit(amount, channel=None):
     def _do():
         s = _load()
         s[_month()] = s.get(_month(), 0.0) + float(amount)
+        if channel:
+            s[_channel_key(channel)] = s.get(_channel_key(channel), 0.0) + float(amount)
         json.dump(s, open(STATE, "w"))
     _locked(_do)
 
@@ -89,6 +99,14 @@ def decide(action):
     contient un budget quotidien explicite (new_campaign, budget_change), le
     cost_cad déclaré par l'agent doit être cohérent avec ce budget — sinon
     blocage automatique, quel que soit le plafond restant.
+
+    Troisième verrou (idem) : la répartition par canal décrite dans
+    prompts/_context.md (≈250 $ Google / 200 $ Meta / 50 $ tests) n'était
+    qu'une intention écrite, jamais vérifiée par le code — un agent (ou le
+    Directeur, qui peut proposer une action Google via le chat) aurait pu
+    dépenser tout le plafond de 500 $ sur un seul canal sans que rien ne
+    l'arrête. Le canal se déduit du TYPE d'action (action_channel dans
+    config.yaml), pas de qui la propose.
     """
     t = action.get("type")
     cost = float(action.get("cost_cad") or 0)
@@ -98,6 +116,13 @@ def decide(action):
 
     if committed_this_month() + cost > CFG["budget"]["monthly_cap_cad"]:
         return "block"
+
+    channel = CFG.get("action_channel", {}).get(t)
+    if channel and cost > 0:
+        cap = CFG["budget"].get("channel_caps_cad", {}).get(channel)
+        if cap is not None and committed_this_month_by_channel(channel) + cost > cap:
+            return "block"
+
     if cost > 0:
         return "ask" if t in CFG["ask_actions"] or t in CFG["auto_actions"] else "block"
     if t in CFG["auto_actions"]:

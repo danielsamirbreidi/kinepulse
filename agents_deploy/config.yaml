@@ -2,6 +2,17 @@
 budget:
   monthly_cap_cad: 500        # plafond total pubs / mois
   auto_max_change_cad: 0      # aucune dépense autonome : tout ajout de budget demande approbation
+  channel_caps_cad:            # répartition voulue par Dandoun (prompts/_context.md) — maintenant vérifiée par le code, pas juste par le prompt
+    google: 250
+    meta: 200
+    tests: 50
+action_channel:                 # quel TYPE d'action compte sur quel canal (pas l'agent qui la propose —
+  budget_change: google         # le Directeur propose aussi des actions Google via le chat, donc se fier
+  new_campaign: google           # au type d'action plutôt qu'à l'agent est plus fiable)
+  new_creative: google
+  enable_campaign: google
+  post_content: meta
+  send_message: meta
 auto_actions:                 # actions sans approbation (ne coûtent rien, réversibles, ou protègent le budget)
   - add_negative_keyword
   - pause_ad

@@ -68,7 +68,7 @@ def _handle_message_inner(text):
             ok = EXECUTORS[a["type"]](a)
             telegram.notify("✅ Fait." if ok else "❌ Erreur lors de l'exécution.")
             if ok:
-                guard.record_commit(a.get("cost_cad", 0))
+                guard.record_commit(a.get("cost_cad", 0), channel=guard.CFG.get("action_channel", {}).get(a["type"]))
                 memory.log(AGENT_NAME, f"FAIT (demandé par Dandoun en conversation) : {a['type']} — {a['description']}")
             else:
                 memory.log(AGENT_NAME, f"ÉCHEC D'EXÉCUTION : {a['type']} — {a['description']}")
@@ -82,6 +82,9 @@ def main():
     chat_id = str(os.environ["TELEGRAM_CHAT_ID"])
     while True:
         try:
+            for pending_text in telegram.drain_pending_messages():
+                if not pending_text.startswith("/"):
+                    handle_message(pending_text)
             r = requests.get(_api() + "/getUpdates", timeout=45, params={
                 "timeout": 30, "offset": offset,
                 "allowed_updates": json.dumps(["message"])}).json()

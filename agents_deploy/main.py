@@ -24,12 +24,12 @@ def run(name, task="Analyse du jour et propositions d'actions."):
         d = guard.decide(a)
         label = f"[{name}] {a['type']} ({a.get('cost_cad',0)} $/mois)\n{a['description']}"
         if d == "block":
-            telegram.notify("⛔ Bloqué (plafond ou action non permise)\n" + label)
+            telegram.notify("⛔ Bloqué (plafond global, plafond par canal, ou action non permise)\n" + label)
             memory.log(name, f"BLOQUÉ : {a['type']} — {a['description']}")
         elif d == "auto" or (d == "ask" and telegram.ask(label)):
             ok = EXECUTORS[a["type"]](a)
             if ok:
-                guard.record_commit(a.get("cost_cad", 0))
+                guard.record_commit(a.get("cost_cad", 0), channel=guard.CFG.get("action_channel", {}).get(a["type"]))
                 memory.log(name, f"FAIT : {a['type']} — {a['description']}")
             else:
                 memory.log(name, f"ÉCHEC D'EXÉCUTION : {a['type']} — {a['description']}")
