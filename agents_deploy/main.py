@@ -1,13 +1,24 @@
 import sys
 from dotenv import load_dotenv
 load_dotenv()
-from core import guard, telegram, memory
+from core import guard, telegram, memory, health
 from core.agent import run_agent
 from core.executors import EXECUTORS
 from core.data_sources import collect
 
 def run(name, task="Analyse du jour et propositions d'actions."):
-    res = run_agent(name, task, collect(name))
+    try:
+        data = collect(name)
+        res = run_agent(name, task, data)
+    except Exception as e:
+        n = health.record_failure(name, e)
+        print(f"[ERREUR] {name} : {e} (échec consécutif n°{n})")
+        if health.should_alert(name):
+            telegram.notify(f"⚠️ L'agent {name} échoue depuis {n} exécutions consécutives : {e}")
+            memory.log(name, f"ÉCHEC PERSISTANT DE L'AGENT : {e}")
+        return
+
+    health.record_success(name)
     telegram.notify(f"[{name}] {res.get('report','')}")
     for a in res.get("actions", []):
         d = guard.decide(a)
