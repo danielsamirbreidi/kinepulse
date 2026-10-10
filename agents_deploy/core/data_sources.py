@@ -291,6 +291,62 @@ def _collect_conversion():
     }
 
 
+import re
+
+
+def _extract_seo_tags(html):
+    title = re.search(r"<title>(.*?)</title>", html, re.I | re.S)
+    meta_desc = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\'](.*?)["\']', html, re.I | re.S)
+    h1s = re.findall(r"<h1[^>]*>(.*?)</h1>", html, re.I | re.S)
+    return {
+        "title_actuel": title.group(1).strip() if title else None,
+        "meta_description_actuelle": meta_desc.group(1).strip() if meta_desc else None,
+        "h1_actuels": [re.sub(r"<[^>]+>", "", h).strip() for h in h1s],
+    }
+
+
+def _collect_seo():
+    """Contenu SEO réel des pages du site (title, meta description, H1,
+    texte). Pas de données de positionnement Google ni de concurrents —
+    aucune API de rang/concurrence n'est branchée, donc l'agent ne doit
+    jamais inventer un classement ou un volume de recherche."""
+    try:
+        from core.github_api import get_file
+    except Exception as e:
+        return {"erreur": True, "note": f"Erreur d'import github_api : {e}"}
+
+    pages = {}
+    for label, path in SITE_PAGES.items():
+        try:
+            f = get_file(path)
+            if not f:
+                pages[label] = {"chemin": path, "erreur": "fichier introuvable"}
+                continue
+            tags = _extract_seo_tags(f["content"])
+            pages[label] = {
+                "chemin": path,
+                **tags,
+                "contenu": f["content"][:6000],
+            }
+        except Exception as e:
+            pages[label] = {"chemin": path, "erreur": str(e)}
+
+    return {
+        "note": (
+            "Voici le title/meta description/H1/contenu RÉELS de chaque page. "
+            "Aucune donnée de classement Google, de volume de recherche ou de concurrents n'est disponible ici "
+            "(pas d'API de référencement branchée) — ne jamais inventer un rang ou un chiffre de trafic organique. "
+            "Pour proposer un site_change, cite un extrait EXACT du texte actuel dans 'find'."
+        ),
+        "mots_cles_cibles_locaux": [
+            "massothérapie Pointe-aux-Trembles", "kinésithérapie Montréal-Est",
+            "entraînement EMS Montréal", "analyse posturale 3D Montréal",
+            "clinique physiothérapie Pointe-aux-Trembles",
+        ],
+        "pages": pages,
+    }
+
+
 def collect(agent_name):
     if agent_name == "tracking":
         return _collect_tracking()
@@ -300,10 +356,13 @@ def collect(agent_name):
         return _collect_google()
     if agent_name == "conversion":
         return _collect_conversion()
+    if agent_name == "seo":
+        return _collect_seo()
     if agent_name == "director":
         return {
             "suivi": _collect_tracking(),
             "fidelisation": _collect_retention(),
             "google_ads": _collect_google(),
+            "seo": _collect_seo(),
         }
     return {"note": "Sources de données pas encore branchées pour cet agent (aucune campagne publicitaire active à lire)."}
