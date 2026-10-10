@@ -76,6 +76,39 @@ def _count_by_source(results, source_property="Source", date_property="Date", da
     return counts, total_in_window
 
 
+STATUT_OPTIONS = ["Confirmé", "Annulé", "Honoré", "No-show"]
+
+
+def _count_by_status(results, date_property="Date", days=30):
+    """Compte les rendez-vous par statut (Confirmé/Annulé/Honoré/No-show),
+    sur les N derniers jours. Ajouté le 2026-10-09 : le champ Statut
+    n'avait que Confirmé/Annulé jusqu'ici — Honoré/No-show viennent d'être
+    ajoutés dans Notion, donc ce comptage sera à 0 pour ces deux options
+    jusqu'à ce que quelqu'un à la clinique commence réellement à les
+    utiliser après chaque visite."""
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    counts = {opt: 0 for opt in STATUT_OPTIONS}
+    counts["(non renseigné)"] = 0
+    total_in_window = 0
+
+    for page in results:
+        props = page.get("properties", {})
+        date_val = (props.get(date_property) or {}).get("date") or {}
+        date_start = date_val.get("start", "")
+        if date_start and date_start < cutoff:
+            continue
+        total_in_window += 1
+
+        statut_val = (props.get("Statut") or {}).get("select")
+        statut_name = statut_val.get("name") if statut_val else None
+        if statut_name in counts:
+            counts[statut_name] += 1
+        else:
+            counts["(non renseigné)"] += 1
+
+    return counts, total_in_window
+
+
 def _collect_tracking():
     rdv_data = _query_data_source(DS_RENDEZVOUS)
     ems_data = _query_data_source(DS_LEADS_EMS)
@@ -88,14 +121,28 @@ def _collect_tracking():
             "note": "Échec de lecture Notion — vérifier le token et le partage des bases.",
         }
 
-    rdv_counts, rdv_total = _count_by_source(rdv_data.get("results", []), date_property="Date", days=30)
+    rdv_results = rdv_data.get("results", [])
+    rdv_counts, rdv_total = _count_by_source(rdv_results, date_property="Date", days=30)
     ems_counts, ems_total = _count_by_source(ems_data.get("results", []), date_property="Date de la demande", days=30)
+    statut_counts, _ = _count_by_status(rdv_results, date_property="Date", days=30)
+
+    honores = statut_counts["Honoré"]
+    no_shows = statut_counts["No-show"]
+    tracked = honores + no_shows  # dénominateur fiable : seulement les rendez-vous dont le statut réel est connu
+    taux_no_show_pct = round(100 * no_shows / tracked, 1) if tracked >= 10 else None
 
     return {
         "periode": "30 derniers jours",
         "depenses_publicitaires": "Aucune campagne active — pas encore de coût par client à calculer",
         "reservations_massage_kine": {"total": rdv_total, "par_source": rdv_counts},
         "demandes_ems": {"total": ems_total, "par_source": ems_counts},
+        "statuts_rendezvous": statut_counts,
+        "taux_no_show_pct": taux_no_show_pct,
+        "note_statuts": (
+            "'Honoré'/'No-show' viennent d'être ajoutés dans Notion (2026-10-09) — tant que presque tout "
+            "reste à 'Confirmé', ne tire AUCUNE conclusion sur le taux de présence réel ; échantillon trop "
+            "petit (<10 statuts Honoré+No-show) tant que taux_no_show_pct est à null."
+        ),
     }
 
 
@@ -191,7 +238,7 @@ def _collect_google():
         impr = clicks = 0
         conv = 0.0
         cost = 0.0
-        for row in ga_service.search(customer_id=customer_id(), query=query):
+        for row in ga_service.search(customer_id=customer_id(), query=query, timeout=20):
             impr += row.metrics.impressions
             clicks += row.metrics.clicks
             conv += row.metrics.conversions
@@ -213,18 +260,21 @@ def _collect_google():
             AND campaign_criterion.type = 'KEYWORD'
     """
     negatives = [r.campaign_criterion.keyword.text
-                 for r in ga_service.search(customer_id=customer_id(), query=neg_query)]
+                 for r in ga_service.search(customer_id=customer_id(), query=neg_query, timeout=20)]
 
     budget_query = f"""
         SELECT campaign_budget.amount_micros
         FROM campaign_budget
         WHERE campaign_budget.resource_name = '{campaign["budget_resource_name"]}'
     """
-    budget_rows = list(ga_service.search(customer_id=customer_id(), query=budget_query))
+    budget_rows = list(ga_service.search(customer_id=customer_id(), query=budget_query, timeout=20))
     budget_cad = round(budget_rows[0].campaign_budget.amount_micros / 1_000_000, 2) if budget_rows else None
 
-    # Vraies réservations Notion (pas le compteur de conversions Google Ads,
-    # qui n'est pas configuré) — source = "Recherche Google", 30 derniers jours.
+    # Vraies réservations Notion — source = "Recherche Google", 30 derniers jours.
+    # Utilisé comme vérité terrain EN PLUS des conversions Google Ads (le tracking
+    # technique est bien configuré depuis le 2026-10-08 : gtag côté site + Conversion
+    # Actions côté Google Ads), car le volume de clics est encore trop faible pour
+    # que les conversions Google Ads seules soient fiables.
     rdv_data = _query_data_source(DS_RENDEZVOUS)
     vraies_reservations_google = None
     if not rdv_data.get("error"):
@@ -248,7 +298,7 @@ def _collect_google():
         "derniers_30_jours": period(30),
         "mots_cles_negatifs_actuels": negatives,
         "vraies_reservations_source_recherche_google_30j": vraies_reservations_google,
-        "note_conversions": "Le suivi de conversion Google Ads n'est pas configuré techniquement — 'conversions' ci-dessus vaut toujours 0. Utilise 'vraies_reservations_source_recherche_google_30j' (vient de Notion) comme vérité terrain, pas les conversions Google Ads.",
+        "note_conversions": "Le suivi de conversion Google Ads EST configuré techniquement (gtag + Conversion Actions, depuis le 2026-10-08) — si 'conversions' reste à 0 ci-dessus, c'est soit qu'il n'y a réellement eu aucune conversion publicitaire sur la période, soit un délai normal de rapport Google (peut prendre quelques jours). Compare toujours avec 'vraies_reservations_source_recherche_google_30j' (Notion) comme deuxième vérité terrain — ne conclus jamais qu'un chiffre bas vient d'un tracking cassé sans l'avoir vérifié.",
         "tendance_jour_par_jour": read_history(21),
         "note_tendance": "Liste des instantanés quotidiens passés (si disponibles) — utilise ça pour voir si les chiffres s'améliorent ou empirent dans le temps, pas juste leur valeur actuelle.",
     }

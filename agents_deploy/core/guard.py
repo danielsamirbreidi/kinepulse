@@ -85,6 +85,22 @@ def _declared_cost_is_plausible(action):
     return cost >= implied_monthly * _TOLERANCE
 
 
+def format_action_params(action):
+    """Rend les paramètres structurés exacts qui vont réellement s'exécuter
+    (tout sauf type/description/cost_cad), pour que l'approbation Telegram
+    montre ce qui va VRAIMENT se passer, pas seulement le résumé en texte
+    libre que l'agent a choisi d'écrire (audit du 2026-10-09, constat #2 :
+    jusqu'ici un agent aurait pu écrire une description rassurante alors
+    que les vrais paramètres faisaient autre chose — rien ne les comparait
+    avant de montrer le bouton Approuver)."""
+    hidden = {"type", "description", "cost_cad"}
+    params = {k: v for k, v in action.items() if k not in hidden}
+    if not params:
+        return ""
+    lines = "\n".join(f"  {k} = {v}" for k, v in params.items())
+    return f"\nParamètres réels :\n{lines}"
+
+
 def decide(action):
     """Retourne 'auto', 'ask' ou 'block'. Les règles viennent de config.yaml, pas de l'agent.
 

@@ -29,7 +29,15 @@ def _load_offset():
 
 
 def _save_offset(offset):
-    json.dump({"offset": offset}, open(OFFSET_FILE, "w"))
+    # Écriture atomique (fichier temporaire + renommage) : si le processus
+    # est tué en plein milieu (ex. le "pkill -f chat.py" utilisé pour
+    # redéployer), le fichier précédent reste intact plutôt que d'être
+    # tronqué/corrompu (audit du 2026-10-09, constat #7 — chat_offset.json
+    # n'avait aucune protection, contrairement à state.json).
+    tmp = OFFSET_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump({"offset": offset}, f)
+    os.replace(tmp, OFFSET_FILE)
 
 
 def handle_message(text):
@@ -60,7 +68,7 @@ def _handle_message_inner(text):
     memory.log(AGENT_NAME, f"Dandoun a dit : \"{text}\" — Réponse : {reply[:300]}")
     for a in res.get("actions", []):
         d = guard.decide(a)
-        label = f"[{AGENT_NAME}] {a['type']} ({a.get('cost_cad', 0)} $/mois)\n{a['description']}"
+        label = f"[{AGENT_NAME}] {a['type']} ({a.get('cost_cad', 0)} $/mois)\n{a['description']}{guard.format_action_params(a)}"
         if d == "block":
             telegram.notify("⛔ Bloqué (plafond, action non permise, ou coût déclaré incohérent avec les paramètres)\n" + label)
             memory.log(AGENT_NAME, f"BLOQUÉ : {a['type']} — {a['description']}")

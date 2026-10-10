@@ -7,6 +7,12 @@ from google.ads.googleads.client import GoogleAdsClient
 
 CAMPAIGN_NAME_LIKE = "KinéPulse"
 
+# Timeout explicite sur chaque appel Google Ads — sans ça, un appel lent ou
+# bloqué pouvait geler toute la boucle de conversation Telegram (chat.py),
+# empêchant même de répondre "je n'ai pas réussi à vérifier" (audit du
+# 2026-10-09, constat #14).
+API_TIMEOUT_SECONDS = 20
+
 
 class AmbiguousCampaignError(Exception):
     """Levée quand plusieurs campagnes correspondent au nom recherché — on
@@ -51,7 +57,7 @@ def find_campaign(client, name_like=CAMPAIGN_NAME_LIKE, exact_name=None):
             FROM campaign
             WHERE campaign.name LIKE '%{name_like}%'
         """
-    rows = list(ga_service.search(customer_id=customer_id(), query=query))
+    rows = list(ga_service.search(customer_id=customer_id(), query=query, timeout=API_TIMEOUT_SECONDS))
     if not rows:
         return None
     if not exact_name and len(rows) > 1:
@@ -70,32 +76,45 @@ def find_campaign(client, name_like=CAMPAIGN_NAME_LIKE, exact_name=None):
 
 
 def find_ad_group_ad(client, campaign_resource_name):
-    """Retourne l'annonce active de la campagne, ou None."""
+    """Retourne l'annonce active de la campagne. Lève AmbiguousCampaignError
+    si plusieurs annonces existent dans cette campagne (trouvé lors de
+    l'audit du 2026-10-09, même principe que find_campaign : ne jamais
+    choisir au hasard entre deux objets réels)."""
     ga_service = client.get_service("GoogleAdsService")
     query = f"""
         SELECT ad_group_ad.resource_name, ad_group_ad.status
         FROM ad_group_ad
         WHERE campaign.resource_name = '{campaign_resource_name}'
-        LIMIT 1
     """
-    rows = list(ga_service.search(customer_id=customer_id(), query=query))
+    rows = list(ga_service.search(customer_id=customer_id(), query=query, timeout=API_TIMEOUT_SECONDS))
     if not rows:
         return None
+    if len(rows) > 1:
+        raise AmbiguousCampaignError(
+            f"{len(rows)} annonces trouvées dans la campagne {campaign_resource_name}. "
+            "Précise laquelle cibler pour agir en sécurité."
+        )
     r = rows[0]
     return {"resource_name": r.ad_group_ad.resource_name, "status": r.ad_group_ad.status.name}
 
 
 def find_ad_group(client, campaign_resource_name):
-    """Retourne le premier groupe d'annonces de la campagne, ou None."""
+    """Retourne le groupe d'annonces de la campagne. Lève
+    AmbiguousCampaignError si plusieurs groupes d'annonces existent dans
+    cette campagne (même principe que find_campaign)."""
     ga_service = client.get_service("GoogleAdsService")
     query = f"""
         SELECT ad_group.resource_name, ad_group.status
         FROM ad_group
         WHERE campaign.resource_name = '{campaign_resource_name}'
-        LIMIT 1
     """
-    rows = list(ga_service.search(customer_id=customer_id(), query=query))
+    rows = list(ga_service.search(customer_id=customer_id(), query=query, timeout=API_TIMEOUT_SECONDS))
     if not rows:
         return None
+    if len(rows) > 1:
+        raise AmbiguousCampaignError(
+            f"{len(rows)} groupes d'annonces trouvés dans la campagne {campaign_resource_name}. "
+            "Précise lequel cibler pour agir en sécurité."
+        )
     r = rows[0]
     return {"resource_name": r.ad_group.resource_name, "status": r.ad_group.status.name}

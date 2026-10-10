@@ -22,7 +22,7 @@ def run(name, task="Analyse du jour et propositions d'actions."):
     telegram.notify(f"[{name}] {res.get('report','')}")
     for a in res.get("actions", []):
         d = guard.decide(a)
-        label = f"[{name}] {a['type']} ({a.get('cost_cad',0)} $/mois)\n{a['description']}"
+        label = f"[{name}] {a['type']} ({a.get('cost_cad',0)} $/mois)\n{a['description']}{guard.format_action_params(a)}"
         if d == "block":
             telegram.notify("⛔ Bloqué (plafond global, plafond par canal, ou action non permise)\n" + label)
             memory.log(name, f"BLOQUÉ : {a['type']} — {a['description']}")
