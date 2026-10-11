@@ -77,6 +77,11 @@ const MIN_BOOKING_LEAD_DAYS = 1; // délai minimum avant un rendez-vous (1 = pas
 const EMS_RENEWAL_ALERT_DAYS = 5; // combien de jours avant renouvellement on t'alerte
 const EXPENSE_ALERT_DAYS = 7; // combien de jours avant une depense recurrente on t'alerte
 
+// Nom affiché comme expéditeur pour TOUS les courriels envoyés par ce script
+// — sans ça, Gmail affiche le nom du profil Google du compte qui exécute le
+// script (ex. "Daniel Breidi") au lieu du nom de la clinique.
+const EMAIL_SENDER_NAME = 'Clinique KinéPulse';
+
 const EMAIL_SIGNATURE =
   '\n\n—\n' +
   'Clinique KinéPulse\n' +
@@ -296,6 +301,7 @@ function handleMassageBooking(data) {
   const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
   MailApp.sendEmail({
     to: email,
+    name: EMAIL_SENDER_NAME,
     subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -355,6 +361,7 @@ function handleEmsLead(data) {
 
   MailApp.sendEmail({
     to: email,
+    name: EMAIL_SENDER_NAME,
     subject: 'Votre demande de consultation EMS — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -928,6 +935,7 @@ function sendAppointmentReminders() {
 
       MailApp.sendEmail({
         to: email,
+        name: EMAIL_SENDER_NAME,
         subject: 'Rappel — votre rendez-vous demain chez KinéPulse',
         body:
           'Bonjour ' + nom + ',\n\n' +
@@ -1193,6 +1201,7 @@ function handleContactMessage(data) {
     MailApp.sendEmail({
       to: ownerEmail,
       replyTo: email,
+      name: EMAIL_SENDER_NAME,
       subject: 'Nouveau message du site — ' + sujet,
       body:
         'Nouveau message reçu via le formulaire de contact du site.\n\n' +
@@ -1207,6 +1216,7 @@ function handleContactMessage(data) {
   // Confirmation au client
   MailApp.sendEmail({
     to: email,
+    name: EMAIL_SENDER_NAME,
     subject: 'Message reçu — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -1271,6 +1281,7 @@ function handleHealthIntake(data) {
 
   MailApp.sendEmail({
     to: email,
+    name: EMAIL_SENDER_NAME,
     subject: 'Fiche santé reçue — Clinique KinéPulse',
     body:
       'Bonjour ' + nom + ',\n\n' +
@@ -1441,7 +1452,7 @@ function getOwnerProperty(key, fallback) {
 function notifyOwner(subject, body) {
   const ownerEmail = getOwnerProperty('OWNER_EMAIL', '');
   if (!ownerEmail) return;
-  MailApp.sendEmail({ to: ownerEmail, subject: subject, body: body });
+  MailApp.sendEmail({ to: ownerEmail, name: EMAIL_SENDER_NAME, subject: subject, body: body });
 }
 
 function jsonResponse(obj) {
