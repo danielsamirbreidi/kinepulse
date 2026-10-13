@@ -186,11 +186,10 @@ function getAvailableSlots(durationMinutes) {
     const dayOfWeek = day.getDay();
     const times = MASSAGE_SLOTS[dayOfWeek] || [];
 
-    // Remplissage séquentiel : on parcourt les créneaux du jour en ordre
-    // chronologique et on offre SEULEMENT le premier qui est encore libre.
-    // Ça empêche un client de réserver un créneau plus tard dans la journée
-    // en laissant un trou vide avant lui (ex: réserver 14h alors que 11h30
-    // et 12h45 sont encore libres).
+    // Montre TOUS les créneaux encore libres de la journée (pas seulement
+    // le premier) — demandé par Dandoun le 2026-10-13 : le site ne montrait
+    // qu'une seule heure par jour, ce qui cachait les autres créneaux
+    // réellement disponibles.
     for (let i = 0; i < times.length; i++) {
       const timeStr = times[i];
       const startDate = buildDateTime(day, timeStr);
@@ -210,7 +209,6 @@ function getAvailableSlots(durationMinutes) {
           time: timeStr,
           label: formatDateFr(day) + ' — ' + timeStr
         });
-        break; // un seul créneau offert par jour : le prochain dans l'ordre
       }
       // Si ce créneau est déjà pris (hasConflict), on continue la boucle
       // pour vérifier le suivant — mais on ne l'ajoute jamais lui-même.
