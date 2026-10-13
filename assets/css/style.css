@@ -890,6 +890,13 @@ SERVICES
     font-weight:300;
 }
 
+.service-content .service-price{
+    color:var(--primary, #1a7a6c);
+    font-weight:600;
+    font-size:1.1rem;
+    margin-bottom:10px;
+}
+
 .service-content ul{
     display:flex;
     flex-direction:column;
