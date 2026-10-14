@@ -1320,7 +1320,7 @@ FORMULAIRES (booking-form / booking-input)
     padding:16px 18px;
     border:1px solid var(--border);
     border-radius:14px;
-    font-size:.96rem;
+    font-size:1rem;
     font-family:inherit;
     color:var(--secondary);
     background:var(--white);
@@ -1612,6 +1612,11 @@ textarea.booking-input{
     }
     .cal-day{
         font-size:.78rem;
+        max-height:44px;
+    }
+    .cal-time-btn{
+        padding:12px 6px;
+        font-size:.9rem;
     }
 }
 
