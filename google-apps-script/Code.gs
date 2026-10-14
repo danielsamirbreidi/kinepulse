@@ -247,80 +247,132 @@ function handleMassageBooking(data) {
   const day = new Date(dayParts[0], dayParts[1] - 1, dayParts[2]);
   const startDate = buildDateTime(day, timeStr);
   const endDate = new Date(startDate.getTime() + duration * 60000);
+  const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
 
-  // 1. Revérifie que le créneau est toujours libre (évite le double-booking)
-  const calendar = CalendarApp.getDefaultCalendar();
-  const conflicts = calendar.getEvents(startDate, endDate);
-  if (conflicts.length > 0) {
-    return { success: false, error: 'SLOT_TAKEN' };
+  // 1 + 2. Revérifie que le créneau est toujours libre, puis crée l'événement
+  // Google Calendar — tout ça protégé par un verrou. Sans ce verrou, deux
+  // clients qui cliquent sur le même dernier créneau à quelques millisecondes
+  // d'intervalle pourraient TOUS LES DEUX passer la vérification "libre"
+  // avant que l'un des deux crée son événement -> double réservation sur le
+  // même créneau. Le verrou force les requêtes à se traiter une à la fois
+  // pour cette partie critique.
+  const lock = LockService.getScriptLock();
+  let event;
+  try {
+    lock.waitLock(15000); // attend jusqu'à 15s si une autre réservation est en cours
+  } catch (lockErr) {
+    return { success: false, error: 'SYSTEM_BUSY' };
   }
 
-  // 2. Crée l'événement Google Calendar
-  const event = calendar.createEvent(
-    service.label + ' — ' + nom,
-    startDate,
-    endDate,
-    {
-      description: 'Téléphone: ' + telephone + '\nCourriel: ' + email +
-                    '\nDisponibilités indiquées: ' + disponibilites.join(', '),
-      location: getOwnerProperty('CLINIC_ADDRESS', '')
+  try {
+    const calendar = CalendarApp.getDefaultCalendar();
+    const conflicts = calendar.getEvents(startDate, endDate);
+    if (conflicts.length > 0) {
+      return { success: false, error: 'SLOT_TAKEN' };
     }
-  );
 
-  // Rappels garantis sur ton calendrier, peu importe tes réglages par défaut
-  event.addPopupReminder(60);   // 1h avant, notification sur le téléphone
-  event.addEmailReminder(24 * 60); // 24h avant, par courriel
+    event = calendar.createEvent(
+      service.label + ' — ' + nom,
+      startDate,
+      endDate,
+      {
+        description: 'Téléphone: ' + telephone + '\nCourriel: ' + email +
+                      '\nDisponibilités indiquées: ' + disponibilites.join(', '),
+        location: getOwnerProperty('CLINIC_ADDRESS', '')
+      }
+    );
 
-  // Invalide le cache des créneaux pour que le créneau qui vient d'être
-  // pris ne soit pas montré à quelqu'un d'autre pendant la fenêtre de cache
-  CacheService.getScriptCache().remove('slots_60');
+    // Rappels garantis sur ton calendrier, peu importe tes réglages par défaut
+    event.addPopupReminder(60);   // 1h avant, notification sur le téléphone
+    event.addEmailReminder(24 * 60); // 24h avant, par courriel
 
-  // 3. Trouve ou crée le client dans Notion (met aussi à jour "Dernière visite")
-  const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr, data.dateNaissance);
-  const clientId = client.id;
+    // Invalide le cache des créneaux pour que le créneau qui vient d'être
+    // pris ne soit pas montré à quelqu'un d'autre pendant la fenêtre de cache
+    CacheService.getScriptCache().remove('slots_60');
+  } finally {
+    lock.releaseLock();
+  }
 
-  // 4. Crée la fiche Rendez-Vous dans Notion
-  const rdv = createNotionPage(DS_RENDEZVOUS, {
-    'Rendez-vous': titleProp(service.label + ' — ' + nom),
-    'Date': dateProp(dateStr),
-    'Heure': richTextProp(timeStr),
-    'Client': relationProp([clientId]),
-    'Service': relationProp([service.serviceId]),
-    'Thérapeute': selectProp('Daniel'),
-    'Statut': selectProp('Confirmé')
-  });
+  // À partir d'ici, le rendez-vous est déjà réel et sécurisé dans le
+  // calendrier (le client a sa place, peu importe ce qui suit). Tout le
+  // reste (Notion, courriels) est donc enveloppé dans ses propres try/catch :
+  // si Notion ou l'envoi de courriel échoue (panne réseau, Notion down,
+  // etc.), on ne fait PAS planter toute la réservation — le client reste
+  // confirmé, et toi tu reçois quand même une alerte pour rattraper
+  // manuellement ce qui a échoué.
+  let clientId = null;
+  let notionFailed = false;
 
-  // Note: la facture n'est PAS créée automatiquement ici — Daniel préfère
-  // cliquer lui-même le bouton "Créer facture" sur la fiche Rendez-Vous
-  // au moment où le client paie réellement.
+  try {
+    // 3. Trouve ou crée le client dans Notion (met aussi à jour "Dernière visite")
+    const client = findOrCreateClient(nom, telephone, email, 'Massage', dateStr, data.dateNaissance);
+    clientId = client.id;
+
+    // 4. Crée la fiche Rendez-Vous dans Notion
+    // Note: la facture n'est PAS créée automatiquement ici — Daniel préfère
+    // cliquer lui-même le bouton "Créer facture" sur la fiche Rendez-Vous
+    // au moment où le client paie réellement.
+    createNotionPage(DS_RENDEZVOUS, {
+      'Rendez-vous': titleProp(service.label + ' — ' + nom),
+      'Date': dateProp(dateStr),
+      'Heure': richTextProp(timeStr),
+      'Client': relationProp([clientId]),
+      'Service': relationProp([service.serviceId]),
+      'Thérapeute': selectProp('Daniel'),
+      'Statut': selectProp('Confirmé')
+    });
+  } catch (notionErr) {
+    notionFailed = true;
+    notifyOwner(
+      '⚠️ Rendez-vous créé au calendrier MAIS pas dans Notion — ' + nom,
+      'Le rendez-vous de ' + nom + ' (' + service.label + ', ' + dateLisible + ' à ' + timeStr + ') ' +
+      'a bien été créé dans Google Calendar, mais l\'enregistrement dans Notion a échoué :\n\n' +
+      notionErr.message +
+      '\n\n-> Ajoute-le manuellement dans Notion "Rendez-Vous" et "Clients" pour ne rien perdre.' +
+      '\nTéléphone: ' + telephone + '\nCourriel: ' + email
+    );
+  }
 
   // 5. Confirmation au client (le lien de la fiche santé n'est envoyé
   // qu'aux NOUVEAUX clients — un client existant l'a déjà remplie)
-  const dateLisible = formatDateFr(day) + ' ' + day.getFullYear();
-  MailApp.sendEmail({
-    to: email,
-    name: EMAIL_SENDER_NAME,
-    subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
-    body:
-      'Bonjour ' + nom + ',\n\n' +
-      'Votre rendez-vous est confirmé :\n\n' +
-      service.label + '\n' +
-      'Date : ' + dateLisible + '\n' +
-      'Heure : ' + timeStr + '\n\n' +
-      (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
-      (!clientAlreadyHasHealthForm(telephone, clientId)
-        ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
-          buildIntakeLink(nom, telephone, email) + '\n\n'
-        : '') +
-      'Au plaisir de vous accueillir.' +
-      EMAIL_SIGNATURE
-  });
+  try {
+    const needsHealthForm = notionFailed ? true : !clientAlreadyHasHealthForm(telephone, clientId);
+    MailApp.sendEmail({
+      to: email,
+      name: EMAIL_SENDER_NAME,
+      subject: 'Confirmation de votre rendez-vous — Clinique KinéPulse',
+      body:
+        'Bonjour ' + nom + ',\n\n' +
+        'Votre rendez-vous est confirmé :\n\n' +
+        service.label + '\n' +
+        'Date : ' + dateLisible + '\n' +
+        'Heure : ' + timeStr + '\n\n' +
+        (getOwnerProperty('CLINIC_ADDRESS', '') ? 'Adresse : ' + getOwnerProperty('CLINIC_ADDRESS', '') + '\n\n' : '') +
+        (needsHealthForm
+          ? 'Pour sauver du temps sur place, prenez 3 minutes pour remplir votre fiche santé avant votre visite :\n' +
+            buildIntakeLink(nom, telephone, email) + '\n\n'
+          : '') +
+        'Au plaisir de vous accueillir.' +
+        EMAIL_SIGNATURE
+    });
+  } catch (emailErr) {
+    notifyOwner(
+      '⚠️ Courriel de confirmation NON envoyé — ' + nom,
+      'Le rendez-vous de ' + nom + ' (' + service.label + ', ' + dateLisible + ' à ' + timeStr + ') ' +
+      'est bien confirmé, mais le courriel de confirmation au client a échoué :\n\n' +
+      emailErr.message +
+      '\n\n-> Contacte-le toi-même pour confirmer.' +
+      '\nTéléphone: ' + telephone + '\nCourriel: ' + email
+    );
+  }
 
-  // 6. Notification au propriétaire
+  // 6. Notification au propriétaire (rendez-vous confirmé — toujours envoyée,
+  // même si Notion ou le courriel client ont échoué plus haut)
   notifyOwner(
     'Nouveau rendez-vous réservé — ' + nom,
     nom + ' a réservé : ' + service.label + ' le ' + dateLisible + ' à ' + timeStr +
-    '.\nTéléphone: ' + telephone + '\nCourriel: ' + email
+    '.\nTéléphone: ' + telephone + '\nCourriel: ' + email +
+    (notionFailed ? '\n\n⚠️ Voir alerte séparée : pas encore dans Notion.' : '')
   );
 
   return { success: true, event: event.getId() };
