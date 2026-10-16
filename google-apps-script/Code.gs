@@ -62,13 +62,16 @@ const SERVICE_LOOKUP = {
 };
 
 // Horaire fixe des créneaux de massage (heures locales, format 24h)
+// Mis à jour le 2026-10-16 (Dandoun) : Lun-Ven 16h/17h/18h/19h,
+// Sam 9h/10h/11h/12h/13h — créneaux espacés d'exactement 1h, sans
+// battement entre deux clients (séances de 60 minutes).
 const MASSAGE_SLOTS = {
-  1: ['16:00', '17:15', '18:30'], // Lundi
-  2: ['16:00', '17:15', '18:30'], // Mardi
-  3: ['16:00', '17:15', '18:30'], // Mercredi
-  4: ['16:00', '17:15', '18:30'], // Jeudi
-  5: ['16:00', '17:15', '18:30'], // Vendredi
-  6: ['09:00', '10:15', '11:30', '12:45', '14:00'], // Samedi
+  1: ['16:00', '17:00', '18:00', '19:00'], // Lundi
+  2: ['16:00', '17:00', '18:00', '19:00'], // Mardi
+  3: ['16:00', '17:00', '18:00', '19:00'], // Mercredi
+  4: ['16:00', '17:00', '18:00', '19:00'], // Jeudi
+  5: ['16:00', '17:00', '18:00', '19:00'], // Vendredi
+  6: ['09:00', '10:00', '11:00', '12:00', '13:00'], // Samedi
   0: [] // Dimanche fermé
 };
 
@@ -557,6 +560,67 @@ function bookCarolineEmsRecurring() {
   );
 
   Logger.log('Série créée: ' + series.getId());
+}
+
+/*==================================================
+CORRECTIF — RÉALIGNER LES VRAIS RENDEZ-VOUS GOOGLE CALENDAR
+SUR LA NOUVELLE GRILLE (2026-10-16, Dandoun)
+
+Ces rendez-vous existaient AVANT le changement de grille, à des
+heures qui ne tombent plus pile sur un créneau (10h15, 11h30,
+16h15...). Leurs fiches Notion ont déjà été corrigées, mais c'est
+le VRAI événement Google Calendar qui doit être déplacé pour que
+le site bloque le bon créneau (10h00, 11h00, 16h00) et empêche un
+nouveau client de prendre la même place.
+
+Cette fonction cherche, pour chaque date ci-dessous, l'événement
+dont le titre contient le mot-clé donné, et le déplace à la
+nouvelle heure (en gardant la même durée). Elle ne touche à rien
+d'autre.
+
+À FAIRE UNE SEULE FOIS : sélectionne "fixLegacyAppointmentTimes"
+dans le menu déroulant, clique ▶ Exécuter, puis vérifie le journal
+d'exécution (Affichage > Journaux) pour confirmer que les 5
+événements ont bien été trouvés et déplacés.
+==================================================*/
+
+function fixLegacyAppointmentTimes() {
+  const calendar = CalendarApp.getDefaultCalendar();
+
+  const fixes = [
+    { date: '2026-10-17', keyword: 'judith',  newHour: 10, newMinute: 0 }, // Sam — Massage Judith 10h15 -> 10h00
+    { date: '2026-10-17', keyword: 'sonia',   newHour: 11, newMinute: 0 }, // Sam — Massage Sonia 11h30 -> 11h00
+    { date: '2026-10-24', keyword: 'yannick', newHour: 10, newMinute: 0 }, // Sam — Massage yannick 10h15 -> 10h00
+    { date: '2026-10-31', keyword: 'judith',  newHour: 10, newMinute: 0 }, // Sam — Massage Judith 10h15 -> 10h00
+    { date: '2026-11-03', keyword: 'judith',  newHour: 16, newMinute: 0 }  // Mar — EMS gratuit Judith 16h15 -> 16h00
+  ];
+
+  fixes.forEach(function (fix) {
+    const parts = fix.date.split('-').map(Number);
+    const dayStart = new Date(parts[0], parts[1] - 1, parts[2]);
+    const dayEnd = new Date(parts[0], parts[1] - 1, parts[2] + 1);
+
+    const events = calendar.getEvents(dayStart, dayEnd);
+    const match = events.find(function (ev) {
+      return ev.getTitle().toLowerCase().indexOf(fix.keyword) !== -1;
+    });
+
+    if (!match) {
+      Logger.log('⚠️ AUCUN événement trouvé le ' + fix.date + ' contenant "' + fix.keyword + '" — à vérifier manuellement.');
+      return;
+    }
+
+    const oldStart = match.getStartTime();
+    const duration = match.getEndTime().getTime() - oldStart.getTime();
+    const newStart = new Date(parts[0], parts[1] - 1, parts[2], fix.newHour, fix.newMinute);
+    const newEnd = new Date(newStart.getTime() + duration);
+
+    match.setTime(newStart, newEnd);
+
+    Logger.log('✅ "' + match.getTitle() + '" (' + fix.date + ') déplacé de ' +
+      Utilities.formatDate(oldStart, TIMEZONE, 'HH:mm') + ' à ' +
+      Utilities.formatDate(newStart, TIMEZONE, 'HH:mm'));
+  });
 }
 
 /*==================================================
