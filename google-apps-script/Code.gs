@@ -522,6 +522,105 @@ function setupExpenseEmailTrigger() {
     .create();
 }
 
+function setupCancellationTrigger() {
+  // Supprime d'anciens déclencheurs pour éviter les doublons
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'traiterAnnulations') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  ScriptApp.newTrigger('traiterAnnulations')
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+}
+
+/*==================================================
+ANNULATIONS — LIBÈRE LE CRÉNEAU SUR LE SITE QUAND UN
+RENDEZ-VOUS EST ANNULÉ DANS NOTION (2026-10-16, Dandoun)
+
+Quand un rendez-vous (souvent une annulation en personne à la
+clinique) est marqué Statut = "Annulé" dans Notion, le vrai
+événement Google Calendar reste tant que personne ne le supprime
+— et c'est CET événement qui bloque le créneau sur le site, pas
+le Statut Notion. Cette fonction fait le lien : elle cherche
+l'événement Google Calendar à la même date/heure et le supprime,
+ce qui libère automatiquement le créneau pour un nouveau client.
+
+Elle ne retraite jamais deux fois le même rendez-vous : une fois
+l'événement supprimé, elle ne retrouve plus rien à ce moment-là
+la prochaine fois et passe simplement au suivant — pas besoin de
+case à cocher "déjà traité".
+
+À FAIRE UNE SEULE FOIS : sélectionne "setupCancellationTrigger"
+dans le menu déroulant, clique ▶ Exécuter. Ça active la
+vérification automatique toutes les 10 minutes.
+==================================================*/
+
+function traiterAnnulations() {
+  const calendar = CalendarApp.getDefaultCalendar();
+  const today = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
+
+  // Seulement les annulations à venir (ou aujourd'hui) — pas besoin de
+  // toucher au calendrier pour un rendez-vous déjà passé.
+  const result = queryNotionDataSource(DS_RENDEZVOUS, {
+    filter: {
+      and: [
+        { property: 'Statut', select: { equals: 'Annulé' } },
+        { property: 'Date', date: { on_or_after: today } }
+      ]
+    }
+  });
+
+  const cancelled = result.results || [];
+  if (cancelled.length === 0) return;
+
+  cancelled.forEach(function (rdv) {
+    try {
+      const dateInfo = rdv.properties['Date'] && rdv.properties['Date'].date;
+      const heure = getPlainText(rdv.properties['Heure']);
+      if (!dateInfo || !dateInfo.start || !heure) return;
+
+      const dateStr = dateInfo.start; // 'yyyy-MM-dd'
+      const dParts = dateStr.split('-').map(Number);
+      const tParts = heure.split(':').map(Number);
+
+      const expectedStart = new Date(dParts[0], dParts[1] - 1, dParts[2], tParts[0], tParts[1] || 0);
+      const dayStart = new Date(dParts[0], dParts[1] - 1, dParts[2]);
+      const dayEnd = new Date(dParts[0], dParts[1] - 1, dParts[2] + 1);
+
+      const events = calendar.getEvents(dayStart, dayEnd);
+      const match = events.find(function (ev) {
+        return ev.getStartTime().getTime() === expectedStart.getTime();
+      });
+
+      if (!match) {
+        // Déjà supprimé lors d'un passage précédent (ou jamais créé) — rien à faire
+        return;
+      }
+
+      const title = match.getTitle();
+      match.deleteEvent();
+
+      // Libère tout de suite le cache des créneaux pour que le site montre
+      // immédiatement ce créneau comme redisponible, sans attendre 60s
+      CacheService.getScriptCache().remove('slots_60');
+
+      Logger.log('🗑️ Événement supprimé pour annulation: "' + title + '" (' + dateStr + ' ' + heure + ')');
+
+      notifyOwner(
+        '🗑️ Rendez-vous annulé — créneau libéré',
+        '"' + title + '" (' + dateStr + ' à ' + heure + ') a été marqué "Annulé" dans Notion. ' +
+        'L\'événement Google Calendar correspondant a été supprimé : ce créneau est de nouveau disponible sur le site.'
+      );
+
+    } catch (err) {
+      notifyOwner('⚠️ Erreur traitement annulation', err.message + '\n\nFiche Notion concernée: ' + (rdv.url || rdv.id));
+    }
+  });
+}
+
 /*==================================================
 BLOCAGE RÉCURRENT — EMS CAROLINE (chaque jeudi 17h00-18h00,
 du 15 octobre 2026 au 15 avril 2027 inclusivement)
