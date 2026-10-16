@@ -624,6 +624,45 @@ function fixLegacyAppointmentTimes() {
 }
 
 /*==================================================
+CORRECTIF — ÉVÉNEMENT "TOUTE LA JOURNÉE" QUI BLOQUAIT
+LE 12 NOVEMBRE 2026 (2026-10-16, Dandoun)
+
+"3id Serge" était un événement "toute la journée" (all-day) dans
+Google Calendar. Un événement all-day couvre minuit à minuit, donc
+il chevauche n'importe quelle heure de la journée — c'est pour ça
+que le 12 novembre s'affichait complètement fermé sur le site,
+alors que seul le créneau de 17h00 (Caroline) aurait dû être pris.
+
+Cette fonction transforme cet événement en rendez-vous ponctuel de
+8h00 à 8h30 (bien avant les heures de clinique), pour qu'il reste
+dans ton calendrier comme rappel sans bloquer toute la journée.
+
+À FAIRE UNE SEULE FOIS : sélectionne "fixAllDayBirthdayBlockingSlot"
+dans le menu déroulant, clique ▶ Exécuter, puis vérifie le journal.
+==================================================*/
+
+function fixAllDayBirthdayBlockingSlot() {
+  const calendar = CalendarApp.getDefaultCalendar();
+  const dayStart = new Date(2026, 10, 12); // novembre = mois index 10
+  const dayEnd = new Date(2026, 10, 13);
+
+  const events = calendar.getEvents(dayStart, dayEnd);
+  const match = events.find(function (ev) {
+    return ev.isAllDayEvent() && ev.getTitle().toLowerCase().indexOf('serge') !== -1;
+  });
+
+  if (!match) {
+    Logger.log('⚠️ Aucun événement "toute la journée" contenant "Serge" trouvé le 12 novembre 2026 — à vérifier manuellement.');
+    return;
+  }
+
+  const title = match.getTitle();
+  match.setTime(new Date(2026, 10, 12, 8, 0), new Date(2026, 10, 12, 8, 30));
+
+  Logger.log('✅ "' + title + '" converti en rendez-vous ponctuel (8h00-8h30), n\'est plus "toute la journée".');
+}
+
+/*==================================================
 SYNCHRONISATION CALENDAR -> NOTION
 (pour les rendez-vous ajoutés manuellement dans Google
 Calendar, hors du site — copie vers Notion "Rendez-Vous"
