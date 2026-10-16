@@ -520,6 +520,46 @@ function setupExpenseEmailTrigger() {
 }
 
 /*==================================================
+BLOCAGE RÉCURRENT — EMS CAROLINE (chaque jeudi 17h00-18h00,
+du 15 octobre 2026 au 15 avril 2027 inclusivement)
+
+Ceci crée une série d'événements dans Google Calendar, pas
+seulement une note dans Notion : c'est Google Calendar que le
+site vérifie pour savoir quels créneaux sont libres. Sans cet
+événement, le site continuerait de montrer le créneau de 17h15
+du jeudi comme disponible, même si la fiche existe déjà dans
+Notion "Rendez-Vous".
+
+À FAIRE UNE SEULE FOIS : dans l'éditeur Apps Script, sélectionne
+"bookCarolineEmsRecurring" dans le menu déroulant en haut, puis
+clique ▶ Exécuter. Après ça, supprime cette fonction (ou laisse-la,
+elle ne refait rien si tu la relances — voir note plus bas) si
+plus besoin.
+==================================================*/
+
+function bookCarolineEmsRecurring() {
+  const calendar = CalendarApp.getDefaultCalendar();
+
+  const startDate = new Date(2026, 9, 15, 17, 0);  // 15 octobre 2026, 17h00 (mois 0-indexé: 9 = octobre)
+  const endDate = new Date(2026, 9, 15, 18, 0);    // 1 heure plus tard
+  const untilDate = new Date(2027, 3, 15);         // 15 avril 2027 inclus (mois 0-indexé: 3 = avril)
+
+  const recurrence = CalendarApp.newRecurrence()
+    .addWeeklyRule()
+    .onlyOnWeekday(CalendarApp.Weekday.THURSDAY)
+    .until(untilDate);
+
+  const series = calendar.createEventSeries(
+    'EMS — Caroline Plouffe',
+    startDate,
+    endDate,
+    recurrence
+  );
+
+  Logger.log('Série créée: ' + series.getId());
+}
+
+/*==================================================
 SYNCHRONISATION CALENDAR -> NOTION
 (pour les rendez-vous ajoutés manuellement dans Google
 Calendar, hors du site — copie vers Notion "Rendez-Vous"
