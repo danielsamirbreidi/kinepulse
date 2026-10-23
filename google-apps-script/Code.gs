@@ -1550,6 +1550,10 @@ function handleHealthIntake(data) {
     'Date de remplissage': dateProp(today)
   };
 
+  if (data.dateNaissance) {
+    fiche['Date de naissance'] = dateProp(data.dateNaissance);
+  }
+
   // Une seule fiche santé par client — si elle existe déjà (peu importe si
   // elle vient d'une réservation massage ou EMS), on la MET À JOUR au lieu
   // d'en créer une deuxième.
