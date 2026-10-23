@@ -2043,15 +2043,24 @@ BOUTON RÉSERVATION STICKY (MOBILE)
         min-width:0;
         text-align:center;
     }
-    /* Bouton d'appel, injecté par script.js directement dans cette barre
-       quand elle est présente sur la page — côte à côte avec "Réserver",
-       jamais superposé */
-    .sticky-reserve-bar #floatingCallBtn{
-        position:static;
-        transform:none;
-        flex:0 0 auto;
+    /* Bouton d'appel, inséré par script.js dans cette même barre —
+       côte à côte avec "Réserver", jamais superposé */
+    #floatingCallBtn{
         display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        flex:0 0 auto;
+        background:#0a7c3a;
+        color:#fff;
+        text-decoration:none;
+        padding:0 20px;
+        border-radius:999px;
+        font-weight:600;
+        font-size:.95rem;
+        white-space:nowrap;
     }
+    #floatingCallBtn svg{ width:18px; height:18px; fill:currentColor; }
     /* évite que la barre cache le bas de la page (footer, formulaire) —
        scopé aux pages qui ont la barre, pour ne pas affecter tout le site */
     body:has(.sticky-reserve-bar){ padding-bottom:64px; }

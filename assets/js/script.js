@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initAnimations();
 
-    initFloatingCallButton();
+    initStickyActionBar();
 
 });
 
@@ -137,58 +137,39 @@ function initBackToTop() {
 }
 
 /*==================================================
-BOUTON D'APPEL FLOTTANT (mobile uniquement)
-Un visiteur pressé sur téléphone doit pouvoir appeler
-en un tap, sans chercher le numéro sur la page.
+BARRE STICKY « RÉSERVER + APPELER » (mobile uniquement)
+Sur TOUTES les pages — 80% des visiteurs sont sur mobile,
+on veut ces deux actions toujours visibles, jamais superposées.
 ==================================================*/
 
-function initFloatingCallButton() {
+function initStickyActionBar() {
 
-    if (document.getElementById("floatingCallBtn")) return; // déjà présent
+    if (document.getElementById("stickyActionBar")) return; // déjà présent
 
-    const style = document.createElement("style");
-    style.textContent = `
-        #floatingCallBtn {
-            display: none;
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            background: #0a7c3a;
-            color: #fff;
-            text-decoration: none;
-            padding: 13px 24px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-            align-items: center;
-            gap: 8px;
-        }
-        #floatingCallBtn svg { width: 18px; height: 18px; fill: currentColor; }
-        @media (max-width: 768px) {
-            #floatingCallBtn { display: inline-flex; }
-        }
-    `;
-    document.head.appendChild(style);
+    // Depuis la racine (index.html), le lien vers la page massage passe par
+    // "pages/" ; depuis une page déjà dans /pages/, c'est direct.
+    const inPagesFolder = location.pathname.indexOf("/pages/") !== -1;
+    const reserveHref = (inPagesFolder ? "" : "pages/") + "massage.html#reservation";
 
-    const btn = document.createElement("a");
-    btn.id = "floatingCallBtn";
-    btn.href = "tel:+12633782247";
-    btn.innerHTML =
+    const bar = document.createElement("div");
+    bar.id = "stickyActionBar";
+    bar.className = "sticky-reserve-bar";
+
+    const reserveBtn = document.createElement("a");
+    reserveBtn.className = "btn-primary";
+    reserveBtn.href = reserveHref;
+    reserveBtn.textContent = "Réserver ma séance — 95 $";
+    bar.appendChild(reserveBtn);
+
+    const callBtn = document.createElement("a");
+    callBtn.id = "floatingCallBtn";
+    callBtn.href = "tel:+12633782247";
+    callBtn.innerHTML =
         '<svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>' +
         '<span>Appeler</span>';
+    bar.appendChild(callBtn);
 
-    // Si la page a déjà une barre de réservation sticky (ex: massage.html),
-    // on place le bouton d'appel DEDANS, à côté de "Réserver", au lieu de le
-    // centrer par-dessus — les deux boutons se chevauchaient sinon.
-    const reserveBar = document.querySelector(".sticky-reserve-bar");
-    if (reserveBar) {
-        reserveBar.appendChild(btn);
-    } else {
-        document.body.appendChild(btn);
-    }
+    document.body.appendChild(bar);
 
 }
 /*==================================================
