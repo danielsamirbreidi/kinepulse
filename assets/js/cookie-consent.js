@@ -22,8 +22,12 @@ Conforme Loi 25 (Québec) + Google Consent Mode v2
 
     function updateGtagConsent(granted) {
         if (typeof gtag !== 'function') return;
+        var state = granted ? 'granted' : 'denied';
         gtag('consent', 'update', {
-            'analytics_storage': granted ? 'granted' : 'denied'
+            'analytics_storage': state,
+            'ad_storage': state,
+            'ad_user_data': state,
+            'ad_personalization': state
         });
     }
 
@@ -55,7 +59,7 @@ Conforme Loi 25 (Québec) + Google Consent Mode v2
         banner.setAttribute('role', 'dialog');
         banner.setAttribute('aria-label', 'Consentement aux cookies');
         banner.innerHTML =
-            '<p>Nous utilisons des cookies analytiques (Google Analytics) pour comprendre comment vous utilisez notre site. ' +
+            '<p>Nous utilisons des cookies analytiques (Google Analytics) et publicitaires (Google Ads) pour comprendre comment vous utilisez notre site et mesurer nos publicités. ' +
             'Vous pouvez accepter ou refuser. Voir notre <a href="' +
             (location.pathname.indexOf('/pages/') !== -1 ? '' : 'pages/') +
             'politique-de-confidentialite.html">politique de confidentialité</a>.</p>' +

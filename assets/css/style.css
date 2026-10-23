@@ -1717,6 +1717,15 @@ textarea.booking-input{
     flex-shrink:0;
 }
 
+.duration-option--secondary{
+    padding:11px 18px;
+    font-size:.85rem;
+    font-weight:400;
+    color:var(--text-light);
+    border-style:dashed;
+    grid-column:1 / -1;
+}
+
 @media(max-width:600px){
     .duration-choice{
         grid-template-columns:1fr;
@@ -2003,6 +2012,36 @@ UTILITAIRES
 .mb-2{ margin-bottom:20px; }
 .mb-3{ margin-bottom:30px; }
 
+
+/*==================================================
+BOUTON RÉSERVATION STICKY (MOBILE)
+==================================================*/
+
+.sticky-reserve-bar{
+    display:none;
+}
+
+@media(max-width:767px){
+    .sticky-reserve-bar{
+        display:block;
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        z-index:999;
+        padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+        background:var(--white);
+        box-shadow:0 -4px 16px rgba(0,0,0,.12);
+    }
+    .sticky-reserve-bar .btn-primary{
+        display:block;
+        width:100%;
+        text-align:center;
+    }
+    /* évite que la barre cache le bas de la page (footer, formulaire) —
+       scopé aux pages qui ont la barre, pour ne pas affecter tout le site */
+    body:has(.sticky-reserve-bar){ padding-bottom:64px; }
+}
 
 /*==================================================
 RESPONSIVE GLOBAL

@@ -12,7 +12,10 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('consent', 'default', {
-        'analytics_storage': 'denied'
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied'
       });
     </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0CBW9YZYLY"></script>
@@ -814,9 +817,9 @@ RÉSERVATION
                         Massage détente 60 minutes
                     </label>
 
-                    <label class="duration-option">
+                    <label class="duration-option duration-option--secondary">
                         <input type="radio" name="duration" value="Kinésithérapie 60 minutes">
-                        Kinésithérapie 60 minutes
+                        Kinésithérapie 60 minutes (aussi offerte)
                     </label>
 
                 </div>
@@ -1040,6 +1043,10 @@ FAQ
 
 </button>
 
+
+<div class="sticky-reserve-bar">
+    <a href="#reservation" class="btn-primary">Réserver ma séance — 95 $</a>
+</div>
 
 <script src="../assets/js/script.js"></script>
 

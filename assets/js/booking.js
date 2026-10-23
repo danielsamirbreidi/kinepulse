@@ -445,6 +445,15 @@ function initMassageBooking() {
                             'value': 110.0,
                             'currency': 'CAD'
                         });
+                        // Événement GA4 (propriété G-0CBW9YZYLY) — suivi indépendant de la
+                        // conversion Ads ci-dessus, pour voir les réservations dans GA4
+                        // même si le signal Ads est bloqué (ex: consentement publicitaire)
+                        gtag('event', 'reservation_complete', {
+                            'event_category': 'reservation',
+                            'service': payload.duration,
+                            'value': 110,
+                            'currency': 'CAD'
+                        });
                     }
                 } else if (data.error === "SLOT_TAKEN") {
                     showStatus(statusEl, "Ce créneau vient d'être réservé par quelqu'un d'autre. Choisissez-en un autre.", true);
@@ -547,6 +556,12 @@ function initEmsLead() {
                         gtag('event', 'conversion', {
                             'send_to': 'AW-18483395101/goaGCIzX7pUdEJ30yO1E',
                             'value': 165.0,
+                            'currency': 'CAD'
+                        });
+                        // Événement GA4 — même logique que la réservation massage
+                        gtag('event', 'demande_ems_complete', {
+                            'event_category': 'reservation',
+                            'value': 165,
                             'currency': 'CAD'
                         });
                     }
