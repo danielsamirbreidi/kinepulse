@@ -2023,7 +2023,9 @@ BOUTON RÉSERVATION STICKY (MOBILE)
 
 @media(max-width:767px){
     .sticky-reserve-bar{
-        display:block;
+        display:flex;
+        align-items:stretch;
+        gap:10px;
         position:fixed;
         left:0;
         right:0;
@@ -2034,9 +2036,21 @@ BOUTON RÉSERVATION STICKY (MOBILE)
         box-shadow:0 -4px 16px rgba(0,0,0,.12);
     }
     .sticky-reserve-bar .btn-primary{
-        display:block;
-        width:100%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex:1 1 auto;
+        min-width:0;
         text-align:center;
+    }
+    /* Bouton d'appel, injecté par script.js directement dans cette barre
+       quand elle est présente sur la page — côte à côte avec "Réserver",
+       jamais superposé */
+    .sticky-reserve-bar #floatingCallBtn{
+        position:static;
+        transform:none;
+        flex:0 0 auto;
+        display:inline-flex;
     }
     /* évite que la barre cache le bas de la page (footer, formulaire) —
        scopé aux pages qui ont la barre, pour ne pas affecter tout le site */
