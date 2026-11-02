@@ -158,7 +158,7 @@ function initStickyActionBar() {
     const reserveBtn = document.createElement("a");
     reserveBtn.className = "btn-primary";
     reserveBtn.href = reserveHref;
-    reserveBtn.textContent = "Réserver ma séance — 95 $";
+    reserveBtn.textContent = "Réserver ma séance — 95\u00A0$";
     bar.appendChild(reserveBtn);
 
     const callBtn = document.createElement("a");
