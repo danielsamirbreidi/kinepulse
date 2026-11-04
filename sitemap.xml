@@ -61,6 +61,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://kinepulse.ca/pages/blog-mal-de-dos-pointe-aux-trembles.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://kinepulse.ca/pages/politique-de-confidentialite.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

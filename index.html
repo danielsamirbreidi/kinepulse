@@ -71,6 +71,11 @@
         "telephone": "+1-263-378-2247",
         "email": "info@kinepulse.ca",
         "priceRange": "$$",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5.0",
+            "reviewCount": "10"
+        },
         "description": "Clinique de massothérapie, kinésithérapie, EMS et analyse corporelle 3D à Pointe-aux-Trembles, Montréal.",
         "address": {
             "@type": "PostalAddress",
@@ -80,7 +85,7 @@
             "postalCode": "H1A 1C2",
             "addressCountry": "CA"
         },
-        "areaServed": ["Pointe-aux-Trembles", "Montréal-Est", "Montréal"],
+        "areaServed": ["Pointe-aux-Trembles", "Montréal-Est", "Rivière-des-Prairies", "Anjou", "Tétreaultville", "Montréal"],
         "sameAs": ["https://www.facebook.com/profile.php?id=61591545420057", "https://www.instagram.com/kinepulse"],
         "openingHoursSpecification": [
             {
@@ -171,6 +176,8 @@
     
 
     <link rel="stylesheet" href="assets/css/style.css">
+
+<link rel="preload" as="image" href="assets/images/hero.webp" type="image/webp" fetchpriority="high">
 
 </head>
 
@@ -363,9 +370,12 @@ HERO
 
         <div class="hero-image">
 
-            <img
+            <picture>
+<source srcset="assets/images/hero.webp" type="image/webp">
+<img
                 src="assets/images/hero.jpg"
                 alt="Séance de massothérapie à la Clinique KinéPulse, Pointe-aux-Trembles">
+</picture>
 
         </div>
 
@@ -404,9 +414,12 @@ HERO
 
             <div class="about-image">
 
-                <img src="assets/images/about.jpg"
+                <picture>
+<source srcset="assets/images/about.webp" type="image/webp">
+<img src="assets/images/about.jpg"
                      alt="Intérieur de la salle de traitement de la Clinique KinéPulse"
                      loading="lazy">
+</picture>
 
             </div>
 
@@ -478,9 +491,12 @@ SERVICES
 
             <article class="service-card">
 
-                <img src="assets/images/massage.jpg"
+                <picture>
+<source srcset="assets/images/massage.webp" type="image/webp">
+<img src="assets/images/massage.jpg"
                      alt="Massothérapie thérapeutique"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -527,9 +543,12 @@ SERVICES
 
             <article class="service-card">
 
-                <img src="assets/images/ems.jpg"
+                <picture>
+<source srcset="assets/images/ems.webp" type="image/webp">
+<img src="assets/images/ems.jpg"
                      alt="Entraînement EMS à la Clinique KinéPulse"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -575,10 +594,13 @@ SERVICES
 
             <article class="service-card">
 
-                <img src="assets/images/bodyscan.jpg"
+                <picture>
+<source srcset="assets/images/bodyscan.webp" type="image/webp">
+<img src="assets/images/bodyscan.jpg"
                      alt="Analyse corporelle 3D à la Clinique KinéPulse"
                      class="img-contain"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -1207,6 +1229,41 @@ DERNIERS ARTICLES DE BLOGUE
 <!-- ==========================================
 CONTACT
 =========================================== -->
+
+
+<section class="section zones-desservies">
+
+    <div class="container">
+
+        <h2>
+
+            Zones desservies
+
+        </h2>
+
+        <p>
+
+            Située à Pointe-aux-Trembles, la clinique accueille aussi les clients de Montréal-Est, Rivière-des-Prairies, Anjou et Tétreaultville.
+
+        </p>
+
+        <ul>
+
+            <li>Pointe-aux-Trembles</li>
+
+            <li>Montréal-Est</li>
+
+            <li>Rivière-des-Prairies</li>
+
+            <li>Anjou</li>
+
+            <li>Tétreaultville</li>
+
+        </ul>
+
+    </div>
+
+</section>
 
 <section class="section contact">
 

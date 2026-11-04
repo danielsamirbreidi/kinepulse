@@ -251,6 +251,40 @@ function initMassageBooking() {
     const submitBtn = document.getElementById("massage-submit-btn");
     const durationInputs = form.querySelectorAll('input[name="duration"]');
 
+    // Récapitulatif avant envoi (1er clic = récap, 2e clic = envoi)
+    let recapConfirmed = false;
+    let recapDiv = null;
+
+    function hideRecap() {
+        if (recapDiv) recapDiv.style.display = "none";
+        recapConfirmed = false;
+    }
+
+    function showRecap(service, dateLabel, timeLabel) {
+        if (!recapDiv) {
+            recapDiv = document.createElement("div");
+            recapDiv.id = "massage-booking-recap";
+            recapDiv.innerHTML = `<p><strong>Récapitulatif de votre réservation</strong></p>
+                <p>Service : <span id="massage-recap-service"></span></p>
+                <p>Date : <span id="massage-recap-date"></span></p>
+                <p>Heure : <span id="massage-recap-time"></span></p>
+                <p>Cliquez de nouveau sur Confirmer ma réservation pour envoyer votre demande.</p>`;
+            const editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.id = "massage-recap-edit";
+            editBtn.textContent = "Modifier";
+            editBtn.addEventListener("click", hideRecap);
+            recapDiv.appendChild(editBtn);
+            submitBtn.parentNode.insertBefore(recapDiv, submitBtn);
+        }
+        document.getElementById("massage-recap-service").textContent = service;
+        document.getElementById("massage-recap-date").textContent = dateLabel;
+        document.getElementById("massage-recap-time").textContent = timeLabel;
+        recapDiv.style.display = "block";
+        recapDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+
     const monthLabel = document.getElementById("cal-month-label");
     const gridEl = document.getElementById("cal-grid");
     const timeslotsEl = document.getElementById("cal-timeslots");
@@ -266,6 +300,7 @@ function initMassageBooking() {
 
     function loadSlots() {
 
+        hideRecap();
         const duration = form.querySelector('input[name="duration"]:checked').value.indexOf("90") !== -1 ? 90 : 60;
 
         gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
@@ -331,6 +366,7 @@ function initMassageBooking() {
 
         gridEl.querySelectorAll(".cal-day.available").forEach(btn => {
             btn.addEventListener("click", () => {
+                hideRecap();
                 selectedDate = btn.dataset.date;
                 slotValueInput.value = "";
                 renderCalendar();
@@ -365,6 +401,7 @@ function initMassageBooking() {
 
         timeslotsEl.querySelectorAll(".cal-time-btn").forEach(btn => {
             btn.addEventListener("click", () => {
+                hideRecap();
                 slotValueInput.value = btn.dataset.value;
                 timeslotsEl.querySelectorAll(".cal-time-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -402,6 +439,15 @@ function initMassageBooking() {
 
         if (!isValidPhone(formData.get("telephone"))) {
             showStatus(statusEl, "Veuillez entrer un numéro de téléphone valide (10 chiffres).", true);
+            return;
+        }
+
+        // 1er clic : afficher le récapitulatif, sans envoyer.
+        if (!recapConfirmed) {
+            const dateObj = new Date(date + "T00:00:00");
+            const dateLabel = dateObj.toLocaleDateString("fr-CA", { weekday: "long", day: "numeric", month: "long" });
+            showRecap(formData.get("duration"), dateLabel, time);
+            recapConfirmed = true;
             return;
         }
 

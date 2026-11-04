@@ -58,6 +58,11 @@
         "telephone": "+1-263-378-2247",
         "email": "info@kinepulse.ca",
         "priceRange": "$$",
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5.0",
+            "reviewCount": "10"
+        },
         "description": "Clinique de massothérapie, kinésithérapie, EMS et analyse corporelle 3D à Pointe-aux-Trembles, Montréal.",
         "address": {
             "@type": "PostalAddress",
@@ -114,6 +119,8 @@
     </script>
 
     <link rel="stylesheet" href="../assets/css/style.css">
+
+<link rel="preload" as="image" href="../assets/images/massage-hero.webp" type="image/webp" fetchpriority="high">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -241,7 +248,10 @@
 
         <div class="hero-image">
 
-            <img src="../assets/images/massage-hero.jpg" alt="Massage thérapeutique à la Clinique KinéPulse" loading="eager">
+            <picture>
+<source srcset="../assets/images/massage-hero.webp" type="image/webp">
+<img src="../assets/images/massage-hero.jpg" alt="Massage thérapeutique à la Clinique KinéPulse" loading="eager">
+</picture>
 
         </div>
 
@@ -252,6 +262,141 @@
 <!--=========================================
 BIENFAITS
 ==========================================-->
+
+<section id="reservation" class="section cta-section">
+
+    <div class="container">
+
+        <div class="cta-box fade-up">
+
+            <span>Réservation</span>
+
+            <h2>
+
+                Choisissez votre massage
+
+            </h2>
+
+            <p>
+
+                Sélectionnez la durée de votre massage, puis choisissez un créneau réellement disponible dans notre horaire.
+
+            </p>
+
+            <p style="display:inline-flex;align-items:center;gap:8px;background:var(--primary-tint);color:var(--primary-dark);font-weight:600;font-size:.95rem;padding:10px 18px;border-radius:999px;margin-bottom:18px;">
+
+                ✔ Reçus d'assurance disponibles
+
+            </p>
+
+            <form class="booking-form fade-up" id="massage-booking-form" data-custom-submit="true">
+
+                <input type="hidden" name="service" value="Massage thérapeutique">
+
+                <div class="duration-choice">
+
+                    <label class="duration-option">
+                        <input type="radio" name="duration" value="Massage thérapeutique 60 minutes" checked>
+                        Massage thérapeutique 60 minutes — 95 $
+                    </label>
+
+                    <label class="duration-option">
+                        <input type="radio" name="duration" value="Massage détente 60 minutes">
+                        Massage détente 60 minutes — 95 $
+                    </label>
+
+                    <label class="duration-option duration-option--secondary">
+                        <input type="radio" name="duration" value="Kinésithérapie 60 minutes">
+                        Kinésithérapie 60 minutes (aussi offerte) — 95 $
+                    </label>
+
+                </div>
+
+                <input
+                    class="booking-input"
+                    type="text"
+                    name="nom"
+                    placeholder="Nom complet"
+                    required>
+
+                <input
+                    class="booking-input"
+                    type="tel"
+                    name="telephone"
+                    placeholder="Téléphone"
+                    required>
+
+                <input
+                    class="booking-input"
+                    type="email"
+                    name="email"
+                    placeholder="Courriel"
+                    required>
+
+                <select
+                    class="booking-input"
+                    name="source"
+                    required>
+
+                    <option value="">Comment nous avez-vous trouvé ?</option>
+                    <option>Recherche Google</option>
+                    <option>Facebook / Instagram</option>
+                    <option>Ami ou famille</option>
+                    <option>Passage devant la clinique</option>
+                    <option>Recommandation d'un professionnel de la santé</option>
+                    <option>Autre</option>
+                </select>
+
+                <div id="massage-calendar-wrap">
+
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav" id="cal-prev" aria-label="Mois précédent">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+                        </button>
+                        <span id="cal-month-label"></span>
+                        <button type="button" class="calendar-nav" id="cal-next" aria-label="Mois suivant">
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                    </div>
+
+                    <div class="calendar-grid" id="cal-grid"></div>
+
+                    <div id="cal-timeslots"></div>
+
+                </div>
+
+                <input type="hidden" name="slot" id="massage-slot-value" required>
+
+                <p id="massage-slot-status" style="font-size:.85rem;color:var(--primary-light);display:none;"></p>
+
+                <label class="consent-check">
+                    <input type="checkbox" name="consentement" required>
+                    <span>J'accepte que mes renseignements soient utilisés pour traiter ma demande de rendez-vous, conformément à la <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
+                </label>
+
+                <button class="btn-primary" type="submit" id="massage-submit-btn">
+
+                    Confirmer ma réservation
+
+                </button>
+
+            </form>
+
+            <p style="margin-top:30px;font-size:.95rem;opacity:.8;">
+
+                ✔ Analyse corporelle 3D offerte avec votre massage.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
 
 <section class="section">
 
@@ -428,9 +573,12 @@ NOS MASSAGES
 
             <div class="card service-card fade-up">
 
-                <img src="../assets/images/massage60.jpg"
+                <picture>
+<source srcset="../assets/images/massage60.webp" type="image/webp">
+<img src="../assets/images/massage60.jpg"
                      alt="Massothérapie thérapeutique 60 minutes"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -470,9 +618,12 @@ NOS MASSAGES
 
             <div class="card service-card fade-up">
 
-                <img src="../assets/images/massagedetente60.jpg"
+                <picture>
+<source srcset="../assets/images/massagedetente60.webp" type="image/webp">
+<img src="../assets/images/massagedetente60.jpg"
                      alt="Massothérapie détente 60 minutes"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -510,9 +661,12 @@ NOS MASSAGES
 
             <div class="card service-card fade-up">
 
-                <img src="../assets/images/kine60.jpg"
+                <picture>
+<source srcset="../assets/images/kine60.webp" type="image/webp">
+<img src="../assets/images/kine60.jpg"
                      alt="Kinésithérapie 60 minutes"
                      loading="lazy">
+</picture>
 
                 <div class="service-content">
 
@@ -565,9 +719,12 @@ ANALYSE CORPORELLE 3D
 
             <div class="analysis-image fade-up">
 
-                <img src="../assets/images/analyse3d.jpg"
+                <picture>
+<source srcset="../assets/images/analyse3d.webp" type="image/webp">
+<img src="../assets/images/analyse3d.jpg"
                      alt="Analyse corporelle 3D offerte à la Clinique KinéPulse"
                      loading="lazy">
+</picture>
 
             </div>
 
@@ -775,140 +932,7 @@ TÉMOIGNAGES
 RÉSERVATION
 ==========================================-->
 
-<section id="reservation" class="section cta-section">
 
-    <div class="container">
-
-        <div class="cta-box fade-up">
-
-            <span>Réservation</span>
-
-            <h2>
-
-                Choisissez votre massage
-
-            </h2>
-
-            <p>
-
-                Sélectionnez la durée de votre massage, puis choisissez un créneau réellement disponible dans notre horaire.
-
-            </p>
-
-            <p style="display:inline-flex;align-items:center;gap:8px;background:var(--primary-tint);color:var(--primary-dark);font-weight:600;font-size:.95rem;padding:10px 18px;border-radius:999px;margin-bottom:18px;">
-
-                ✔ Reçus d'assurance disponibles
-
-            </p>
-
-            <form class="booking-form fade-up" id="massage-booking-form" data-custom-submit="true">
-
-                <input type="hidden" name="service" value="Massage thérapeutique">
-
-                <div class="duration-choice">
-
-                    <label class="duration-option">
-                        <input type="radio" name="duration" value="Massage thérapeutique 60 minutes" checked>
-                        Massage thérapeutique 60 minutes — 95 $
-                    </label>
-
-                    <label class="duration-option">
-                        <input type="radio" name="duration" value="Massage détente 60 minutes">
-                        Massage détente 60 minutes — 95 $
-                    </label>
-
-                    <label class="duration-option duration-option--secondary">
-                        <input type="radio" name="duration" value="Kinésithérapie 60 minutes">
-                        Kinésithérapie 60 minutes (aussi offerte) — 95 $
-                    </label>
-
-                </div>
-
-                <input
-                    class="booking-input"
-                    type="text"
-                    name="nom"
-                    placeholder="Nom complet"
-                    required>
-
-                <input
-                    class="booking-input"
-                    type="tel"
-                    name="telephone"
-                    placeholder="Téléphone"
-                    required>
-
-                <input
-                    class="booking-input"
-                    type="email"
-                    name="email"
-                    placeholder="Courriel"
-                    required>
-
-                <select
-                    class="booking-input"
-                    name="source"
-                    required>
-
-                    <option value="">Comment nous avez-vous trouvé ?</option>
-                    <option>Recherche Google</option>
-                    <option>Facebook / Instagram</option>
-                    <option>Ami ou famille</option>
-                    <option>Passage devant la clinique</option>
-                    <option>Recommandation d'un professionnel de la santé</option>
-                    <option>Autre</option>
-                </select>
-
-                <div id="massage-calendar-wrap">
-
-                    <div class="calendar-header">
-                        <button type="button" class="calendar-nav" id="cal-prev" aria-label="Mois précédent">
-                            <svg class="icon" viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
-                        </button>
-                        <span id="cal-month-label"></span>
-                        <button type="button" class="calendar-nav" id="cal-next" aria-label="Mois suivant">
-                            <svg class="icon" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="calendar-weekdays">
-                        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
-                    </div>
-
-                    <div class="calendar-grid" id="cal-grid"></div>
-
-                    <div id="cal-timeslots"></div>
-
-                </div>
-
-                <input type="hidden" name="slot" id="massage-slot-value" required>
-
-                <p id="massage-slot-status" style="font-size:.85rem;color:var(--primary-light);display:none;"></p>
-
-                <label class="consent-check">
-                    <input type="checkbox" name="consentement" required>
-                    <span>J'accepte que mes renseignements soient utilisés pour traiter ma demande de rendez-vous, conformément à la <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
-                </label>
-
-                <button class="btn-primary" type="submit" id="massage-submit-btn">
-
-                    Confirmer ma réservation
-
-                </button>
-
-            </form>
-
-            <p style="margin-top:30px;font-size:.95rem;opacity:.8;">
-
-                ✔ Analyse corporelle 3D offerte avec votre massage.
-
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
 <!--=========================================
 FAQ
 ==========================================-->
@@ -1049,5 +1073,5 @@ FAQ
 <script src="../assets/js/booking.js"></script>
 
 </body>
-<script>(function(){var f=document.getElementById('massage-booking-form');if(!f)return;var s=document.getElementById('massage-submit-btn'),v=document.getElementById('massage-slot-value');if(!s||!v)return;var d=document.createElement('div');d.id='massage-booking-recap';d.style.display='none';var u=document.createElement('strong');u.textContent='Récapitulatif de votre réservation';var g=document.createElement('p');g.appendChild(u);d.appendChild(g);function mk(t,i){var p=document.createElement('p');p.textContent=t;var y=document.createElement('span');y.id=i;p.appendChild(y);return p;}d.appendChild(mk('Service : ','massage-recap-service'));d.appendChild(mk('Date : ','massage-recap-date'));d.appendChild(mk('Heure : ','massage-recap-time'));var n=document.createElement('p');n.textContent='Cliquez de nouveau sur Confirmer ma réservation pour envoyer votre demande.';d.appendChild(n);var b=document.createElement('button');b.type='button';b.id='massage-recap-edit';b.textContent='Modifier';d.appendChild(b);f.insertBefore(d,s);var q=false;function x(){q=false;d.style.display='none';}document.getElementById('massage-recap-edit').addEventListener('click',x);f.addEventListener('change',function(e){if(e.target.name==='duration')x();});f.addEventListener('click',function(e){var t=e.target;if(t.closest&&(t.closest('.cal-day')||t.closest('.cal-time-btn'))x();});f.addEventListener('submit',function(e){if(q)return;var a=v.value;if(!a)return;var p=a.split('|');if(p.length!==2)return;var r=f.querySelector('input[name=duration]:checked');if(!r)return;document.getElementById('massage-recap-service').textContent=r.value;document.getElementById('massage-recap-date').textContent=new Date(p[0]+'T00:00:00').toLocaleDateString('fr-CA',{weekday:'long',day:'numeric',month:'long'});document.getElementById('massage-recap-time').textContent=p[1];q=true;d.style.display='block';d.scrollIntoView();e.preventDefault();e.stopImmediatePropagation();});})();</script>
+
 </html>
