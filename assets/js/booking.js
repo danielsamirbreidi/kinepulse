@@ -298,41 +298,75 @@ function initMassageBooking() {
     viewMonth.setDate(1);
     let selectedDate = null;
 
+    function applySlotsData(data) {
+
+        slotsByDate = {};
+
+        if (data.success && data.slots) {
+            data.slots.forEach(slot => {
+                if (!slotsByDate[slot.date]) slotsByDate[slot.date] = [];
+                slotsByDate[slot.date].push(slot);
+            });
+        }
+
+        // Ouvre le calendrier sur le premier mois qui contient un créneau
+        const firstDate = data.slots && data.slots.length ? data.slots[0].date : null;
+        if (firstDate) {
+            const [y, m] = firstDate.split("-").map(Number);
+            viewMonth = new Date(y, m - 1, 1);
+        }
+
+        renderCalendar();
+    }
+
     function loadSlots() {
 
         hideRecap();
         const duration = form.querySelector('input[name="duration"]:checked').value.indexOf("90") !== -1 ? 90 : 60;
+        const cacheKey = "kinepulse-slots-" + duration;
 
-        gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
+        // Cache court (5 min) : la visite suivante et le changement de service
+        // affichent le calendrier tout de suite, puis les créneaux frais arrivent
+        // en arrière-plan. Un créneau pris entre-temps reste bloqué à l'envoi
+        // (le serveur répond SLOT_TAKEN), donc le cache ne peut pas créer
+        // de double réservation.
+        let cached = null;
+        try {
+            const raw = sessionStorage.getItem(cacheKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.t && (Date.now() - parsed.t) < 300000 && parsed.data && parsed.data.success) {
+                    cached = parsed.data;
+                }
+            }
+        } catch (e) { cached = null; }
+
         timeslotsEl.innerHTML = "";
         slotValueInput.value = "";
         selectedDate = null;
 
+        if (cached) {
+            applySlotsData(cached);
+        } else {
+            gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
+        }
+
         fetch(`${BOOKING_API_URL}?action=slots&duration=${duration}`)
             .then(res => res.json())
             .then(data => {
-
-                slotsByDate = {};
-
-                if (data.success && data.slots) {
-                    data.slots.forEach(slot => {
-                        if (!slotsByDate[slot.date]) slotsByDate[slot.date] = [];
-                        slotsByDate[slot.date].push(slot);
-                    });
+                if (data.success) {
+                    try { sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), data: data })); } catch (e) {}
                 }
-
-                // Ouvre le calendrier sur le premier mois qui contient un créneau
-                const firstDate = data.slots && data.slots.length ? data.slots[0].date : null;
-                if (firstDate) {
-                    const [y, m] = firstDate.split("-").map(Number);
-                    viewMonth = new Date(y, m - 1, 1);
+                // Ne pas écraser un choix en cours : on ne rafraîchit l'affichage
+                // que si le client n'a encore rien sélectionné.
+                if (!cached || (slotValueInput.value === "" && selectedDate === null)) {
+                    applySlotsData(data);
                 }
-
-                renderCalendar();
-
             })
             .catch(() => {
-                gridEl.innerHTML = '<p style="grid-column:1/-1;font-size:.85rem;color:var(--text-light);">Erreur de chargement — réessayez plus tard.</p>';
+                if (!cached) {
+                    gridEl.innerHTML = '<p style="grid-column:1/-1;font-size:.85rem;color:var(--text-light);">Erreur de chargement — réessayez plus tard.</p>';
+                }
             });
     }
 
