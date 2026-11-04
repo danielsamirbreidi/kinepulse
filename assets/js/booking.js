@@ -10,6 +10,39 @@ Google Apps Script (Calendar + Notion + courriels)
 // (voir README-automatisation.md pour les étapes)
 const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbwVumxoiEIMVGlC6Q0EO3W2JQy8WKPUFIwRbou6tD7quG-j1vhwprESdqLOT8j8xZckig/exec";
 
+// Créneaux : serveur rapide d'abord (tunnel Cloudflare), ancien système
+// Apps Script en secours automatique. Les envois (réservation, contact,
+// fiche santé, EMS) restent sur BOOKING_API_URL, seul l'affichage des
+// créneaux change de source.
+// NOTE : l'adresse du tunnel change si le tunnel redémarre — la valeur
+// courante est dans /opt/kinepulse/tunnel_url.txt sur le serveur.
+const SLOTS_API_URL = "https://safari-probe-pendant-integrate.trycloudflare.com/slots";
+const SLOTS_TIMEOUT_MS = 5000;
+
+function fetchWithTimeout(url, ms) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { signal: controller.signal })
+        .finally(() => clearTimeout(timer));
+}
+
+// Essaie le serveur rapide, puis l'ancien système en cas d'échec
+// (délai dépassé, erreur réseau, réponse non OK ou success:false).
+function fetchSlots(duration) {
+    const serverUrl = `${SLOTS_API_URL}?action=slots&duration=${duration}`;
+    const fallbackUrl = `${BOOKING_API_URL}?action=slots&duration=${duration}`;
+    return fetchWithTimeout(serverUrl, SLOTS_TIMEOUT_MS)
+        .then(res => {
+            if (!res.ok) throw new Error("server slots failed");
+            return res.json();
+        })
+        .then(data => {
+            if (!data.success) throw new Error("server slots unsuccessful");
+            return data;
+        })
+        .catch(() => fetch(fallbackUrl).then(res => res.json()));
+}
+
 // Valide qu'un numéro de téléphone est plausible: exactement 10 chiffres
 // (11 si préfixé par 1), pas une suite de chiffres identiques (ex: 0000000000)
 function isValidPhone(rawValue) {
@@ -357,8 +390,7 @@ function initMassageBooking() {
             renderCalendar();
         }
 
-        fetch(`${BOOKING_API_URL}?action=slots&duration=${duration}`)
-            .then(res => res.json())
+        fetchSlots(duration)
             .then(data => {
                 if (data.success) {
                     try { sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), data: data })); } catch (e) {}
