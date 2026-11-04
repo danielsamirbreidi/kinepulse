@@ -300,6 +300,8 @@ function initMassageBooking() {
 
     function applySlotsData(data) {
 
+        if (statusEl) { statusEl.textContent = ""; statusEl.style.display = "none"; }
+
         slotsByDate = {};
 
         if (data.success && data.slots) {
@@ -348,7 +350,11 @@ function initMassageBooking() {
         if (cached) {
             applySlotsData(cached);
         } else {
-            gridEl.innerHTML = '<div class="cal-loading"><span class="cal-spinner"></span>Chargement des créneaux...</div>';
+            // Squelette immédiat : la grille du mois s'affiche tout de suite,
+            // tous les jours grisés et inactifs tant que les créneaux ne sont
+            // pas arrivés (renderCalendar désactive les jours sans créneau).
+            showStatus(statusEl, "Chargement des créneaux...", false);
+            renderCalendar();
         }
 
         fetch(`${BOOKING_API_URL}?action=slots&duration=${duration}`)
