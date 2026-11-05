@@ -302,15 +302,16 @@ function initMassageBooking() {
     }
 
     if (consentInput) {
-        // La bulle native devient française au lieu de l'anglais du navigateur.
+        // Message défini dès le chargement : la bulle affiche ce texte en
+        // français même si la validation native bloque l'envoi avant le handler.
+        consentInput.setCustomValidity(CONSENT_MSG);
         consentInput.addEventListener("invalid", () => {
-            consentInput.setCustomValidity(CONSENT_MSG);
             showConsentError();
         });
         // Dès que la case est cochée, on efface le message (sinon setCustomValidity
-        // garderait le champ invalide même coché).
+        // garderait le champ invalide même coché) ; si on la décoche, on le remet.
         consentInput.addEventListener("change", () => {
-            consentInput.setCustomValidity("");
+            consentInput.setCustomValidity(consentInput.checked ? "" : CONSENT_MSG);
             if (consentInput.checked) hideConsentError();
         });
     }
