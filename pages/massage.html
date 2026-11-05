@@ -312,25 +312,27 @@ BIENFAITS
 
                 </div>
 
+                <p style="font-size:.8rem;opacity:.7;margin:0 0 10px;">* Champ obligatoire</p>
+
                 <input
                     class="booking-input"
                     type="text"
                     name="nom"
-                    placeholder="Nom complet"
+                    placeholder="Nom complet *"
                     required>
 
                 <input
                     class="booking-input"
                     type="tel"
                     name="telephone"
-                    placeholder="Téléphone"
+                    placeholder="Téléphone *"
                     required>
 
                 <input
                     class="booking-input"
                     type="email"
                     name="email"
-                    placeholder="Courriel"
+                    placeholder="Courriel *"
                     required>
 
                 <select
@@ -338,7 +340,7 @@ BIENFAITS
                     name="source"
                     required>
 
-                    <option value="">Comment nous avez-vous trouvé ?</option>
+                    <option value="">Comment nous avez-vous trouvé ? *</option>
                     <option>Recherche Google</option>
                     <option>Facebook / Instagram</option>
                     <option>Ami ou famille</option>
@@ -374,9 +376,10 @@ BIENFAITS
                 <p id="massage-slot-status" style="font-size:.85rem;color:var(--primary-light);display:none;"></p>
 
                 <label class="consent-check">
-                    <input type="checkbox" name="consentement" required>
-                    <span>J'accepte que mes renseignements soient utilisés pour traiter ma demande de rendez-vous, conformément à la <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
+                    <input type="checkbox" name="consentement" id="massage-consent" required>
+                    <span><span style="color:#e57373;font-weight:700;">*</span> J'accepte que mes renseignements soient utilisés pour traiter ma demande de rendez-vous, conformément à la <a href="politique-de-confidentialite.html" target="_blank">politique de confidentialité</a>.</span>
                 </label>
+                <p id="massage-consent-error" style="display:none;color:#e57373;font-size:.9rem;font-weight:600;margin:6px 0 0;">Cochez la case pour accepter que vos renseignements soient utilisés pour traiter votre demande.</p>
 
                 <button class="btn-primary" type="submit" id="massage-submit-btn">
 
