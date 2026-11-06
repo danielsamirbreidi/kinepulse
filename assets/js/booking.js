@@ -10,13 +10,13 @@ Google Apps Script (Calendar + Notion + courriels)
 // (voir README-automatisation.md pour les étapes)
 const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbwVumxoiEIMVGlC6Q0EO3W2JQy8WKPUFIwRbou6tD7quG-j1vhwprESdqLOT8j8xZckig/exec";
 
-// Créneaux : lus dans Google Agenda via Apps Script (BOOKING_API_URL).
-// Le serveur rapide (tunnel Cloudflare) a été retiré le 2026-11-06 :
-// son adresse apparaissait dans le site et Google a refusé les pubs
-// (« site compromis »). L'affichage des créneaux redevient plus lent
-// (~7 s), les envois (réservation, contact, fiche santé, EMS) ne changent pas.
-const SLOTS_API_URL = BOOKING_API_URL;
-const SLOTS_TIMEOUT_MS = 30000;
+// Créneaux : lus dans Google Agenda via le serveur rapide api.kinepulse.ca
+// (adresse propre de la clinique, DNS chez WHC, certificat Let's Encrypt).
+// En cas d'échec, Apps Script (BOOKING_API_URL) sert de repli.
+// (Le tunnel Cloudflare a été retiré le 2026-11-06 : son adresse
+// apparaissait dans le site et Google a refusé les pubs « site compromis ».)
+const SLOTS_API_URL = "https://api.kinepulse.ca/slots";
+const SLOTS_TIMEOUT_MS = 5000;
 
 function fetchWithTimeout(url, ms) {
     const controller = new AbortController();
@@ -25,7 +25,7 @@ function fetchWithTimeout(url, ms) {
         .finally(() => clearTimeout(timer));
 }
 
-// Lit les créneaux via Apps Script. En cas d'échec (délai dépassé,
+// Lit les créneaux via api.kinepulse.ca (serveur rapide). En cas d'échec (délai dépassé,
 // erreur réseau, réponse non OK ou success:false), réessaie une fois.
 function fetchSlots(duration) {
     const serverUrl = `${SLOTS_API_URL}?action=slots&duration=${duration}`;
