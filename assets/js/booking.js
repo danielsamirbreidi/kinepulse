@@ -1,7 +1,8 @@
 /*==================================================
 KINÉPULSE — INTÉGRATION RÉSERVATION
-Relie les formulaires massage / EMS au backend
-Google Apps Script (Calendar + Notion + courriels)
+Relie les formulaires massage / EMS au backend :
+serveur KinéPulse pour les réservations massage,
+Google Apps Script pour le reste (Calendar + Notion + courriels)
 ==================================================*/
 
 "use strict";
@@ -9,6 +10,11 @@ Google Apps Script (Calendar + Notion + courriels)
 // ⚠️ À REMPLACER après le déploiement du script Google Apps Script
 // (voir README-automatisation.md pour les étapes)
 const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycbwVumxoiEIMVGlC6Q0EO3W2JQy8WKPUFIwRbou6tD7quG-j1vhwprESdqLOT8j8xZckig/exec";
+
+// Réservations massage : serveur rapide de la clinique (3 s au lieu de 10–30 s).
+// Contact, fiche santé et demandes EMS restent sur Google Apps Script,
+// qui sert aussi de repli si le serveur ne répond pas.
+const MASSAGE_BOOKING_API_URL = "https://api.kinepulse.ca/book";
 
 // Créneaux : lus dans Google Agenda via le serveur rapide api.kinepulse.ca
 // (adresse propre de la clinique, DNS chez WHC, certificat Let's Encrypt).
@@ -23,6 +29,19 @@ function fetchWithTimeout(url, ms) {
     const timer = setTimeout(() => controller.abort(), ms);
     return fetch(url, { signal: controller.signal })
         .finally(() => clearTimeout(timer));
+}
+
+// Envoie une réservation massage : serveur rapide d'abord, Apps Script en repli
+// si le serveur ne répond pas (le repli vérifie le chevauchement : pas de double réservation).
+function postMassageBooking(payload) {
+    const opts = {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite le préflight CORS
+        body: JSON.stringify(payload)
+    };
+    return fetch(MASSAGE_BOOKING_API_URL, opts)
+        .then(res => res.json())
+        .catch(() => fetch(BOOKING_API_URL, opts).then(res => res.json()));
 }
 
 // Lit les créneaux via api.kinepulse.ca (serveur rapide). En cas d'échec (délai dépassé,
@@ -530,12 +549,7 @@ function initMassageBooking() {
         submitBtn.disabled = true;
         submitBtn.textContent = "Envoi en cours...";
 
-        fetch(BOOKING_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" }, // évite le préflight CORS
-            body: JSON.stringify(payload)
-        })
-            .then(res => res.json())
+        postMassageBooking(payload)
             .then(data => {
 
                 if (data.success) {
