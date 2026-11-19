@@ -31,6 +31,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://kinepulse.ca/pages/carte-cadeau.html</loc>
+    <lastmod>2026-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kinepulse.ca/pages/blog-prix-massotherapie-pointe-aux-trembles.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -62,6 +68,18 @@
   </url>
   <url>
     <loc>https://kinepulse.ca/pages/blog-mal-de-dos-pointe-aux-trembles.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://kinepulse.ca/pages/blog-douleur-cou-epaules-bureau-pointe-aux-trembles.html</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://kinepulse.ca/pages/blog-massage-sommeil-stress-pointe-aux-trembles.html</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
