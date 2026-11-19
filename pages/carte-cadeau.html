@@ -536,6 +536,10 @@ FAQ
         if (ok) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} }
         else { merciErreur.hidden = false; }
       });
+    } else {
+      // Paiement fait, mais aucune info retrouvée dans ce navigateur :
+      // on prévient l'acheteur au lieu de le laisser attendre ses cartes.
+      merciErreur.hidden = false;
     }
   } else if (!expired) {
     // Retour sur la page sans avoir payé : on remet ce qui était rempli.
