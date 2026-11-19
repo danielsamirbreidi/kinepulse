@@ -79,7 +79,7 @@
         "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": "5.0",
-            "reviewCount": "12"
+            "reviewCount": "13"
         },
         "description": "Clinique de massothérapie, kinésithérapie, EMS et analyse corporelle 3D à Pointe-aux-Trembles, Montréal.",
         "address": {
@@ -293,7 +293,7 @@
 
                 <div>
                     <label for="email-carte-2">Courriel de la 2<sup>e</sup> carte *</label>
-                    <input type="email" id="email-carte-2" class="booking-input" placeholder="ex : jean@email.com" required>
+                    <input type="email" id="email-carte-2" class="booking-input" placeholder="ex : jean@email.com">
                 </div>
 
                 <label class="same-email">
@@ -308,7 +308,7 @@
 
                 <button type="submit" class="btn-primary" id="giftcard-pay-btn">Payer 115 $</button>
 
-                <p class="giftcard-note">✔ Paiement sécurisé par carte — ✔ Reçus admissibles aux assurances</p>
+                <p class="giftcard-note">✔ Paiement sécurisé par carte — ✔ Reçus admissibles aux assurances — ✔ Sans expiration</p>
 
             </form>
 
@@ -352,6 +352,7 @@ CE QUE VOUS RECEVEZ
         <ul>
             <li>2 séances de massothérapie de 60 min — massage thérapeutique ou massage détente, au choix.</li>
             <li>Analyse corporelle 3D offerte avec chaque séance.</li>
+            <li>Aucune date d'expiration : vos 2 séances restent valables sans limite de temps.</li>
             <li>Reçus admissibles aux assurances.</li>
             <li>Pour vous, ou pour offrir à quelqu'un que vous aimez.</li>
         </ul>
@@ -372,7 +373,7 @@ COMMENT ÇA MARCHE
 
         <ol>
             <li><strong>Entrez votre nom et les courriels des 2 cartes</strong> — le même courriel pour les deux, si vous voulez. Vous pouvez aussi ajouter un petit message.</li>
-            <li><strong>Payez 115 $ par carte</strong> en toute sécurité.</li>
+            <li><strong>Payez 115 $ pour les 2 cartes</strong> en toute sécurité.</li>
             <li><strong>Recevez vos 2 cartes-cadeaux par courriel</strong> et réservez vos séances en ligne sur kinepulse.ca.</li>
         </ol>
 
@@ -476,6 +477,12 @@ FAQ
     else { email2.disabled = false; }
   }
   same.addEventListener('change', syncSame);
+  var formStarted = false;
+  form.addEventListener('input', function () {
+    if (formStarted) return;
+    formStarted = true;
+    if (window.gtag) gtag('event', 'giftcard_form_start');
+  });
   email1.addEventListener('input', function () { if (same.checked) email2.value = email1.value; });
 
   // Envoie les infos à la clinique — seulement APRÈS le paiement.
@@ -547,6 +554,12 @@ FAQ
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     if (same.checked) email2.value = email1.value;
+    if (!same.checked && !email2.value.trim()) {
+      email2.setCustomValidity('Entrez le courriel de la 2e carte, ou cochez « Même courriel ».');
+      email2.reportValidity();
+      return;
+    }
+    email2.setCustomValidity('');
     if (!form.checkValidity()) { form.reportValidity(); return; }
     var data = {
       nom: nom.value.trim(),
@@ -555,6 +568,7 @@ FAQ
       message: message.value.trim()
     };
     try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+    if (window.gtag) gtag('event', 'giftcard_pay_click', { value: 115, currency: 'CAD' });
     window.location.href = SQUARE_URL;
   });
 })();
