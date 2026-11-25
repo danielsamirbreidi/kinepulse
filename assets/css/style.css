@@ -1346,20 +1346,20 @@ textarea.booking-input{
     display:flex;
     align-items:flex-start;
     gap:10px;
-    font-size:.85rem;
-    color:var(--text-light);
-    line-height:1.5;
+    font-size:1rem;
+    color:var(--text);
+    line-height:1.55;
     cursor:pointer;
 }
 
 .cta-box .consent-check{
-    color:rgba(255,255,255,.75);
+    color:rgba(255,255,255,.95);
 }
 
 .consent-check input[type="checkbox"]{
-    width:17px;
-    height:17px;
-    margin-top:2px;
+    width:22px;
+    height:22px;
+    margin-top:1px;
     accent-color:var(--primary);
     flex-shrink:0;
 }
@@ -1541,6 +1541,28 @@ textarea.booking-input{
     color:var(--white) !important;
     transform:scale(1.08);
     box-shadow:0 4px 14px rgba(79,157,147,.4);
+}
+
+/* Jour complet : barré, un peu plus visible qu'un jour passé, avec infobulle */
+.cal-day.full{
+    opacity:.55;
+    text-decoration:line-through;
+}
+
+.cta-box .cal-day.full{
+    color:rgba(255,255,255,.6);
+}
+
+/* Légende sous le calendrier : explique les jours indisponibles */
+.cal-legend{
+    font-size:.8rem;
+    color:var(--text-light);
+    margin-top:10px;
+    line-height:1.5;
+}
+
+.cta-box .cal-legend{
+    color:rgba(255,255,255,.65);
 }
 
 #cal-timeslots{

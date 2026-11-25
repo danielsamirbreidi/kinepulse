@@ -344,6 +344,7 @@ function initMassageBooking() {
     const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
     let slotsByDate = {};   // { "2026-08-04": [{time,label}, ...] }
+    let slotsLoaded = false;   // vrai seulement quand les créneaux affichés sont les vrais (pas le squelette de chargement)
     let viewMonth = new Date();
     viewMonth.setDate(1);
     let selectedDate = null;
@@ -353,6 +354,7 @@ function initMassageBooking() {
         if (statusEl) { statusEl.textContent = ""; statusEl.style.display = "none"; }
 
         slotsByDate = {};
+        slotsLoaded = true;
 
         if (data.success && data.slots) {
             data.slots.forEach(slot => {
@@ -395,6 +397,7 @@ function initMassageBooking() {
         timeslotsEl.innerHTML = "";
         slotValueInput.value = "";
         selectedDate = null;
+        slotsLoaded = false;
 
         if (cached) {
             applySlotsData(cached);
@@ -445,7 +448,29 @@ function initMassageBooking() {
             const hasSlots = !!slotsByDate[dateStr];
             const isSelected = dateStr === selectedDate;
 
-            html += `<button type="button" class="cal-day${hasSlots ? " available" : ""}${isSelected ? " selected" : ""}" data-date="${dateStr}" ${hasSlots ? "" : "disabled"}>
+            // Jour sans créneau alors que les vraies données sont chargées :
+            // on dit pourquoi il est indisponible (complet ou fermé le dimanche),
+            // au lieu d'un simple grisé sans explication.
+            let dayClass = "";
+            let dayTitle = "";
+            if (!hasSlots && slotsLoaded) {
+                const dayDate = new Date(year, month, d);
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const windowEnd = new Date(todayStart);
+                windowEnd.setDate(windowEnd.getDate() + 60);
+                if (dayDate >= todayStart && dayDate <= windowEnd) {
+                    if (dayDate.getDay() === 0) {
+                        dayClass = " closed";
+                        dayTitle = ' title="Fermé — la clinique est fermée le dimanche"';
+                    } else {
+                        dayClass = " full";
+                        dayTitle = ' title="Complet — plus de place ce jour-là"';
+                    }
+                }
+            }
+
+            html += `<button type="button" class="cal-day${hasSlots ? " available" : ""}${isSelected ? " selected" : ""}${dayClass}" data-date="${dateStr}"${dayTitle} ${hasSlots ? "" : "disabled"}>
                 ${d}
             </button>`;
         }
@@ -495,13 +520,23 @@ function initMassageBooking() {
         });
     }
 
+    // Changement de mois : on efface la sélection et les créneaux affichés,
+    // sinon les heures du mois précédent restent visibles sous le nouveau mois.
+    function clearSelection() {
+        selectedDate = null;
+        slotValueInput.value = "";
+        timeslotsEl.innerHTML = "";
+    }
+
     prevBtn.addEventListener("click", () => {
         viewMonth.setMonth(viewMonth.getMonth() - 1);
+        clearSelection();
         renderCalendar();
     });
 
     nextBtn.addEventListener("click", () => {
         viewMonth.setMonth(viewMonth.getMonth() + 1);
+        clearSelection();
         renderCalendar();
     });
 
