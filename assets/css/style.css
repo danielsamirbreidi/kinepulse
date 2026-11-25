@@ -1357,9 +1357,9 @@ textarea.booking-input{
 }
 
 .consent-check input[type="checkbox"]{
-    width:22px;
-    height:22px;
-    margin-top:1px;
+    width:26px;
+    height:26px;
+    margin-top:0;
     accent-color:var(--primary);
     flex-shrink:0;
 }
