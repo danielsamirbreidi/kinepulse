@@ -1369,6 +1369,20 @@ textarea.booking-input{
     color:inherit;
 }
 
+/* Le texte du consentement ne doit pas hériter du style « étiquette » des
+   spans de la boîte d'appel (.cta-box span : police mono, majuscules,
+   turquoise, petit) — sinon il reste illisible malgré .consent-check. */
+.consent-check span{
+    display:inline;
+    font-family:inherit;
+    font-size:1rem;
+    font-weight:400;
+    text-transform:none;
+    letter-spacing:normal;
+    color:inherit;
+    margin-bottom:0;
+}
+
 .consent-check a:hover{
     color:var(--primary);
 }
